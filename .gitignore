@@ -1,0 +1,5 @@
+# Python Stuff
+__pycache__/
+
+# Virtual Environments
+.venv/
