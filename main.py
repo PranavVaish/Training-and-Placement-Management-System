@@ -1,13 +1,15 @@
-from typing import Union
-
 from fastapi import FastAPI
+from routes import student, company, job, placement
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+# Include routers
+app.include_router(student.router, prefix="/students", tags=["Students"])
+app.include_router(company.router, prefix="/companies", tags=["Companies"])
+app.include_router(job.router, prefix="/jobs", tags=["Jobs"])
+app.include_router(placement.router, prefix="/placements", tags=["Placements"])
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+# Home route
+@app.get("/")
+def read_home():
+    return({"message": "Welcome to the Placement Management System API!"})
