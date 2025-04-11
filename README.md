@@ -14,7 +14,7 @@ This project is a FastAPI-based backend for managing placements, jobs, companies
 
 ### 1. Clone the Repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/RitwikGupta-0501/ChaarBhaiCharoTabahii.git
 cd Project
 ```
 
@@ -29,7 +29,7 @@ python -m venv .venv
     source .venv/bin/activate
     ```
 - **Windows:**
-    ```powershell
+    ```bash
     .venv\Scripts\activate
     ```
 
