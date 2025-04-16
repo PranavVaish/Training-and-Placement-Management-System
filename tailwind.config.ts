@@ -61,6 +61,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				portal: {
+					DEFAULT: '#7E69AB',
+					light: '#9b87f5',
+					dark: '#6E59A5',
+					foreground: '#FFFFFF',
+					muted: '#E5DEFF',
+					accent: '#F2FCE2',
 				}
 			},
 			borderRadius: {
