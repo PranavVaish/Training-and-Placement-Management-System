@@ -12,10 +12,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BookOpen, Calendar, Clock, User, Search, Filter, Award } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BookOpen, Calendar, Clock, User, Search, Filter, Award, UserRound, Phone, Mail, Briefcase, Bookmark, Star } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 export default function TrainingPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedProgram, setSelectedProgram] = useState(null);
   
   // Mock training programs data
   const programs = [
@@ -156,6 +164,53 @@ export default function TrainingPage() {
     program.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Trainer registration form
+  const trainerForm = useForm({
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      trainerId: '',
+      expertise: '',
+      organization: ''
+    }
+  });
+
+  const handleTrainerSubmit = (data) => {
+    console.log('Trainer registration data:', data);
+    toast.success('Trainer registration submitted successfully!');
+    trainerForm.reset();
+  };
+
+  // Student training registration form
+  const handleTrainingRegistration = (program) => {
+    setSelectedProgram(program);
+  };
+
+  const handleEnrollSubmit = (e) => {
+    e.preventDefault();
+    console.log('Enrolled for training:', selectedProgram);
+    toast.success(`Successfully enrolled in ${selectedProgram.name}!`);
+    setSelectedProgram(null);
+  };
+
+  // Feedback form
+  const feedbackForm = useForm({
+    defaultValues: {
+      studentId: '',
+      trainingId: '',
+      trainerId: '',
+      rating: '',
+      comments: ''
+    }
+  });
+
+  const handleFeedbackSubmit = (data) => {
+    console.log('Feedback data:', data);
+    toast.success('Feedback submitted successfully!');
+    feedbackForm.reset();
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto py-8 px-4">
@@ -175,14 +230,126 @@ export default function TrainingPage() {
                 className="pl-10 w-full sm:w-[300px]"
               />
             </div>
+            
+            {/* Trainer Registration Button */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-portal-DEFAULT hover:bg-portal-dark">
+                  <UserRound className="mr-2 h-4 w-4" />
+                  Register as Trainer
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Trainer Registration</DialogTitle>
+                  <DialogDescription>
+                    Register as a trainer to conduct training programs on our platform.
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...trainerForm}>
+                  <form onSubmit={trainerForm.handleSubmit(handleTrainerSubmit)} className="space-y-4">
+                    <FormField
+                      control={trainerForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Full Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. John Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={trainerForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. johndoe@example.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={trainerForm.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Phone Number</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. (123) 456-7890" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={trainerForm.control}
+                      name="trainerId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Trainer ID</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. TR123" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={trainerForm.control}
+                      name="expertise"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Area of Expertise</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. Web Development, Machine Learning" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={trainerForm.control}
+                      name="organization"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Organization</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. Tech University" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <DialogFooter>
+                      <Button type="submit">Register</Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
         
         <Tabs defaultValue="programs" className="w-full">
-          <TabsList className="mb-8 grid w-full grid-cols-1 sm:grid-cols-3 max-w-md mx-auto">
+          <TabsList className="mb-8 grid w-full grid-cols-1 sm:grid-cols-4 max-w-md mx-auto">
             <TabsTrigger value="programs">Programs</TabsTrigger>
             <TabsTrigger value="trainers">Trainers</TabsTrigger>
             <TabsTrigger value="enrollment">My Enrollments</TabsTrigger>
+            <TabsTrigger value="feedback">Feedback</TabsTrigger>
           </TabsList>
           
           {/* Training Programs Tab */}
@@ -225,9 +392,68 @@ export default function TrainingPage() {
                     )}
                   </CardContent>
                   <CardFooter>
-                    <Button className="w-full bg-portal-DEFAULT hover:bg-portal-dark">
-                      Enroll Now
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button 
+                          className="w-full bg-portal-DEFAULT hover:bg-portal-dark"
+                          onClick={() => handleTrainingRegistration(program)}
+                        >
+                          <Bookmark className="mr-2 h-4 w-4" />
+                          Enroll Now
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[500px]">
+                        <DialogHeader>
+                          <DialogTitle>Training Registration</DialogTitle>
+                          <DialogDescription>
+                            Register for "{selectedProgram?.name}" training program.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleEnrollSubmit} className="space-y-4">
+                          <div className="grid gap-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="studentId" className="text-right">Student ID</Label>
+                              <Input id="studentId" placeholder="Enter your student ID" className="col-span-3" required />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="name" className="text-right">Full Name</Label>
+                              <Input id="name" placeholder="Enter your full name" className="col-span-3" required />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="email" className="text-right">Email</Label>
+                              <Input id="email" type="email" placeholder="Enter your email" className="col-span-3" required />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="department" className="text-right">Department</Label>
+                              <Input id="department" placeholder="Enter your department" className="col-span-3" required />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="paymentMethod" className="text-right">Payment Method</Label>
+                              <Select defaultValue="credit">
+                                <SelectTrigger className="col-span-3">
+                                  <SelectValue placeholder="Select payment method" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="credit">Credit Card</SelectItem>
+                                  <SelectItem value="debit">Debit Card</SelectItem>
+                                  <SelectItem value="bank">Bank Transfer</SelectItem>
+                                  <SelectItem value="paypal">PayPal</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div className="bg-muted p-3 rounded-md">
+                            <div className="flex justify-between items-center">
+                              <span>Training Fee:</span>
+                              <span className="font-semibold">{selectedProgram?.cost}</span>
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button type="submit">Confirm Registration</Button>
+                          </DialogFooter>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
                   </CardFooter>
                 </Card>
               ))}
@@ -332,6 +558,146 @@ export default function TrainingPage() {
                     </div>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Feedback Tab */}
+          <TabsContent value="feedback">
+            <Card>
+              <CardHeader>
+                <CardTitle>Training Feedback</CardTitle>
+                <CardDescription>
+                  Share your experience and help us improve our training programs
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...feedbackForm}>
+                  <form onSubmit={feedbackForm.handleSubmit(handleFeedbackSubmit)} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={feedbackForm.control}
+                        name="studentId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Student ID</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter your Student ID" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={feedbackForm.control}
+                        name="trainingId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Training Program</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select training program" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {programs.map(program => (
+                                  <SelectItem key={program.id} value={program.id}>
+                                    {program.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={feedbackForm.control}
+                        name="trainerId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Trainer</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select trainer" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {trainers.map(trainer => (
+                                  <SelectItem key={trainer.id} value={trainer.id}>
+                                    {trainer.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={feedbackForm.control}
+                        name="rating"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Rating</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select rating" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="5">★★★★★ Excellent</SelectItem>
+                                <SelectItem value="4">★★★★☆ Very Good</SelectItem>
+                                <SelectItem value="3">★★★☆☆ Good</SelectItem>
+                                <SelectItem value="2">★★☆☆☆ Fair</SelectItem>
+                                <SelectItem value="1">★☆☆☆☆ Poor</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={feedbackForm.control}
+                      name="comments"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Comments</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Share your experience, suggestions, and feedback" 
+                              className="min-h-[150px]" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <Button type="submit" className="bg-portal-DEFAULT hover:bg-portal-dark">
+                      <Star className="mr-2 h-4 w-4" />
+                      Submit Feedback
+                    </Button>
+                  </form>
+                </Form>
               </CardContent>
             </Card>
           </TabsContent>

@@ -94,3 +94,26 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin 8s linear infinite;
+  }
+  
+  .animate-ping-slow {
+    animation: ping 4s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}

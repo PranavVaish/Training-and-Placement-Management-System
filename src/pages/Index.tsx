@@ -1,7 +1,7 @@
 
 import MainLayout from '@/components/layout/MainLayout';
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Calendar, GraduationCap, Users, Briefcase } from 'lucide-react';
+import { ArrowRight, BookOpen, Calendar, GraduationCap, Users, Briefcase, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Index() {
@@ -29,10 +29,21 @@ export default function Index() {
         </div>
       </section>
 
-      {/* About Us Section */}
+      {/* About Us Section with animation */}
       <section className="py-16 bg-white" id="about">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
+            {/* Animated element */}
+            <div className="flex justify-center mb-8">
+              <div className="relative">
+                <div className="animate-spin-slow absolute -top-4 -left-4 w-16 h-16 rounded-full bg-gradient-to-r from-portal-DEFAULT to-portal-dark opacity-20"></div>
+                <div className="animate-ping-slow absolute -bottom-4 -right-4 w-16 h-16 rounded-full bg-gradient-to-r from-portal-dark to-portal-DEFAULT opacity-20"></div>
+                <div className="rounded-full bg-portal-muted p-6 relative z-10">
+                  <Sparkles className="h-12 w-12 text-portal-DEFAULT animate-pulse" />
+                </div>
+              </div>
+            </div>
+            
             <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">About Us</h2>
             <div className="prose prose-lg mx-auto">
               <p>
