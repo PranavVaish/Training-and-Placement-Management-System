@@ -226,7 +226,7 @@ export default function TrainingPage() {
             <Dialog>
               <DialogTrigger asChild>
                 <Button 
-                  className="bg-bright-orange text-white hover:bg-orange-600"
+                  className="bg-dark-orange text-white"
                 >
                   <UserRound className="mr-2 h-4 w-4" />
                   Register as Trainer
@@ -328,7 +328,7 @@ export default function TrainingPage() {
                     />
                     
                     <DialogFooter>
-                      <Button type="submit">Register</Button>
+                      <Button type="submit" className="bg-dark-charcoal text-white">Register</Button>
                     </DialogFooter>
                   </form>
                 </Form>
@@ -387,7 +387,7 @@ export default function TrainingPage() {
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button 
-                          className="w-full bg-vivid-purple text-white hover:bg-dark-purple"
+                          className="w-full bg-dark-purple text-white"
                           onClick={() => handleTrainingRegistration(program)}
                         >
                           <Bookmark className="mr-2 h-4 w-4" />
@@ -441,7 +441,7 @@ export default function TrainingPage() {
                             </div>
                           </div>
                           <DialogFooter>
-                            <Button type="submit">Confirm Registration</Button>
+                            <Button type="submit" className="bg-dark-charcoal text-white">Confirm Registration</Button>
                           </DialogFooter>
                         </form>
                       </DialogContent>
@@ -542,7 +542,7 @@ export default function TrainingPage() {
                   <div className="text-center py-8 text-gray-500">
                     You are not enrolled in any training programs yet.
                     <div className="mt-4">
-                      <Button asChild>
+                      <Button asChild className="bg-dark-charcoal text-white">
                         <a href="#programs">Browse Programs</a>
                       </Button>
                     </div>
@@ -681,7 +681,7 @@ export default function TrainingPage() {
                       )}
                     />
                     
-                    <Button type="submit" className="bg-portal-DEFAULT hover:bg-portal-dark">
+                    <Button type="submit" className="bg-dark-charcoal text-white">
                       <Star className="mr-2 h-4 w-4" />
                       Submit Feedback
                     </Button>

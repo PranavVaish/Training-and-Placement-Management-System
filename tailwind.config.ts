@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -69,7 +70,14 @@ export default {
 					foreground: '#FFFFFF',
 					muted: '#E5DEFF',
 					accent: '#F2FCE2',
-				}
+				},
+				// New darker colors for buttons
+				'bright-orange': '#E65C00',
+				'dark-orange': '#CC5200',
+				'vivid-purple': '#5D3FD3',
+				'dark-purple': '#4B32A8',
+				'charcoal': '#333333',
+				'dark-charcoal': '#222222',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
