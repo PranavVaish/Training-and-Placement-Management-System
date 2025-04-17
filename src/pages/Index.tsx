@@ -1,4 +1,3 @@
-
 import MainLayout from '@/components/layout/MainLayout';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, Calendar, GraduationCap, Users, Briefcase, Sparkles } from 'lucide-react';
@@ -26,10 +25,10 @@ export default function Index() {
               Connect with the right opportunities and grow your career
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="bg-portal-DEFAULT hover:bg-portal-dark text-white">
+              <Button asChild size="lg" className="bg-portal-DEFAULT text-white">
                 <Link to="/jobs">Browse Jobs</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="bg-[#1A1F2C] text-white hover:bg-[#222222]">
+              <Button asChild size="lg" variant="outline" className="bg-[#1A1F2C] text-white">
                 <Link to="/training">Explore Training</Link>
               </Button>
             </div>
