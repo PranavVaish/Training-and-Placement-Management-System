@@ -97,7 +97,7 @@ export default function Index() {
                 <Users className="h-6 w-6 text-portal-DEFAULT" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Industry Network</h3>
-              <Button className="bg-portal-DEFAULT text-white w-full">
+              <Button className="bg-purple-300 text-white w-full">
                 Connect Now
               </Button>
             </div>
