@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { 
@@ -25,7 +24,6 @@ export default function TrainingPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProgram, setSelectedProgram] = useState(null);
   
-  // Mock training programs data
   const programs = [
     {
       id: 'TRN001',
@@ -94,7 +92,6 @@ export default function TrainingPage() {
     },
   ];
   
-  // Mock trainers data
   const trainers = [
     {
       id: 'TR001',
@@ -138,7 +135,6 @@ export default function TrainingPage() {
     },
   ];
   
-  // Mock enrollment data
   const enrollments = [
     {
       enrollmentId: 'ENR001',
@@ -158,13 +154,11 @@ export default function TrainingPage() {
     },
   ];
   
-  // Filter programs based on search term
   const filteredPrograms = programs.filter(program => 
     program.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     program.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Trainer registration form
   const trainerForm = useForm({
     defaultValues: {
       name: '',
@@ -182,7 +176,6 @@ export default function TrainingPage() {
     trainerForm.reset();
   };
 
-  // Student training registration form
   const handleTrainingRegistration = (program) => {
     setSelectedProgram(program);
   };
@@ -194,7 +187,6 @@ export default function TrainingPage() {
     setSelectedProgram(null);
   };
 
-  // Feedback form
   const feedbackForm = useForm({
     defaultValues: {
       studentId: '',
@@ -231,10 +223,11 @@ export default function TrainingPage() {
               />
             </div>
             
-            {/* Trainer Registration Button */}
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="bg-portal-DEFAULT hover:bg-portal-dark">
+                <Button 
+                  className="bg-bright-orange text-white hover:bg-orange-600"
+                >
                   <UserRound className="mr-2 h-4 w-4" />
                   Register as Trainer
                 </Button>
@@ -352,7 +345,6 @@ export default function TrainingPage() {
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
           </TabsList>
           
-          {/* Training Programs Tab */}
           <TabsContent value="programs">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredPrograms.map((program) => (
@@ -395,7 +387,7 @@ export default function TrainingPage() {
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button 
-                          className="w-full bg-portal-DEFAULT hover:bg-portal-dark"
+                          className="w-full bg-vivid-purple text-white hover:bg-dark-purple"
                           onClick={() => handleTrainingRegistration(program)}
                         >
                           <Bookmark className="mr-2 h-4 w-4" />
@@ -460,7 +452,6 @@ export default function TrainingPage() {
             </div>
           </TabsContent>
           
-          {/* Trainers Tab */}
           <TabsContent value="trainers">
             <Card>
               <CardHeader>
@@ -503,7 +494,6 @@ export default function TrainingPage() {
             </Card>
           </TabsContent>
           
-          {/* Enrollment Tab */}
           <TabsContent value="enrollment">
             <Card>
               <CardHeader>
@@ -562,7 +552,6 @@ export default function TrainingPage() {
             </Card>
           </TabsContent>
           
-          {/* Feedback Tab */}
           <TabsContent value="feedback">
             <Card>
               <CardHeader>
