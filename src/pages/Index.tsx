@@ -25,7 +25,7 @@ export default function Index() {
               Connect with the right opportunities and grow your career
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="bg-portal-DEFAULT text-white">
+              <Button asChild size="lg" className="bg-white text-black hover:bg-gray-100">
                 <Link to="/jobs">Browse Jobs</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="bg-[#1A1F2C] text-white">
@@ -77,9 +77,9 @@ export default function Index() {
                 <BookOpen className="h-6 w-6 text-portal-DEFAULT" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Quality Training</h3>
-              <p className="text-gray-600">
-                Access industry-relevant training programs designed by experts to enhance your skills and employability.
-              </p>
+              <Button className="bg-portal-light text-white w-full">
+                View Courses
+              </Button>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
@@ -87,9 +87,9 @@ export default function Index() {
                 <Briefcase className="h-6 w-6 text-portal-DEFAULT" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Career Opportunities</h3>
-              <p className="text-gray-600">
-                Connect with top companies offering internships, full-time positions, and career advancement paths.
-              </p>
+              <Button className="bg-portal-dark text-white w-full">
+                Explore Opportunities
+              </Button>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
@@ -97,9 +97,9 @@ export default function Index() {
                 <Users className="h-6 w-6 text-portal-DEFAULT" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Industry Network</h3>
-              <p className="text-gray-600">
-                Build connections with industry professionals, recruiters, and peers to expand your professional network.
-              </p>
+              <Button className="bg-portal-DEFAULT text-white w-full">
+                Connect Now
+              </Button>
             </div>
           </div>
         </div>
