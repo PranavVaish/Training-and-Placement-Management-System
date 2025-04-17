@@ -1,3 +1,4 @@
+
 import MainLayout from '@/components/layout/MainLayout';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, Calendar, GraduationCap, Users, Briefcase, Sparkles } from 'lucide-react';
@@ -28,7 +29,7 @@ export default function Index() {
               <Button asChild size="lg" className="bg-portal-DEFAULT hover:bg-portal-dark text-white">
                 <Link to="/jobs">Browse Jobs</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="bg-white text-portal-DEFAULT hover:bg-gray-100">
+              <Button asChild size="lg" variant="outline" className="bg-[#1A1F2C] text-white hover:bg-[#222222]">
                 <Link to="/training">Explore Training</Link>
               </Button>
             </div>
