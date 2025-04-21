@@ -87,7 +87,7 @@ export default function Index() {
                 <Briefcase className="h-6 w-6 text-portal-DEFAULT" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Career Opportunities</h3>
-              <Button className="bg-portal-dark text-white w-full">
+              <Button className="bg-portal-light text-white w-full">
                 Explore Opportunities
               </Button>
             </div>

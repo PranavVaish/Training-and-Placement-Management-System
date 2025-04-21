@@ -76,7 +76,7 @@ export default function Login() {
             </CardContent>
             
             <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full bg-portal-DEFAULT hover:bg-portal-dark">
+              <Button type="submit" className="w-full bg-portal-dark">
                 Login
               </Button>
               
