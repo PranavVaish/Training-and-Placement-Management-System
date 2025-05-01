@@ -9,7 +9,7 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-portal-DEFAULT">Job Growth Hub</h3>
+            <h3 className="text-lg font-semibold text-portal-DEFAULT">Training and Placement</h3>
             <p className="text-gray-600 text-sm">
               Connecting students with opportunities and companies with talent.
             </p>
@@ -47,7 +47,7 @@ export default function Footer() {
         </div>
         
         <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600">
-          <p>© {currentYear} Job Growth Hub. All rights reserved.</p>
+          <p>© {currentYear} Training and Placement. All rights reserved.</p>
         </div>
       </div>
     </footer>

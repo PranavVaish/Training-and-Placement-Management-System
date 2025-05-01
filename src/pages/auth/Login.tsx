@@ -65,8 +65,8 @@ export default function Login() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" required />
+                <Label htmlFor="id">ID</Label>
+                <Input id="id" type="number" required />
               </div>
               
               <div className="space-y-2">

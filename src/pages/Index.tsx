@@ -78,7 +78,7 @@ export default function Index() {
               </div>
               <h3 className="text-xl font-semibold mb-3">Quality Training</h3>
               <Button className="bg-portal-light text-white w-full">
-                View Courses
+                <Link to="/Training">View Courses</Link>
               </Button>
             </div>
             
@@ -88,7 +88,7 @@ export default function Index() {
               </div>
               <h3 className="text-xl font-semibold mb-3">Career Opportunities</h3>
               <Button className="bg-portal-light text-white w-full">
-                Explore Opportunities
+              <Link to="/jobs">Explore Opportunities</Link>
               </Button>
             </div>
             
@@ -98,7 +98,7 @@ export default function Index() {
               </div>
               <h3 className="text-xl font-semibold mb-3">Industry Network</h3>
               <Button className="text-white w-full" style={{ backgroundColor: '#9B87F5' }}>
-                Connect Now
+                <Link to="/placement-records">Connect Now</Link>
               </Button>
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function Index() {
           <p className="text-lg mb-8 max-w-2xl mx-auto text-gray-700">
             Join our platform today to access exclusive job listings, training programs, and career resources.
           </p>
-          <Button asChild size="lg" className="bg-portal-DEFAULT hover:bg-portal-dark text-white">
+          <Button asChild size="lg" className="bg-portal-DEFAULT bg-portal-dark text-white">
             <Link to="/auth/register/student">
               Register Now <ArrowRight className="ml-2 h-4 w-4" />
             </Link>

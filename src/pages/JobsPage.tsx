@@ -11,10 +11,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Briefcase, MapPin, Calendar, User, Search, Filter } from 'lucide-react';
+import { Briefcase, MapPin, Calendar, Search, Filter } from 'lucide-react';
 
 export default function JobsPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showApplyForm, setShowApplyForm] = useState(false);
   
   // Mock job listings
   const jobs = [
@@ -251,9 +252,71 @@ export default function JobsPage() {
                     </CardContent>
                   </Card>
                   
-                  <Button className="w-full bg-portal-DEFAULT hover:bg-portal-dark">
+                  <Button 
+                    className="w-full bg-portal-DEFAULT bg-portal-dark"
+                    onClick={() => setShowApplyForm(true)}
+                  >
                     Apply Now
                   </Button>
+                    {showApplyForm && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                      <h3 className="text-xl font-bold mb-4">Apply for {jobs[0].title}</h3>
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        alert('Application submitted successfully!');
+                      }}>
+                        <div className="mb-4">
+                        <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">
+                          Student ID
+                        </label>
+                        <Input 
+                          id="studentId" 
+                          type="text" 
+                          required 
+                          placeholder="Enter your Student ID" 
+                          className="mt-1 w-full"
+                        />
+                        </div>
+                        <div className="mb-4">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                          Password
+                        </label>
+                        <Input 
+                          id="password" 
+                          type="password" 
+                          required 
+                          placeholder="Enter your password" 
+                          className="mt-1 w-full"
+                        />
+                        </div>
+                        <div className="mb-4">
+                        <label htmlFor="resume" className="block text-sm font-medium text-gray-700">
+                          Upload Resume
+                        </label>
+                        <Input 
+                          id="resume" 
+                          type="file" 
+                          required 
+                          className="mt-1 w-full"
+                        />
+                        </div>
+                        <div className="flex justify-end gap-4">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => setShowApplyForm(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button type="submit" className="bg-portal-DEFAULT bg-portal-dark">
+                          Submit Application
+                        </Button>
+                        </div>
+                      </form>
+                        </div>
+                      </div>
+                    )}
                 </div>
               </div>
             </CardContent>

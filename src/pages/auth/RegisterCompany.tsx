@@ -100,7 +100,7 @@ export default function RegisterCompany() {
             </CardContent>
             
             <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full bg-portal-DEFAULT hover:bg-portal-dark">
+              <Button type="submit" className="w-full bg-portal-DEFAULT bg-portal-dark">
                 Register as Company
               </Button>
               

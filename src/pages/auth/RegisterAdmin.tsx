@@ -63,9 +63,9 @@ export default function RegisterAdmin() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="super_admin">Super Admin</SelectItem>
-                    <SelectItem value="placement_coordinator">Placement Coordinator</SelectItem>
+                    {/* <SelectItem value="placement_coordinator">Placement Coordinator</SelectItem>
                     <SelectItem value="training_coordinator">Training Coordinator</SelectItem>
-                    <SelectItem value="department_admin">Department Admin</SelectItem>
+                    <SelectItem value="department_admin">Department Admin</SelectItem> */}
                   </SelectContent>
                 </Select>
               </div>
@@ -77,7 +77,7 @@ export default function RegisterAdmin() {
             </CardContent>
             
             <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full bg-portal-DEFAULT hover:bg-portal-dark">
+              <Button type="submit" className="w-full bg-portal-DEFAULT bg-portal-dark">
                 Register as Admin
               </Button>
               
