@@ -1,4 +1,4 @@
-
+import { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { 
   Card, 
@@ -8,12 +8,18 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
 import { Edit, FileText, Clock, Check, X } from 'lucide-react';
 
 export default function StudentDashboard() {
+  // State for profile editing dialog
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editedProfile, setEditedProfile] = useState(null);
+
   // Mock data for student profile
-  const studentProfile = {
+  const [studentProfile, setStudentProfile] = useState({
     name: 'John Smith',
     id: 'ST12345',
     email: 'john.smith@example.com',
@@ -21,7 +27,7 @@ export default function StudentDashboard() {
     department: 'Computer Science',
     cgpa: '8.5',
     graduationYear: '2025'
-  };
+  });
   
   // Mock data for job applications
   const jobApplications = [
@@ -70,6 +76,29 @@ export default function StudentDashboard() {
     }
   };
 
+  // Handler for opening the edit dialog
+  const handleEditProfile = () => {
+    setEditedProfile({...studentProfile});
+    setIsEditDialogOpen(true);
+  };
+  
+  // Handler for saving profile changes
+  const handleSaveProfile = () => {
+    if (editedProfile) {
+      setStudentProfile(editedProfile);
+      setIsEditDialogOpen(false);
+    }
+  };
+  
+  // Handler for input changes
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setEditedProfile(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto py-8 px-4">
@@ -81,7 +110,7 @@ export default function StudentDashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Profile Information</CardTitle>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleEditProfile}>
                   <Edit className="h-4 w-4 mr-2" /> Edit
                 </Button>
               </div>
@@ -249,6 +278,81 @@ export default function StudentDashboard() {
             </CardContent>
           </Card>
         </div>
+        
+        {/* Edit Profile Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Profile</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label htmlFor="name" className="text-sm font-medium">Name</label>
+                <Input 
+                  id="name" 
+                  value={editedProfile?.name || ''} 
+                  disabled
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="id" className="text-sm font-medium">Student ID</label>
+                <Input 
+                  id="id" 
+                  value={editedProfile?.id || ''} 
+                  disabled
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">Email</label>
+                <Input 
+                  id="email" 
+                  value={editedProfile?.email || ''}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="phone" className="text-sm font-medium">Phone</label>
+                <Input 
+                  id="phone" 
+                  value={editedProfile?.phone || ''}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="department" className="text-sm font-medium">Department</label>
+                <Input 
+                  id="department" 
+                  value={editedProfile?.department || ''} 
+                  disabled
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="cgpa" className="text-sm font-medium">CGPA</label>
+                <Input 
+                  id="cgpa" 
+                  value={editedProfile?.cgpa || ''} 
+                  disabled
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="graduationYear" className="text-sm font-medium">Graduation Year</label>
+                <Input 
+                  id="graduationYear" 
+                  value={editedProfile?.graduationYear || ''} 
+                  disabled
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveProfile}>
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );
