@@ -1,22 +1,23 @@
 import { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
-import { Edit, FileText, Clock, Check, X } from 'lucide-react';
+import { Edit, FileText, Clock, Check, Calendar, Briefcase } from 'lucide-react';
 
 export default function StudentDashboard() {
   // State for profile editing dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editedProfile, setEditedProfile] = useState(null);
+  const [activeApplicationTab, setActiveApplicationTab] = useState('jobListings');
 
   // Mock data for student profile
   const [studentProfile, setStudentProfile] = useState({
@@ -28,7 +29,7 @@ export default function StudentDashboard() {
     cgpa: '8.5',
     graduationYear: '2025'
   });
-  
+
   // Mock data for job applications
   const jobApplications = [
     {
@@ -59,10 +60,36 @@ export default function StudentDashboard() {
       interviewSchedule: 'N/A'
     },
   ];
-  
+
+  // Mock data for scheduled interviews
+  const scheduledInterviews = [
+    {
+      interviewId: 'INT001',
+      applicationId: 'APP002',
+      company: 'Global Systems Ltd.',
+      position: 'Frontend Developer',
+      date: '2025-03-25',
+      time: '10:00 AM',
+      mode: 'Video Call',
+      interviewer: 'Sarah Thompson',
+      status: 'Scheduled'
+    },
+    {
+      interviewId: 'INT002',
+      applicationId: 'APP004',
+      company: 'TechFusion Inc.',
+      position: 'UI/UX Designer',
+      date: '2025-04-03',
+      time: '2:30 PM',
+      mode: 'In-person',
+      interviewer: 'Michael Brooks',
+      status: 'Completed'
+    }
+  ];
+
   // Helper function to get status badge color
   const getStatusColor = (status: string) => {
-    switch(status.toLowerCase()) {
+    switch (status.toLowerCase()) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
       case 'shortlisted':
@@ -71,6 +98,10 @@ export default function StudentDashboard() {
         return 'bg-green-100 text-green-800';
       case 'rejected':
         return 'bg-red-100 text-red-800';
+      case 'scheduled':
+        return 'bg-purple-100 text-purple-800';
+      case 'completed':
+        return 'bg-teal-100 text-teal-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -78,10 +109,10 @@ export default function StudentDashboard() {
 
   // Handler for opening the edit dialog
   const handleEditProfile = () => {
-    setEditedProfile({...studentProfile});
+    setEditedProfile({ ...studentProfile });
     setIsEditDialogOpen(true);
   };
-  
+
   // Handler for saving profile changes
   const handleSaveProfile = () => {
     if (editedProfile) {
@@ -89,7 +120,7 @@ export default function StudentDashboard() {
       setIsEditDialogOpen(false);
     }
   };
-  
+
   // Handler for input changes
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -103,7 +134,7 @@ export default function StudentDashboard() {
     <MainLayout>
       <div className="container mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-6">Student Dashboard</h1>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Card */}
           <Card className="lg:col-span-1">
@@ -146,8 +177,8 @@ export default function StudentDashboard() {
               </div>
             </CardContent>
           </Card>
-          
-          {/* Applications Card */}
+
+          {/* Applications Card with Tabs */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -156,15 +187,32 @@ export default function StudentDashboard() {
                   <Link to="/jobs">Browse Jobs</Link>
                 </Button>
               </div>
+              
+              {/* Toggle buttons for Job Listings and Interview Schedule */}
+              <div className="flex border-b mt-4">
+                <button
+                  className={`pb-2 px-4 font-medium flex items-center ${activeApplicationTab === 'jobListings' 
+                    ? 'border-b-2 border-primary text-primary' 
+                    : 'text-gray-500'}`}
+                  onClick={() => setActiveApplicationTab('jobListings')}
+                >
+                  <Briefcase className="h-4 w-4 mr-2" /> Job Listings
+                </button>
+                <button
+                  className={`pb-2 px-4 font-medium flex items-center ${activeApplicationTab === 'interviewSchedule' 
+                    ? 'border-b-2 border-primary text-primary' 
+                    : 'text-gray-500'}`}
+                  onClick={() => setActiveApplicationTab('interviewSchedule')}
+                >
+                  <Calendar className="h-4 w-4 mr-2" /> Interview Schedule
+                </button>
+              </div>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="active" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="active">Active Applications</TabsTrigger>
-                  <TabsTrigger value="history">Application History</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="active" className="mt-4">
+              {activeApplicationTab === 'jobListings' ? (
+                // Job Listings Content
+                <div className="mt-4">
+                  <h2 className="text-xl font-semibold mb-4">Active Applications</h2>
                   {jobApplications.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full border-collapse">
@@ -205,17 +253,54 @@ export default function StudentDashboard() {
                       No active applications. Start applying for jobs now!
                     </div>
                   )}
-                </TabsContent>
-                
-                <TabsContent value="history">
-                  <div className="text-center py-8 text-gray-500">
-                    Your application history will appear here.
-                  </div>
-                </TabsContent>
-              </Tabs>
+                </div>
+              ) : (
+                // Interview Schedule Content
+                <div className="mt-4">
+                  <h2 className="text-xl font-semibold mb-4">Interview Schedule</h2>
+                  {scheduledInterviews.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="text-left text-sm text-gray-500 border-b">
+                            <th className="py-3 px-2">Company</th>
+                            <th className="py-3 px-2">Position</th>
+                            <th className="py-3 px-2">Date</th>
+                            <th className="py-3 px-2">Time</th>
+                            <th className="py-3 px-2">Mode</th>
+                            <th className="py-3 px-2">Interviewer</th>
+                            <th className="py-3 px-2">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {scheduledInterviews.map((interview) => (
+                            <tr key={interview.interviewId} className="border-b">
+                              <td className="py-3 px-2 font-medium">{interview.company}</td>
+                              <td className="py-3 px-2">{interview.position}</td>
+                              <td className="py-3 px-2">{interview.date}</td>
+                              <td className="py-3 px-2">{interview.time}</td>
+                              <td className="py-3 px-2">{interview.mode}</td>
+                              <td className="py-3 px-2">{interview.interviewer}</td>
+                              <td className="py-3 px-2">
+                                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(interview.status)}`}>
+                                  {interview.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      No interviews scheduled at the moment.
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
-          
+
           {/* Training Enrollments */}
           <Card className="lg:col-span-3">
             <CardHeader>
@@ -278,7 +363,7 @@ export default function StudentDashboard() {
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Edit Profile Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent>
@@ -288,57 +373,57 @@ export default function StudentDashboard() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <label htmlFor="name" className="text-sm font-medium">Name</label>
-                <Input 
-                  id="name" 
-                  value={editedProfile?.name || ''} 
+                <Input
+                  id="name"
+                  value={editedProfile?.name || ''}
                   disabled
                 />
               </div>
               <div className="space-y-2">
                 <label htmlFor="id" className="text-sm font-medium">Student ID</label>
-                <Input 
-                  id="id" 
-                  value={editedProfile?.id || ''} 
+                <Input
+                  id="id"
+                  value={editedProfile?.id || ''}
                   disabled
                 />
               </div>
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">Email</label>
-                <Input 
-                  id="email" 
+                <Input
+                  id="email"
                   value={editedProfile?.email || ''}
                   onChange={handleInputChange}
                 />
               </div>
               <div className="space-y-2">
                 <label htmlFor="phone" className="text-sm font-medium">Phone</label>
-                <Input 
-                  id="phone" 
+                <Input
+                  id="phone"
                   value={editedProfile?.phone || ''}
                   onChange={handleInputChange}
                 />
               </div>
               <div className="space-y-2">
                 <label htmlFor="department" className="text-sm font-medium">Department</label>
-                <Input 
-                  id="department" 
-                  value={editedProfile?.department || ''} 
+                <Input
+                  id="department"
+                  value={editedProfile?.department || ''}
                   disabled
                 />
               </div>
               <div className="space-y-2">
                 <label htmlFor="cgpa" className="text-sm font-medium">CGPA</label>
-                <Input 
-                  id="cgpa" 
-                  value={editedProfile?.cgpa || ''} 
-                  disabled
+                <Input
+                  id="cgpa"
+                  value={editedProfile?.cgpa || ''}
+                  onChange={handleInputChange}
                 />
               </div>
               <div className="space-y-2">
                 <label htmlFor="graduationYear" className="text-sm font-medium">Graduation Year</label>
-                <Input 
-                  id="graduationYear" 
-                  value={editedProfile?.graduationYear || ''} 
+                <Input
+                  id="graduationYear"
+                  value={editedProfile?.graduationYear || ''}
                   disabled
                 />
               </div>
