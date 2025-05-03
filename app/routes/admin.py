@@ -5,36 +5,43 @@ import mysql.connector
 from db.connections import get_db
 from mysql.connector import MySQLConnection
 from models.admin import AdminLogin, AdminResponse
+from typing import List
 
 router = APIRouter()
 
-async def get_admin_by_id(admin_id: int, db: MySQLConnection = Depends(get_db)):
+@router.get("/", response_model=List[AdminResponse])
+async def get_admin(db: MySQLConnection = Depends(get_db)):
     """
-    Helper function to retrieve an admin from the database by Admin ID, including phone number.
-    """
-    query = """
-        SELECT a.Admin_ID, a.Name, a.Role, ap.Phone_No
-        FROM Admin a
-        LEFT JOIN Admin_Phone ap ON a.Admin_ID = ap.Admin_ID
-        WHERE a.Admin_ID = %s
+    Retrieve admin data using the GetAdminData stored procedure.
     """
     try:
         cursor = db.cursor()
-        cursor.execute(query, (admin_id,))
-        admin = cursor.fetchone()
+        cursor.callproc("GetAdminData")
 
-        if not admin:
-            raise HTTPException(status_code=404, detail="Admin not found")
+        results = []
+        for result in cursor.stored_results():
+            admins = result.fetchall()
 
-        # Convert the tuple to a dictionary
-        admin_data = {
-            "Admin_ID": admin[0],
-            "Name": admin[1],
-            "Role": admin[2],
-            "Phone_Number": admin[3]  # Add phone number
-        }
+            if not admins:
+                raise HTTPException(status_code=404, detail="Admins not found")
 
-        return AdminResponse(**admin_data)
+            # Convert the tuple to a dictionary or an Admin object
+            admin_list = []
+            for admin in admins:
+                admin_data = {
+                    "Admin_ID": admin[0],
+                    "Admin_Name": admin[1],
+                    "Role": admin[2],
+                    "Email": admin[3],
+                    "Phone": admin[4],
+                }
+                admin_list.append(AdminResponse(**admin_data))
+            results.append(admin_list)
+
+        if results:
+            return results[0]
+        else:
+            raise HTTPException(status_code=404, detail="Admins not found")
 
     except mysql.connector.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
@@ -73,11 +80,7 @@ async def login_admin(
         if not bcrypt.checkpw(admin_data.password.encode('utf-8'), password_hash.encode('utf-8')):
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
-        # If password is correct, retrieve the admin using raw SQL
-        admin_info = await get_admin_by_id(admin_id, db)
-
-        # Return the admin (without the password hash)
-        return admin_info
+        return {"access_token": "test_token"}
 
     except mysql.connector.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")

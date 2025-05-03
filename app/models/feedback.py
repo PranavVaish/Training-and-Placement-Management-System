@@ -1,11 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
 
-class Feedback(BaseModel):
+class FeedbackCreate(BaseModel):
     Feedback_ID: int
     Student_ID: int
-    Company_ID: int
     Rating: int
-    Trainer_ID: int
-    Comments: Optional[str]
-    Feedback_Type: Optional[str] = Field(..., max_length=50)
+    Comments: str
+    Trainer_ID: Optional[int] = None

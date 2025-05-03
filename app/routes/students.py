@@ -3,7 +3,7 @@ import bcrypt
 from fastapi import APIRouter, Body, Depends, HTTPException
 import mysql.connector
 from db.connections import get_db
-from models.student import StudentListResponse, StudentLogin, StudentRegistration, StudentResponse
+from models.student import StudentListResponse, StudentLogin, StudentRegistration, StudentResponse, EnrollStudent, JobApplication
 import datetime
 from main import create_access_token
 
@@ -14,9 +14,10 @@ async def get_student_by_id(student_id: int, db: mysql.connector.MySQLConnection
     Helper function to retrieve a student from the database by Student ID, including phone number.
     """
     query = """
-        SELECT s.Student_ID, s.Name, s.CGPA, s.Graduation_Year, s.Department, sp.Phone_No
+        SELECT s.Student_ID, s.Name, s.CGPA, s.Graduation_Year, s.Department, sp.Phone_No, se.Email_ID
         FROM Student s
         LEFT JOIN Student_Phone sp ON s.Student_ID = sp.Student_ID
+        LEFT JOIN Student_Email se ON s.Student_ID = se.Student_ID
         WHERE s.Student_ID = %s
     """
     try:
@@ -29,12 +30,13 @@ async def get_student_by_id(student_id: int, db: mysql.connector.MySQLConnection
 
         # Convert the tuple to a dictionary
         student_data = {
-            "Student_ID": student[0],
             "Name": student[1],
+            "Student_ID": student[0],
+            "Email_ID": student[6], 
+            "Phone_No": student[5], 
+            "Department": student[4],
             "CGPA": student[2],
             "Graduation_Year": student[3],
-            "Department": student[4],
-            "Phone_Number": student[5]  # Add phone number
         }
 
         return StudentResponse(**student_data)
@@ -186,6 +188,127 @@ async def login_student(
 
     except mysql.connector.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+
+@router.post("/apply")
+async def apply_to_job(
+    application_data: JobApplication = Body(...),
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+    current_user: dict = Depends(create_access_token),
+):
+    """
+    Apply to a job using the Application table.
+    """
+    try:
+        cursor = db.cursor()
+
+        # Extract student_id from the access token
+        student_id = current_user.get("sub")
+        if not student_id:
+            raise HTTPException(status_code=401, detail="Invalid access token")
+
+        # Call the stored procedure
+        application_date = datetime.date.today()
+        status = "Pending"
+        cursor.callproc("ApplyToJob", (student_id, application_data.job_id, application_date, status))
+
+        # Commit the changes
+        db.commit()
+
+        return {"message": "Application submitted successfully"}
+
+    except mysql.connector.Error as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Application failed: {e}")
+    except HTTPException as e:
+        db.rollback()
+        raise e
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+
+@router.get("/enrolled_courses/{student_id}")
+async def get_enrolled_courses(
+    student_id: int,
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+):
+    """
+    Retrieve all training programs a student is enrolled in using the stored procedure.
+    """
+    try:
+        cursor = db.cursor()
+
+        # Call the stored procedure
+        cursor.callproc("GetTrainingEnrollmentsByStudent", (student_id,))
+
+        # Fetch results from the procedure
+        for result in cursor.stored_results():
+            enrollments = result.fetchall()
+
+        if not enrollments:
+            raise HTTPException(status_code=404, detail="No training enrollments found for this student")
+
+        # Convert the tuple to a dictionary or a Training object
+        enrollment_list = []
+        for enrollment in enrollments:
+            enrollment_data = {
+                "Enrollment_ID": enrollment[0],
+                "Training_ID": enrollment[1],
+                "Training_Name": enrollment[2],
+                "Performance_Grade": enrollment[3],
+                "Completion_Status": enrollment[4]
+            }
+            enrollment_list.append(enrollment_data)
+        return {"enrollments": enrollment_list}
+
+    except mysql.connector.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+
+@router.post("/enroll")
+async def enroll_student(
+    enrollment_data: EnrollStudent,
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+    current_user: dict = Depends(create_access_token),
+):
+    """
+    Enroll a student in a training program using their access token and a stored procedure.
+    """
+    try:
+        cursor = db.cursor()
+
+        # Extract student_id from the access token
+        student_id = current_user.get("sub")
+        if not student_id:
+            raise HTTPException(status_code=401, detail="Invalid access token")
+
+        # Call the stored procedure
+        cursor.callproc("EnrollStudentInTraining", (enrollment_data.training_id, student_id))
+
+        # Commit the changes
+        db.commit()
+
+        return {"message": "Student enrolled successfully"}
+
+    except mysql.connector.Error as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Enrollment failed: {e}")
+    except HTTPException as e:
+        db.rollback()
+        raise e
     finally:
         if cursor:
             cursor.close()

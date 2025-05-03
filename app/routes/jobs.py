@@ -27,11 +27,15 @@ async def get_all_jobs(db: mysql.connector.MySQLConnection = Depends(get_db)):
             for job in jobs:
                 job_data = {
                     "Job_ID": job[0],
-                    "Company_Name": job[3],  # Assuming company name is the 4th column
                     "Title": job[1],
+                    "Company_Name": job[3],  # Assuming company name is the 4th column
+                    "Location_List": job[8].split(",") if job[8] else [],
                     "Salary": job[2],
                     "Job_Type": job[4],
                     "Application_Deadline": job[5],
+                    "Job_Description": job[6],
+                    "Vacancies": job[7],
+                    "Eligibility_Criteria_List": job[9].split(",") if job[9] else [],
                 }
                 job_list.append(JobResponse(**job_data))
             results.append(job_list)
@@ -139,12 +143,15 @@ async def get_active_jobs_by_company(company_id: int, db: mysql.connector.MySQLC
             job_list = []
             for job in jobs:
                 job_data = {
-                    "Job_ID": job[0],
-                    "Company_Name": job[3],  # Assuming company name is the 4th column
                     "Title": job[1],
                     "Salary": job[2],
                     "Job_Type": job[4],
                     "Application_Deadline": job[5],
+                    "Job_ID": job[0],
+                    "Job_Description": job[6],
+                    "Vacancies": job[7],
+                    "Location_List": job[8].split(",") if job[8] else [],
+                    "Eligibility_Criteria_List": job[9].split(",") if job[9] else [],
                 }
                 job_list.append(JobResponse(**job_data))
             results.append(job_list)

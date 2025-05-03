@@ -23,6 +23,26 @@ BEGIN
     VALUES (p_PhoneNo, p_AdminID);
 END;
 
+-- Stored Procedure: Retrieve Admin Data
+DROP PROCEDURE IF EXISTS GetAdminData;
+CREATE PROCEDURE IF NOT EXISTS GetAdminData()
+BEGIN
+    SELECT 
+        a.Admin_ID,
+        a.Name AS Admin_Name,
+        a.Role,
+        e.Email_ID AS Email,
+        p.Phone_No AS Phone
+    FROM 
+        Admin a
+    LEFT JOIN 
+        Email e ON a.Admin_ID = e.Admin_ID
+    LEFT JOIN 
+        Phone p ON a.Admin_ID = p.Admin_ID
+    ORDER BY 
+        a.Name;
+END;
+
 -- Stored Procedure: Register Student
 DROP PROCEDURE IF EXISTS AddStudentWithContact;
 CREATE PROCEDURE IF NOT EXISTS AddStudentWithContact(
@@ -47,6 +67,36 @@ BEGIN
     -- Insert into Student_Phone table
     INSERT INTO Student_Phone (Phone_No, Student_ID)
     VALUES (p_PhoneNo, p_StudentID);
+END;
+
+-- ADD FEEDBACK
+DROP PROCEDURE IF EXISTS AddFeedback;
+CREATE PROCEDURE IF NOT EXISTS AddFeedback (
+    IN p_Student_ID INT,
+    IN p_Rating INT,
+    IN p_Comments TEXT,
+    IN p_Trainer_ID INT
+)
+IS 
+    v_Feedback_ID INT;
+    id_exists INT DEFAULT 1;
+    WHILE id_exists = 1 DO
+        SET v_Feedback_ID = FLOOR(100000 + (RAND() * 900000)); -- 6-digit random ID
+        SELECT COUNT(*) INTO id_exists
+        FROM Feedback
+        WHERE Feedback_ID = v_Feedback_ID
+    END WHILE;
+BEGIN
+    -- Check if Student exists
+    IF EXISTS (SELECT 1 FROM Student WHERE Student_ID = p_Student_ID) AND
+       EXISTS (SELECT 1 FROM Trainer WHERE Trainer_ID = p_Trainer_ID) THEN
+
+        INSERT INTO Feedback (Feedback_ID, Student_ID, Rating, Comments, Trainer_ID)
+        VALUES (p_Feedback_ID, p_Student_ID, p_Rating, p_Comments, p_Trainer_ID);
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid Student_ID, or Trainer_ID';
+    END IF;
 END;
 
 -- Stored Procedure: Register Company
@@ -219,16 +269,24 @@ BEGIN
     DECLARE v_JobID INT;
     DECLARE v_JobTitle VARCHAR(100);
     DECLARE v_Salary DECIMAL(10,2);
-    DECLARE v_CompanyName VARCHAR(100);
+    DECLARE v_Location VARCHAR(100);
+    DECLARE v_Description TEXT;
+    DECLARE v_eligibilty_criteria TEXT;
+    DECLARE v_vanacancies INT;
     DECLARE v_JobType VARCHAR(50);
     DECLARE v_Deadline DATE;
+    DECLARE v_CompanyName VARCHAR(100);
 
     -- Cursor for expired job listings with company name for a specific company
     DECLARE job_cursor CURSOR FOR
         SELECT 
             j.Job_ID, j.Job_Title, j.Salary,
-            c.Name, j.Job_Type, j.Application_Deadline
+            c.Name, j.Job_Type, j.Application_Deadline,
+            j.Job_Description, j.Vacancies, k.Location,
+            je.Eligibility_Criterion
         FROM Job j
+        Join Job_Location k on j.Job_ID = k.Job_ID
+        Join Job_Eligibility je on j.Job_ID = je.Job_ID
         JOIN Company c ON j.Company_ID = c.Company_ID
         WHERE j.Application_Deadline >= CURDATE()
           AND j.Company_ID = p_CompanyID;
@@ -433,4 +491,129 @@ BEGIN
     END LOOP;
 
     CLOSE training_cursor;
+END;
+
+
+-- Stored Procedure: Retrieve Hiring History, Department, Candidate, Job Role, and Hiring Period
+DROP PROCEDURE IF EXISTS GetHiringHistoryDetails;
+CREATE PROCEDURE IF NOT EXISTS GetHiringHistoryDetails(
+    IN p_CompanyID INT
+)
+BEGIN
+    SELECT 
+        c.Name AS Company_Name,
+        s.Name AS Candidate_Name,
+        s.Department,
+        ch.Hiring_Period,
+        ch.Job_Roles
+    FROM 
+        Company_Hiring_History ch
+    JOIN 
+        Company c ON ch.Company_ID = c.Company_ID
+    JOIN 
+        Placement_Record pr ON pr.Company_ID = c.Company_ID
+    JOIN 
+        Student s ON pr.Student_ID = s.Student_ID
+    WHERE 
+        c.Company_ID = p_CompanyID
+    ORDER BY 
+        c.Name, ch.Hiring_Period, s.Name;
+END;
+
+-- Stored Procedure: GetTrainingEnrollmentsByStudent
+DROP PROCEDURE IF EXISTS GetTrainingEnrollmentsByStudent;
+CREATE PROCEDURE IF NOT EXISTS GetTrainingEnrollmentsByStudent(
+    IN p_StudentID INT
+)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_EnrollmentID INT;
+    DECLARE v_TrainingID INT;
+    DECLARE v_TrainingName VARCHAR(100);
+    DECLARE v_PerformanceGrade VARCHAR(10);
+    DECLARE v_CompletionStatus VARCHAR(20);
+
+    -- Cursor: fetch enrollments for the given student, along with training name
+    DECLARE enroll_cursor CURSOR FOR
+        SELECT 
+            te.Enrollment_ID,
+            te.Training_ID,
+            tp.Training_Name,
+            te.Performance_Grade,
+            te.Completion_Status
+        FROM Training_Enrollment te
+        JOIN Training_Program tp ON te.Training_ID = tp.Training_ID
+        WHERE te.Student_ID = p_StudentID;
+
+    -- Handler to detect end of rows
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Open the cursor
+    OPEN enroll_cursor;
+
+    read_loop: LOOP
+        FETCH enroll_cursor INTO
+            v_EnrollmentID,
+            v_TrainingID,
+            v_TrainingName,
+            v_PerformanceGrade,
+            v_CompletionStatus;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Output one row at a time
+        SELECT 
+            v_EnrollmentID AS Enrollment_ID,
+            v_TrainingID AS Training_ID,
+            v_TrainingName AS Training_Name,
+            v_PerformanceGrade AS Performance_Grade,
+            v_CompletionStatus AS Completion_Status;
+
+    END LOOP;
+
+    CLOSE enroll_cursor;
+END ;
+
+-- Stored Procedure: Enroll Student in Training
+DROP PROCEDURE IF EXISTS EnrollStudentInTraining;
+CREATE PROCEDURE IF NOT EXISTS EnrollStudentInTraining(
+    IN p_training_id INT,
+    IN p_student_id INT
+)
+BEGIN
+    -- Check if the training program exists
+    IF NOT EXISTS (SELECT 1 FROM Training_Program WHERE Training_ID = p_training_id) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Training program not found';
+    END IF;
+
+    -- Check if the student is already enrolled in the training program
+    IF EXISTS (SELECT 1 FROM Training_Enrollment WHERE Training_ID = p_training_id AND Student_ID = p_student_id) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Student is already enrolled in this training program';
+    END IF;
+
+    -- Insert a new row into Training_Enrollment
+    INSERT INTO Training_Enrollment (Training_ID, Student_ID, Performance_Grade, Completion_Status)
+    VALUES (p_training_id, p_student_id, NULL, 'Enrolled');
+END;
+
+
+-- Stored Procedure: Apply to Job
+DROP PROCEDURE IF EXISTS ApplyToJob;
+CREATE PROCEDURE IF NOT EXISTS ApplyToJob(
+    IN p_student_id INT,
+    IN p_job_id INT,
+    IN p_application_date DATE,
+    IN p_status VARCHAR(20)
+)
+BEGIN
+    -- Check if the student has already applied for the job
+    IF EXISTS (SELECT 1 FROM Application WHERE Student_ID = p_student_id AND Job_ID = p_job_id) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You have already applied for this job';
+    END IF;
+
+    -- Insert the application into the Application table
+    INSERT INTO Application (Student_ID, Job_ID, Application_Date, Status)
+    VALUES (p_student_id, p_job_id, p_application_date, p_status);
 END;

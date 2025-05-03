@@ -7,65 +7,7 @@
 
 -----------------------------------------------------------------------
 
---Stored Procedure: GetTrainingEnrollmentsByStudent
 
-DELIMITER //
-
-CREATE PROCEDURE GetTrainingEnrollmentsByStudent(
-    IN p_StudentID INT
-)
-BEGIN
-    DECLARE done INT DEFAULT FALSE;
-    DECLARE v_EnrollmentID INT;
-    DECLARE v_TrainingID INT;
-    DECLARE v_TrainingName VARCHAR(100);
-    DECLARE v_PerformanceGrade VARCHAR(10);
-    DECLARE v_CompletionStatus VARCHAR(20);
-
-    -- Cursor: fetch enrollments for the given student, along with training name
-    DECLARE enroll_cursor CURSOR FOR
-        SELECT 
-            te.Enrollment_ID,
-            te.Training_ID,
-            tp.Training_Name,
-            te.Performance_Grade,
-            te.Completion_Status
-        FROM Training_Enrollment te
-        JOIN Training_Program tp ON te.Training_ID = tp.Training_ID
-        WHERE te.Student_ID = p_StudentID;
-
-    -- Handler to detect end of rows
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-
-    -- Open the cursor
-    OPEN enroll_cursor;
-
-    read_loop: LOOP
-        FETCH enroll_cursor INTO
-            v_EnrollmentID,
-            v_TrainingID,
-            v_TrainingName,
-            v_PerformanceGrade,
-            v_CompletionStatus;
-
-        IF done THEN
-            LEAVE read_loop;
-        END IF;
-
-        -- Output one row at a time
-        SELECT 
-            v_EnrollmentID AS Enrollment_ID,
-            v_TrainingID AS Training_ID,
-            v_TrainingName AS Training_Name,
-            v_PerformanceGrade AS Performance_Grade,
-            v_CompletionStatus AS Completion_Status;
-
-    END LOOP;
-
-    CLOSE enroll_cursor;
-END //
-
-DELIMITER ;
 
 --------------------------------------------------------------------
 
@@ -135,6 +77,7 @@ BEGIN
     DECLARE v_Job_Title VARCHAR(100);
     DECLARE v_Package DECIMAL(10,2);
     DECLARE v_Placement_Date DATE;
+    Company_ID: int
     DECLARE v_Placement_Location VARCHAR(100);
     
     -- Declare cursor for selecting the records
@@ -329,116 +272,19 @@ DELIMITER ;
 
 --------------------------------------------------------------------------------------------------------------
 
--- Stored Procedure: Get Full Company Data (Emails, Phones, Locations All Separate)
 
-DELIMITER $$
-
-CREATE PROCEDURE GetCompanyDataWithDetails()
-BEGIN
-    SELECT 
-        c.Company_ID,
-        c.Name AS Company_Name,
-        c.Industry_Type,
-        c.Contact_Person,
-        c.Website,
-        ce.Email_ID AS Email,
-        cp.Phone_No AS Phone,
-        cl.Location AS Location
-    FROM 
-        Company c
-    LEFT JOIN 
-        Company_Email ce ON c.Company_ID = ce.Company_ID
-    LEFT JOIN 
-        Company_Phone cp ON c.Company_ID = cp.Company_ID
-    LEFT JOIN 
-        Company_Location cl ON c.Company_ID = cl.Company_ID
-    ORDER BY 
-        c.Name;
-END$$
-
-DELIMITER ;
 
 ----------------------------------------------------------------------------------------------------------------
 
---Stored Procedure to Retrieve Student Data:
 
-DELIMITER $$
-
-CREATE PROCEDURE GetStudentData()
-BEGIN
-    SELECT 
-        s.Student_ID,
-        s.Name AS Student_Name,
-        s.Department,
-        s.CGPA,
-        s.Graduation_Year,
-        se.Email_ID AS Email,
-        sp.Phone_No AS Phone
-    FROM 
-        Student s
-    LEFT JOIN 
-        Student_Email se ON s.Student_ID = se.Student_ID
-    LEFT JOIN 
-        Student_Phone sp ON s.Student_ID = sp.Student_ID
-    ORDER BY 
-        s.Name;
-END$$
-
-DELIMITER ;
 
 -----------------------------------------------------------------------------------------------------------
 
---Stored Procedure: Retrieve Hiring History, Department, Candidate, Job Role, and Hiring Period
 
-DELIMITER $$
-
-CREATE PROCEDURE GetHiringHistoryDetails()
-BEGIN
-    SELECT 
-        c.Name AS Company_Name,
-        s.Name AS Candidate_Name,
-        s.Department,
-        ch.Hiring_Period,
-        ch.Job_Roles
-    FROM 
-        Company_Hiring_History ch
-    JOIN 
-        Company c ON ch.Company_ID = c.Company_ID
-    JOIN 
-        Placement_Record pr ON pr.Company_ID = c.Company_ID
-    JOIN 
-        Student s ON pr.Student_ID = s.Student_ID
-    ORDER BY 
-        c.Name, ch.Hiring_Period, s.Name;
-END$$
-
-DELIMITER ;
 
 ---------------------------------------------------------------------------------------------------
 
---Stored Procedure: Retrieve Admin Data
 
-DELIMITER $$
-
-CREATE PROCEDURE GetAdminData()
-BEGIN
-    SELECT 
-        a.Admin_ID,
-        a.Name AS Admin_Name,
-        a.Role,
-        e.Email_ID AS Email,
-        p.Phone_No AS Phone
-    FROM 
-        Admin a
-    LEFT JOIN 
-        Email e ON a.Admin_ID = e.Admin_ID
-    LEFT JOIN 
-        Phone p ON a.Admin_ID = p.Admin_ID
-    ORDER BY 
-        a.Name;
-END$$
-
-DELIMITER ;
 
 -----------------------------------------------------------------------------------------------------
 

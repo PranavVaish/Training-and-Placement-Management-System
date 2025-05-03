@@ -65,34 +65,7 @@ DELIMITER ;
 
 --------------------------------------------------------------------------------
 
---ADD FEEDBACK
 
-DELIMITER //
-
-CREATE PROCEDURE AddFeedback (
-    IN p_Feedback_ID INT,
-    IN p_Student_ID INT,
-    IN p_Company_ID INT,
-    IN p_Rating INT,
-    IN p_Comments TEXT,
-    IN p_Feedback_Type VARCHAR(50),
-    IN p_Trainer_ID INT
-)
-BEGIN
-    -- Check if Student exists
-    IF EXISTS (SELECT 1 FROM Student WHERE Student_ID = p_Student_ID) AND
-       EXISTS (SELECT 1 FROM Company WHERE Company_ID = p_Company_ID) AND
-       EXISTS (SELECT 1 FROM Trainer WHERE Trainer_ID = p_Trainer_ID) THEN
-       
-        INSERT INTO Feedback (Feedback_ID, Student_ID, Company_ID, Rating, Comments, Feedback_Type, Trainer_ID)
-        VALUES (p_Feedback_ID, p_Student_ID, p_Company_ID, p_Rating, p_Comments, p_Feedback_Type, p_Trainer_ID);
-    ELSE
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Invalid Student_ID, Company_ID, or Trainer_ID';
-    END IF;
-END //
-
-DELIMITER ;
 
 --------------------------------------------------------------------------------------
 

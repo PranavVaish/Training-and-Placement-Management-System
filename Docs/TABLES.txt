@@ -13,68 +13,19 @@
 
 -------------------------------------------------------------------
 
---APPLICATION SET (WEAK ENTITY)
 
-CREATE TABLE Application (
-    Application_ID INT PRIMARY KEY,
-    Student_ID INT,
-    Job_ID INT,
-    Application_Date DATE,
-    Interview_Schedule INT,
-    Status VARCHAR(50),
-    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
-    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID),
-    FOREIGN KEY (Interview_Schedule) REFERENCES Interview_Schedule(Interview_ID)
-);
 
 -----------------------------------------------------------------
 
- --Interview Schedule Set (Weak Entity)
-
-CREATE TABLE Interview_Schedule (
-    Interview_ID INT PRIMARY KEY,
-    Application_ID INT,
-    Date DATE,
-    Time TIME,
-    Mode VARCHAR(50),
-    Interviewer_Name VARCHAR(100),
-    FOREIGN KEY (Application_ID) REFERENCES Application(Application_ID)
-);
-
-----------------------------------------------------------------
-
---Placement Records Set
-
-CREATE TABLE Placement_Record (
-    Placement_ID INT PRIMARY KEY,
-    Student_ID INT,
-    Job_ID INT,
-    Company_ID INT,
-    Package DECIMAL(10,2),
-    Placement_Date DATE,
-    Placement_Location VARCHAR(100),
-    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
-    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID),
-    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
-);
 
 
 ----------------------------------------------------------------
 
---Feedback Set
 
-CREATE TABLE Feedback (
-    Feedback_ID INT PRIMARY KEY,
-    Student_ID INT,
-    Company_ID INT,
-    Rating INT,
-    Comments TEXT,
-    Feedback_Type VARCHAR(50),
-    Trainer_ID INT,
-    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
-    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID),
-    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
-);
+
+
+----------------------------------------------------------------
+
 
 -------------------------------------------------------------------
 
@@ -82,35 +33,11 @@ CREATE TABLE Feedback (
 
 -----------------------------------------------------------------
 
---TRAINING PROGRAM
 
-CREATE TABLE Training_Program (
-    Training_ID INT PRIMARY KEY,
-    Training_Name VARCHAR(100),
-    Training_Description TEXT,
-    Duration INT,  -- Duration in days/weeks/etc.
-    Trainer_ID INT,
-    Start_Date DATE,
-    End_Date DATE,
-    Mode VARCHAR(50),  -- e.g., Online, Offline, Hybrid
-    Certification_Provided BOOLEAN,
-    Training_Cost DECIMAL(10,2),
-    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
-);
 
 -------------------------------------------------------------------
 
---TRAINING ENROLLMENT
 
-CREATE TABLE Training_Enrollment (
-    Enrollment_ID INT PRIMARY KEY,
-    Training_ID INT,
-    Student_ID INT,
-    Performance_Grade VARCHAR(10),
-    Completion_Status VARCHAR(20),
-    FOREIGN KEY (Training_ID) REFERENCES Training_Program(Training_ID),
-    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID)
-);
 
 -------------------------------------------------------------------
 

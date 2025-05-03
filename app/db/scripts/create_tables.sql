@@ -135,3 +135,81 @@ CREATE TABLE IF NOT EXISTS Trainer_Phone (
     Trainer_ID INT,
     FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
 );
+
+
+-- Placement Records Set
+CREATE TABLE IF NOT EXISTS Placement_Record (
+    Placement_ID INT PRIMARY KEY,
+    Student_ID INT,
+    Job_ID INT,
+    Company_ID INT,
+    Package DECIMAL(10,2),
+    Placement_Date DATE,
+    Placement_Location VARCHAR(100),
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID),
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+);
+
+
+-- Feedback Set
+CREATE TABLE IF NOT EXISTS Feedback (
+    Feedback_ID INT PRIMARY KEY,
+    Student_ID INT,
+    Rating INT,
+    Comments TEXT,
+    Trainer_ID INT,
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
+);
+
+
+-- TRAINING PROGRAM
+CREATE TABLE Training_Program (
+    Training_ID INT PRIMARY KEY,
+    Training_Name VARCHAR(100),
+    Training_Description TEXT,
+    Duration INT,  -- Duration in days/weeks/etc.
+    Trainer_ID INT,
+    Start_Date DATE,
+    End_Date DATE,
+    Mode VARCHAR(50),  -- e.g., Online, Offline, Hybrid
+    Certification_Provided BOOLEAN,
+    Training_Cost DECIMAL(10,2),
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
+);
+
+-- TRAINING ENROLLMENT
+CREATE TABLE Training_Enrollment (
+    Enrollment_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Training_ID INT,
+    Student_ID INT,
+    Performance_Grade VARCHAR(10),
+    Completion_Status VARCHAR(20),
+    FOREIGN KEY (Training_ID) REFERENCES Training_Program(Training_ID),
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID)
+);
+
+
+
+-- APPLICATION SET (WEAK ENTITY)
+CREATE TABLE IF NOT EXISTS Application (
+    Application_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Student_ID INT,
+    Job_ID INT,
+    Application_Date DATE,
+    Status VARCHAR(50),
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID),
+);
+
+-- Interview Schedule Set (Weak Entity)
+CREATE TABLE Interview_Schedule (
+    Interview_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Application_ID INT,
+    Date DATE,
+    Time TIME,
+    Mode VARCHAR(50),
+    Interviewer_Name VARCHAR(100),
+    FOREIGN KEY (Application_ID) REFERENCES Application(Application_ID)
+);

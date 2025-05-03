@@ -10,6 +10,10 @@ class JobResponse(BaseModel):
     Salary: float
     Job_Type: str
     Application_Deadline: date
+    Job_Description: str
+    Vacancies: int
+    Location_List: List[str]
+    Eligibility_Criteria_List: List[str]
 
 class JobListResponse(BaseModel):
     jobs: List[JobResponse]

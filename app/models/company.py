@@ -43,8 +43,7 @@ class CompanyResponse(BaseModel):
     Website: str = Field(..., max_length=100)
     Phone_No: str = Field(..., max_length=15)
     Location: str = Field(..., max_length=100)
-    Hiring_Period: str = Field(..., max_length=50)
-    Job_Roles: str
+    Email_ID: EmailStr
 
 class CompanyRegistration(BaseModel):
     company_id: int

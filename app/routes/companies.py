@@ -15,10 +15,11 @@ async def get_company_by_id(company_id: int, db: mysql.connector.MySQLConnection
     Helper function to retrieve a company from the database by Company_ID, including phone number.
     """
     query = """
-        SELECT c.Company_ID, c.Name, c.Industry_Type, c.Contact_Person, c.Website, cp.Phone_No, cl.Location
+        SELECT c.Company_ID, c.Name, c.Industry_Type, c.Contact_Person, c.Website, cp.Phone_No, cl.Location, ce.Email_ID
         FROM Company c LEFT JOIN Company_Phone cp ON c.Company_ID = cp.Company_ID
         LEFT JOIN Company_Location cl ON c.Company_ID = cl.Company_ID
-        WHERE Company_ID = %s
+        LEFT JOIN Company_Email ce ON c.Company_ID = ce.Company_ID
+        WHERE c.Company_ID = %s
     """
     try:
         cursor = db.cursor()
@@ -37,6 +38,7 @@ async def get_company_by_id(company_id: int, db: mysql.connector.MySQLConnection
             "Website": company[4],
             "Phone_No": company[5],
             "Location": company[6],
+            "Email_ID": company[7],
         }
 
         return CompanyResponse(**company_data)
@@ -49,6 +51,16 @@ async def get_company_by_id(company_id: int, db: mysql.connector.MySQLConnection
         if db:
             db.close()
 
+
+@router.get("/{company_id}", response_model=CompanyResponse)
+async def get_company(
+    company_id: int,
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+):
+    """
+    Retrieve a company from the database by Company_ID.
+    """
+    return await get_company_by_id(company_id, db)
 
 @router.get("/")
 async def get_all_companies(
@@ -175,3 +187,46 @@ async def login_company(
             cursor.close()
         if db:
             db.close()
+
+
+@router.get("/hiring_history/{company_id}")
+async def get_hiring_history(
+    company_id: int,
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+):
+    """
+    Retrieve the hiring history of a company using the GetHiringHistoryDetails stored procedure.
+    """
+    try:
+        cursor = db.cursor()
+        cursor.callproc("GetHiringHistoryDetails", (company_id,))
+
+        for result in cursor.stored_results():
+            hiring_history = result.fetchall()
+
+            if not hiring_history:
+                raise HTTPException(status_code=404, detail="No hiring history found")
+
+            # Convert the list of tuples to a list of dictionaries
+            hiring_list = [
+                {
+                    "Company_Name": row[0],
+                    "Candidate_Name": row[1],
+                    "Department": row[2],
+                    "Hiring_Period": row[3],
+                    "Job_Roles": row[4],
+                }
+                for row in hiring_history
+            ]
+
+        return {"hiring_history": hiring_list}
+
+    except mysql.connector.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+
