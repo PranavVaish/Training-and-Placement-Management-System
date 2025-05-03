@@ -1,7 +1,6 @@
 -- Registration Procedures
 -- Stored Procedure: Register Admin
-DELIMITER //
-
+DROP PROCEDURE IF EXISTS AddAdminWithContact;
 CREATE PROCEDURE IF NOT EXISTS AddAdminWithContact(
     IN p_AdminID INT,
     IN p_Name VARCHAR(100),
@@ -22,13 +21,10 @@ BEGIN
     -- Insert into Phone table
     INSERT INTO Phone (Phone_No, Admin_ID)
     VALUES (p_PhoneNo, p_AdminID);
-END //
+END;
 
-DELIMITER ;
-
---Stored Procedure: Register Student
-DELIMITER //
-
+-- Stored Procedure: Register Student
+DROP PROCEDURE IF EXISTS AddStudentWithContact;
 CREATE PROCEDURE IF NOT EXISTS AddStudentWithContact(
     IN p_StudentID INT,
     IN p_Name VARCHAR(100),
@@ -51,13 +47,10 @@ BEGIN
     -- Insert into Student_Phone table
     INSERT INTO Student_Phone (Phone_No, Student_ID)
     VALUES (p_PhoneNo, p_StudentID);
-END //
-
-DELIMITER ;
+END;
 
 -- Stored Procedure: Register Company
-DELIMITER //
-
+DROP PROCEDURE IF EXISTS AddCompanyWithDetails;
 CREATE PROCEDURE IF NOT EXISTS AddCompanyWithDetails(
     IN p_CompanyID INT,
     IN p_Name VARCHAR(100),
@@ -85,13 +78,10 @@ BEGIN
     -- Insert into Company_Location table
     INSERT INTO Company_Location (Company_ID, Location)
     VALUES (p_CompanyID, p_Location);
-END //
+END;
 
-DELIMITER ;
-
---Stored Procedure: Register Trainer
-DELIMITER //
-
+-- Stored Procedure: Register Trainer
+DROP PROCEDURE IF EXISTS AddTrainerWithDetails;
 CREATE PROCEDURE IF NOT EXISTS AddTrainerWithDetails(
     IN p_TrainerID INT,
     IN p_Expertise VARCHAR(100),
@@ -112,16 +102,13 @@ BEGIN
     -- Insert into Trainer_Phone table
     INSERT INTO Trainer_Phone (Phone_No, Trainer_ID)
     VALUES (p_PhoneNo, p_TrainerID);
-END //
-
-DELIMITER ;
+END;
 
 
 -- Job Listing Procedures
---Stored Procedure: Get All Active Jobs with Company Name
-DELIMITER //
-
-CREATE PROCEDURE GetNotExpiredJobListingsWithCompanyName()
+-- Stored Procedure: Get All Active Jobs with Company Name
+DROP PROCEDURE IF EXISTS GetNotExpiredJobListingsWithCompanyName;
+CREATE PROCEDURE IF NOT EXISTS GetNotExpiredJobListingsWithCompanyName()
 BEGIN
     DECLARE done INT DEFAULT FALSE;
 
@@ -166,13 +153,11 @@ BEGIN
     END LOOP;
 
     CLOSE job_cursor;
-END //
+END;
 
-DELIMITER ;
-
---Stored Procedure: Get All Expired Jobs of a Company
-DELIMITER //
-CREATE PROCEDURE GetExpiredJobListingsByCompany(
+-- Stored Procedure: Get All Expired Jobs of a Company
+DROP PROCEDURE IF EXISTS GetExpiredJobListingsByCompany;
+CREATE PROCEDURE IF NOT EXISTS GetExpiredJobListingsByCompany(
     IN p_CompanyID INT
 )
 BEGIN
@@ -220,12 +205,11 @@ BEGIN
     END LOOP;
 
     CLOSE job_cursor;
-END //
-DELIMITER ;
+END;
 
---Stored Procedure: Get All Expired Jobs of a Company
-DELIMITER //
-CREATE PROCEDURE GetActiveJobListingsByCompany(
+-- Stored Procedure: Get All Active Jobs of a Company
+DROP PROCEDURE IF EXISTS GetActiveJobListingsByCompany;
+CREATE PROCEDURE IF NOT EXISTS GetActiveJobListingsByCompany(
     IN p_CompanyID INT
 )
 BEGIN
@@ -272,13 +256,11 @@ BEGIN
     END LOOP;
 
     CLOSE job_cursor;
-END //
-DELIMITER ;
+END;
 
 -- Stored Procedure: Add Job with Multiple Details
-DELIMITER //
-
-CREATE PROCEDURE AddJobWithMultipleDetails(
+DROP PROCEDURE IF EXISTS AddJobWithMultipleDetails;
+CREATE PROCEDURE IF NOT EXISTS AddJobWithMultipleDetails(
     IN p_JobID INT,
     IN p_JobTitle VARCHAR(100),
     IN p_JobDescription TEXT,
@@ -322,6 +304,133 @@ BEGIN
         VALUES (p_JobID, location);
         SET i = i + 1;
     END WHILE;
-END //
+END;
 
-DELIMITER ;
+
+-- Trainer Procedures
+-- Stored Procedure: GetAllTrainersRowByRow
+DROP PROCEDURE IF EXISTS GetAllTrainersRowByRow;
+CREATE PROCEDURE IF NOT EXISTS GetAllTrainersRowByRow()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_TrainerID INT;
+    DECLARE v_Expertise VARCHAR(100);
+    DECLARE v_Name VARCHAR(100);
+    DECLARE v_Organisation VARCHAR(100);
+    DECLARE v_Email VARCHAR(100);
+    DECLARE v_PhoneNo VARCHAR(15);
+
+    -- Declare the cursor
+    DECLARE trainer_cursor CURSOR FOR
+        SELECT 
+            t.Trainer_ID, 
+            t.Expertise, 
+            t.Name, 
+            t.Organisation,
+            te.Email,
+            tp.Phone_No
+        FROM Trainer t
+        JOIN Trainer_Email te ON t.Trainer_ID = te.Trainer_ID
+        JOIN Trainer_Phone tp ON t.Trainer_ID = tp.Trainer_ID;
+
+    -- Declare the exit handler
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Open the cursor
+    OPEN trainer_cursor;
+
+    read_loop: LOOP
+        FETCH trainer_cursor INTO v_TrainerID, v_Expertise, v_Name, v_Organisation, v_Email, v_PhoneNo;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Output each row
+        SELECT 
+            v_TrainerID AS Trainer_ID, 
+            v_Expertise AS Expertise, 
+            v_Name AS Name, 
+            v_Organisation AS Organisation,
+            v_Email AS Email,
+            v_PhoneNo AS Phone_No;
+
+        -- You can also perform other processing here if needed
+
+    END LOOP;
+
+    -- Close the cursor
+    CLOSE trainer_cursor;
+END;
+
+-- Stored Procedure: GetTrainingProgramsRowByRow
+DROP PROCEDURE IF EXISTS GetTrainingProgramsRowByRow;
+CREATE PROCEDURE IF NOT EXISTS GetTrainingProgramsRowByRow()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_TrainingID INT;
+    DECLARE v_TrainingName VARCHAR(100);
+    DECLARE v_TrainingDescription TEXT;
+    DECLARE v_Duration INT;
+    DECLARE v_StartDate DATE;
+    DECLARE v_EndDate DATE;
+    DECLARE v_Mode VARCHAR(50);
+    DECLARE v_CertificationProvided BOOLEAN;
+    DECLARE v_TrainingCost DECIMAL(10,2);
+    DECLARE v_TrainerName VARCHAR(100);
+
+    -- Cursor to fetch training programs along with trainer name
+    DECLARE training_cursor CURSOR FOR
+        SELECT 
+            tp.Training_ID,
+            tp.Training_Name,
+            tp.Training_Description,
+            tp.Duration,
+            tp.Start_Date,
+            tp.End_Date,
+            tp.Mode,
+            tp.Certification_Provided,
+            tp.Training_Cost,
+            t.Name
+        FROM Training_Program tp
+        JOIN Trainer t ON tp.Trainer_ID = t.Trainer_ID;
+
+    -- Handler for end of rows
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Open cursor
+    OPEN training_cursor;
+
+    read_loop: LOOP
+        FETCH training_cursor INTO
+            v_TrainingID,
+            v_TrainingName,
+            v_TrainingDescription,
+            v_Duration,
+            v_StartDate,
+            v_EndDate,
+            v_Mode,
+            v_CertificationProvided,
+            v_TrainingCost,
+            v_TrainerName;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Output one row at a time
+        SELECT 
+            v_TrainingID AS Training_ID,
+            v_TrainingName AS Training_Name,
+            v_TrainingDescription AS Description,
+            v_Duration AS Duration,
+            v_StartDate AS Start_Date,
+            v_EndDate AS End_Date,
+            v_Mode AS Mode,
+            v_CertificationProvided AS Certification_Provided,
+            v_TrainingCost AS Training_Cost,
+            v_TrainerName AS Trainer_Name;
+
+    END LOOP;
+
+    CLOSE training_cursor;
+END;

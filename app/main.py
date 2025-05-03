@@ -4,27 +4,42 @@ import mysql.connector
 import datetime
 from utils import create_access_token, generate_refresh_token
 
-from db.setup import setup_database
 from db.connections import get_db
 from models.student import StudentLogin
-from contextlib import asynccontextmanager
 
 from routes.students import router as students_router, login_student
 from routes.companies import router as company_router, login_company
 from routes.admin import router as admin_router, login_admin
 from routes.jobs import router as job_router
+from routes.training import router as training_router
+from contextlib import asynccontextmanager
+from db.setup import setup_database  # Import the setup_database function
 
 
 @asynccontextmanager
-async def initialize_database():
-    setup_database()
+async def lifespan(app: FastAPI):
+    # Startup: setup the database
+    try:
+        setup_database()
+    except Exception as e:
+        # Log the error but don't prevent application startup
+        print(f"Warning: Database setup failed: {e}")
+        # Optionally, if you want to fail the startup:
+        # raise e
+    
+    yield  # This is where FastAPI serves requests
+    
+    # Shutdown: perform cleanup if needed
+    pass
+
+app = FastAPI(lifespan=lifespan)
 
 
-app = FastAPI(lifespan=initialize_database)
 app.include_router(students_router, prefix="/students")
 app.include_router(company_router, prefix="/companies")
 app.include_router(admin_router, prefix="/admin")
 app.include_router(job_router, prefix="/job")
+app.include_router(training_router, prefix="/training")
 
 
 @app.get("/")

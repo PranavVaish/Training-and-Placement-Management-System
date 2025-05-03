@@ -78,26 +78,7 @@ CREATE TABLE Feedback (
 
 -------------------------------------------------------------------
 
---Trainer Set
 
-CREATE TABLE Trainer (
-    Trainer_ID INT PRIMARY KEY,
-    Expertise VARCHAR(100),
-    Name VARCHAR(100),
-    Organisation VARCHAR(100)
-);
-
-CREATE TABLE Trainer_Email (
-    Email VARCHAR(100) PRIMARY KEY,
-    Trainer_ID INT,
-    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
-);
-
-CREATE TABLE Trainer_Phone (
-    Phone_No VARCHAR(15) PRIMARY KEY,
-    Trainer_ID INT,
-    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
-);
 
 -----------------------------------------------------------------
 

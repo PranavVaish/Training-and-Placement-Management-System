@@ -59,6 +59,7 @@ async def create_job(
     Create a new job listing using the AddJobWithMultipleDetails stored procedure.
     Only companies are allowed to create jobs.
     """
+    cursor = None
     try:
         if not authorization:
             raise HTTPException(status_code=401, detail="Authorization header is missing")
@@ -86,6 +87,9 @@ async def create_job(
                 status_code=403, detail="Only companies are allowed to create jobs"
             )
 
+        locations = ",".join(job_data.Location_List)
+        eligibility_criteria = ",".join(job_data.Eligibility_Criteria_List)
+
         # Call the stored procedure
         cursor.callproc(
             "AddJobWithMultipleDetails",
@@ -98,8 +102,8 @@ async def create_job(
                 job_data.Job_Type,
                 job_data.Vacancies,
                 job_data.Application_Deadline,
-                job_data.Eligibility_Criteria_List,
-                job_data.Location_List,
+                eligibility_criteria,
+                locations,
             ),
         )
         db.commit()

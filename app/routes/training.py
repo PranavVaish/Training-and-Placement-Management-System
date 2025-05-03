@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Body, Depends, HTTPException
 import mysql.connector
 from db.connections import get_db
-from models.training import TrainerRegistration  # Assuming you have a TrainerRegistration model
+from models.training import TrainerRegistration, TrainerProgram  # Assuming you have a TrainerRegistration model
 
 router = APIRouter()
 
@@ -35,6 +35,64 @@ async def register_trainer(
     except mysql.connector.Error as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Registration failed: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+    
+@router.get("/trainers")
+async def get_trainers(
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+):
+    """
+    Get all trainers.
+    """
+    try:
+        cursor = db.cursor(dictionary=True)
+
+        # Call the stored procedure
+        cursor.callproc("GetAllTrainersRowByRow")
+
+        # Fetch all results
+        trainers = []
+        for result in cursor.stored_results():
+            trainers.extend(result.fetchall())
+
+        return {"trainers": trainers}
+
+    except mysql.connector.Error as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch trainers: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+
+@router.get("/programs", response_model=list[TrainerProgram])
+async def get_training_programs(
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+):
+    """
+    Get all training programs.
+    """
+    try:
+        cursor = db.cursor(dictionary=True)
+
+        # Call the stored procedure
+        cursor.callproc("GetAllTrainingProgramsRowByRow")
+
+        # Fetch all results
+        programs = []
+        for result in cursor.stored_results():
+            programs.extend(result.fetchall())
+
+        return {"programs": programs}
+
+    except mysql.connector.Error as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch training programs: {e}")
     finally:
         if cursor:
             cursor.close()

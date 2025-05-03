@@ -5,13 +5,11 @@ from typing import List
 
 class JobResponse(BaseModel):
     Job_ID: int
-    Company_ID: int
+    Company_Name: str  # Assuming company name is the 4th column
     Title: str
-    Description: str
-    Requirements: str
-    Location: str
     Salary: float
-    Date_Posted: date
+    Job_Type: str
+    Application_Deadline: date
 
 class JobListResponse(BaseModel):
     jobs: List[JobResponse]

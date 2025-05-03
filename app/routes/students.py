@@ -14,7 +14,7 @@ async def get_student_by_id(student_id: int, db: mysql.connector.MySQLConnection
     Helper function to retrieve a student from the database by Student ID, including phone number.
     """
     query = """
-        SELECT s.Student_ID, s.Name, s.CGPA, s.Grauation_Year, s.Department, sp.Phone_Number
+        SELECT s.Student_ID, s.Name, s.CGPA, s.Graduation_Year, s.Department, sp.Phone_No
         FROM Student s
         LEFT JOIN Student_Phone sp ON s.Student_ID = sp.Student_ID
         WHERE s.Student_ID = %s
@@ -32,7 +32,7 @@ async def get_student_by_id(student_id: int, db: mysql.connector.MySQLConnection
             "Student_ID": student[0],
             "Name": student[1],
             "CGPA": student[2],
-            "Grauation_Year": student[3],
+            "Graduation_Year": student[3],
             "Department": student[4],
             "Phone_Number": student[5]  # Add phone number
         }
@@ -53,7 +53,7 @@ async def get_all_students(db: mysql.connector.MySQLConnection = Depends(get_db)
     Retrieve all students from the database.
     """
     query = """
-        SELECT s.Student_ID, s.Name, s.CGPA, s.Grauation_Year, s.Department, sp.Phone_Number
+        SELECT s.Student_ID, s.Name, s.CGPA, s.Graduation_Year, s.Department, sp.Phone_No
         FROM Student s
         LEFT JOIN Student_Phone sp ON s.Student_ID = sp.Student_ID
     """
@@ -72,12 +72,11 @@ async def get_all_students(db: mysql.connector.MySQLConnection = Depends(get_db)
                 "Student_ID": student[0],
                 "Name": student[1],
                 "CGPA": student[2],
-                "Grauation_Year": student[3],
+                "Graduation_Year": student[3],
                 "Department": student[4],
                 "Phone_Number": student[5]  # Add phone number
             }
             student_list.append(StudentResponse(**student_data))
-
         return StudentListResponse(students=student_list)
 
     except mysql.connector.Error as e:

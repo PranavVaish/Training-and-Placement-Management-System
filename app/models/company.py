@@ -1,5 +1,5 @@
 # Pydantic Models for Company
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 """
 class Company(BaseModel):
@@ -32,7 +32,7 @@ class Company_Credentials(BaseModel):
 """
 
 class CompanyLogin(BaseModel):
-    email: str = Field(..., max_length=100)  # VARCHAR(100)
+    email: EmailStr = Field(..., max_length=100)  # VARCHAR(100)
     password: str  # Hashed password
 
 class CompanyResponse(BaseModel):
@@ -47,11 +47,12 @@ class CompanyResponse(BaseModel):
     Job_Roles: str
 
 class CompanyRegistration(BaseModel):
-    Company_ID: int
-    Name: str = Field(..., max_length=100)
-    Industry_Type: str = Field(..., max_length=100)
-    Contact_Person: str = Field(..., max_length=100)
-    Website: str = Field(..., max_length=100)
-    Phone_No: str = Field(..., max_length=15)
-    Location: str = Field(..., max_length=100)
-    Password: str
+    company_id: int
+    name: str = Field(..., max_length=100)
+    industry_type: str = Field(..., max_length=100)
+    contact_person: str = Field(..., max_length=100)
+    website: str = Field(..., max_length=100)
+    email: EmailStr
+    phone_no: str = Field(..., max_length=15)
+    location: str = Field(..., max_length=100)
+    password: str

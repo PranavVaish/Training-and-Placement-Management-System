@@ -50,6 +50,45 @@ async def get_company_by_id(company_id: int, db: mysql.connector.MySQLConnection
             db.close()
 
 
+@router.get("/")
+async def get_all_companies(
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+):
+    """
+    Retrieve all companies from the database.
+    """
+    query = "SELECT * FROM Company"
+    try:
+        cursor = db.cursor()
+        cursor.execute(query)
+        companies = cursor.fetchall()
+
+        if not companies:
+            raise HTTPException(status_code=404, detail="No companies found")
+
+        # Convert the list of tuples to a list of dictionaries
+        company_list = [
+            {
+                "Company_ID": company[0],
+                "Name": company[1],
+                "Industry_Type": company[2],
+                "Contact_Person": company[3],
+                "Website": company[4],
+                "Password": company[5],
+            }
+            for company in companies
+        ]
+
+        return {"companies": company_list}
+
+    except mysql.connector.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
 @router.post("/register")
 async def register_company(
     company_data: CompanyRegistration = Body(...),  # Use CompanyResponse model
@@ -66,14 +105,15 @@ async def register_company(
 
         # Call the stored procedure
         cursor.callproc("AddCompanyWithDetails", (
+            company_data.company_id,
             company_data.name,
             company_data.industry_type,
             company_data.contact_person,
             company_data.website,
+            hashed_password,  # Pass the hashed password
             company_data.email,
             company_data.phone_no,
             company_data.location,
-            hashed_password  # Pass the hashed password
         ))
 
         db.commit()
@@ -90,19 +130,20 @@ async def register_company(
             db.close()
 
 
-@router.post("/login")
 async def login_company(
-    company_data: CompanyLogin = Body(...),  # Use CompanyLogin model
+    email: str, password: str,  # Use CompanyLogin model
     db: mysql.connector.MySQLConnection = Depends(get_db),
 ):
     """
     Login a company using their email and password with raw SQL and return a JWT token.
     """
     query = """
-        SELECT Company_ID, Password_Hash
-        FROM Company_Credentials
-        WHERE Email_ID = %s
+        SELECT c.Company_ID, c.Password
+        FROM Company c
+        JOIN Company_Email ce ON c.Company_ID = ce.Company_ID
+        WHERE ce.Email_ID = %s
     """
+    company_data = CompanyLogin(email=email, password=password)
 
     try:
         cursor = db.cursor()
@@ -115,7 +156,7 @@ async def login_company(
         company_id, password_hash = company_credentials
 
         # Verify the password
-        if not bcrypt.checkpw(company_data.password.encode('utf-8'), password_hash.encode('utf-8')):
+        if not bcrypt.checkpw(company_data.password.encode('utf-8'), password_hash):
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
         # Generate JWT token

@@ -1,34 +1,35 @@
 -- AUTH TABLES
-CREATE TABLE refresh_tokens (
+CREATE TABLE IF NOT EXISTS refresh_tokens (
     refresh_token VARCHAR(255) PRIMARY KEY,
     user_id INT NOT NULL,
     expiry_date DATETIME NOT NULL,
     revoked BOOLEAN NOT NULL DEFAULT FALSE
 );
 
---ADMIN TABLES
-CREATE TABLE Admin (
+
+-- ADMIN TABLES
+CREATE TABLE IF NOT EXISTS Admin (
     Admin_ID INT PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
     Role VARCHAR(50),
     Password BLOB NOT NULL
 );
 
-CREATE TABLE Email (
-    Email_ID VARCHAR(100) PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS Email (
+    Email_ID VARCHAR(100) ,
     Admin_ID INT,
     FOREIGN KEY (Admin_ID) REFERENCES Admin(Admin_ID)
 );
 
-CREATE TABLE Phone (
-    Phone_No VARCHAR(15) PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS Phone (
+    Phone_No VARCHAR(15) ,
     Admin_ID INT,
     FOREIGN KEY (Admin_ID) REFERENCES Admin(Admin_ID)
 );
 
 
---STUDENT TABLES
-CREATE TABLE Student (
+-- STUDENT TABLES
+CREATE TABLE IF NOT EXISTS Student (
     Student_ID INT PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
     CGPA DECIMAL(3,2),
@@ -37,21 +38,21 @@ CREATE TABLE Student (
     Password BLOB NOT NULL
 );
 
-CREATE TABLE Student_Email (
-    Email_ID VARCHAR(100) PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS Student_Email (
+    Email_ID VARCHAR(100) ,
     Student_ID INT,
     FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID)
 );
 
-CREATE TABLE Student_Phone (
-    Phone_No VARCHAR(15) PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS Student_Phone (
+    Phone_No VARCHAR(15) ,
     Student_ID INT,
     FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID)
 );
 
 
---COMPANY TABLES
-CREATE TABLE Company (
+-- COMPANY TABLES
+CREATE TABLE IF NOT EXISTS Company (
     Company_ID INT PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
     Industry_Type VARCHAR(100),
@@ -60,26 +61,26 @@ CREATE TABLE Company (
     Password BLOB NOT NULL
 );
 
-CREATE TABLE Company_Email (
-    Email_ID VARCHAR(100) PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS Company_Email (
+    Email_ID VARCHAR(100),
     Company_ID INT,
     FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
 );
 
-CREATE TABLE Company_Phone (
-    Phone_No VARCHAR(15) PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS Company_Phone (
+    Phone_No VARCHAR(15) ,
     Company_ID INT,
     FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
 );
 
-CREATE TABLE Company_Location (
+CREATE TABLE IF NOT EXISTS Company_Location (
     Company_ID INT,
     Location VARCHAR(100),
     PRIMARY KEY (Company_ID, Location),
     FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
 );
 
-CREATE TABLE Company_Hiring_History (
+CREATE TABLE IF NOT EXISTS Company_Hiring_History (
     Company_ID INT,
     Hiring_Period VARCHAR(50),
     Job_Roles TEXT,
@@ -88,8 +89,8 @@ CREATE TABLE Company_Hiring_History (
 );
 
 
---JOB TABLE
-CREATE TABLE Job (
+-- JOB TABLE
+CREATE TABLE IF NOT EXISTS Job (
     Job_ID INT PRIMARY KEY,
     Job_Title VARCHAR(100) NOT NULL,
     Job_Description TEXT,
@@ -101,16 +102,36 @@ CREATE TABLE Job (
     FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
 );
 
-CREATE TABLE Job_Eligibility (
+CREATE TABLE IF NOT EXISTS Job_Eligibility (
     Job_ID INT,
     Eligibility_Criterion VARCHAR(100),
     PRIMARY KEY (Job_ID, Eligibility_Criterion),
     FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID)
 );
 
-CREATE TABLE Job_Location (
+CREATE TABLE IF NOT EXISTS Job_Location (
     Job_ID INT,
     Location VARCHAR(100),
     PRIMARY KEY (Job_ID, Location),
     FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID)
+);
+
+-- Trainer Set
+CREATE TABLE IF NOT EXISTS Trainer (
+    Trainer_ID INT PRIMARY KEY,
+    Expertise VARCHAR(100),
+    Name VARCHAR(100),
+    Organisation VARCHAR(100)
+);
+
+CREATE TABLE IF NOT EXISTS Trainer_Email (
+    Email VARCHAR(100),
+    Trainer_ID INT,
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
+);
+
+CREATE TABLE IF NOT EXISTS Trainer_Phone (
+    Phone_No VARCHAR(15),
+    Trainer_ID INT,
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
 );

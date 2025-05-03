@@ -1,6 +1,5 @@
 # The Pydantic models for Admin
-from pydantic import BaseModel, Field
-from fastapi import EmailStr
+from pydantic import BaseModel, Field, EmailStr
 
 """
 class Admin(BaseModel):
