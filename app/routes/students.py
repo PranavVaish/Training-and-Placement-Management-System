@@ -4,6 +4,8 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 import mysql.connector
 from db.connections import get_db
 from models.student import StudentListResponse, StudentLogin, StudentRegistration, StudentResponse
+import datetime
+from main import create_access_token
 
 router = APIRouter()
 
@@ -93,12 +95,63 @@ async def get_student(student_id: int, db: mysql.connector.MySQLConnection = Dep
     """
     return await get_student_by_id(student_id, db)
 
+@router.post("/register")
+async def register_student(
+    student_data: StudentRegistration = Body(...),  # Use StudentRegistration model
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+):
+    """
+    Register a new student using a stored procedure.
+    """
+    try:
+        cursor = db.cursor()
+
+        # Check if the student already exists
+        query_check = """
+            SELECT 1 FROM Student WHERE Student_ID = %s
+        """
+        cursor.execute(query_check, (student_data.student_id,))
+        existing_student = cursor.fetchone()
+
+        if existing_student:
+            raise HTTPException(status_code=400, detail="Student with this ID already exists")
+
+        # Hash the password
+        hashed_password = bcrypt.hashpw(student_data.password.encode("utf-8"), bcrypt.gensalt())
+
+        # Call the stored procedure
+        cursor.callproc("AddStudentWithContact", (
+            student_data.student_id,  # Assuming student_id is provided in the request
+            student_data.name,
+            student_data.cgpa,
+            student_data.graduation_year,
+            student_data.department,
+            hashed_password.decode("utf-8"),
+            student_data.email,
+            student_data.phone_number
+        ))
+
+        # Commit the changes
+        db.commit()
+
+        return {"message": "Student registered successfully"}
+
+    except mysql.connector.Error as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Registration failed: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+
 async def login_student(
     student_data: StudentLogin = Body(...),  # Use StudentLogin model
     db: mysql.connector.MySQLConnection = Depends(get_db),
 ):
     """
-    Login a student using their email and password with raw SQL.
+    Login a student using their email and password with raw SQL and return a JWT token.
     """
     # Construct the raw SQL query to fetch student credentials
     query = """
@@ -123,69 +176,17 @@ async def login_student(
         if not bcrypt.checkpw(student_data.password.encode('utf-8'), password_hash.encode('utf-8')):
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
-        # If password is correct, retrieve the student using raw SQL
-        student_info = await get_student_by_id(student_id, db)
+        # Generate JWT token
+        access_token_expires = datetime.timedelta(minutes=30)  # Token expiration time
+        access_token = create_access_token(
+            data={"sub": str(student_id)}, expires_delta=access_token_expires
+        )
 
-        # Return the student (without the password hash)
-        return student_info
+        # Return the token
+        return {"access_token": access_token, "token_type": "bearer"}
 
     except mysql.connector.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
-    finally:
-        if cursor:
-            cursor.close()
-        if db:
-            db.close()
-
-@router.post("/register")
-async def register_student(
-    student_data: StudentRegistration = Body(...),  # Use StudentRegistration model
-    db: mysql.connector.MySQLConnection = Depends(get_db),
-):
-    """
-    Register a new student.
-    """
-    try:
-        # Hash the password
-        hashed_password = bcrypt.hashpw(student_data.password.encode("utf-8"), bcrypt.gensalt())
-
-        # Insert the student into the Student table
-        query_student = """
-            INSERT INTO Student (Name, CGPA, Grauation_Year, Department)
-            VALUES (%s, %s, %s, %s)
-        """
-        cursor = db.cursor()
-        cursor.execute(query_student, (student_data.name, student_data.cgpa, student_data.graduation_year, student_data.department))
-        student_id = cursor.lastrowid  # Get the auto-generated ID
-
-        # Insert the email into the Student_Email table
-        query_email = """
-            INSERT INTO Student_Email (Student_ID, Email_ID)
-            VALUES (%s, %s)
-        """
-        cursor.execute(query_email, (student_id, student_data.email))
-
-        # Insert the phone number into the Student_Phone table
-        query_phone = """
-            INSERT INTO Student_Phone (Student_ID, Phone_Number)
-            VALUES (%s, %s)
-        """
-        cursor.execute(query_phone, (student_id, student_data.phone_number))
-
-        # Insert the credentials into the Student_Credentials table
-        query_credentials = """
-            INSERT INTO Student_Credentials (Student_ID, Password_Hash)
-            VALUES (%s, %s)
-        """
-        cursor.execute(query_credentials, (student_id, hashed_password.decode("utf-8")))
-
-        db.commit()
-
-        return {"message": "Student registered successfully", "student_id": student_id}
-
-    except mysql.connector.Error as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Registration failed: {e}")
     finally:
         if cursor:
             cursor.close()

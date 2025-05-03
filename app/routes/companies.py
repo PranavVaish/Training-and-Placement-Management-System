@@ -4,8 +4,11 @@ import mysql.connector
 from db.connections import get_db
 from models.company import CompanyLogin, CompanyResponse, CompanyRegistration
 import bcrypt
+import datetime
+from main import create_access_token
 
 router = APIRouter()
+
 
 async def get_company_by_id(company_id: int, db: mysql.connector.MySQLConnection = Depends(get_db)):
     """
@@ -41,15 +44,59 @@ async def get_company_by_id(company_id: int, db: mysql.connector.MySQLConnection
     except mysql.connector.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
     finally:
-        cursor.close()
-        db.close()
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
 
+
+@router.post("/register")
+async def register_company(
+    company_data: CompanyRegistration = Body(...),  # Use CompanyResponse model
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+):
+    """
+    Register a new company.
+    """
+    try:
+        cursor = db.cursor()
+
+        # Hash the password
+        hashed_password = bcrypt.hashpw(company_data.password.encode("utf-8"), bcrypt.gensalt())
+
+        # Call the stored procedure
+        cursor.callproc("AddCompanyWithDetails", (
+            company_data.name,
+            company_data.industry_type,
+            company_data.contact_person,
+            company_data.website,
+            company_data.email,
+            company_data.phone_no,
+            company_data.location,
+            hashed_password  # Pass the hashed password
+        ))
+
+        db.commit()
+
+        return {"message": "Company registered successfully"}
+
+    except mysql.connector.Error as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Registration failed: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+
+@router.post("/login")
 async def login_company(
     company_data: CompanyLogin = Body(...),  # Use CompanyLogin model
     db: mysql.connector.MySQLConnection = Depends(get_db),
 ):
     """
-    Login a company using their email and password with raw SQL.
+    Login a company using their email and password with raw SQL and return a JWT token.
     """
     query = """
         SELECT Company_ID, Password_Hash
@@ -71,75 +118,19 @@ async def login_company(
         if not bcrypt.checkpw(company_data.password.encode('utf-8'), password_hash.encode('utf-8')):
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
-        # If password is correct, retrieve the company using raw SQL
-        company_info = await get_company_by_id(company_id, db)
+        # Generate JWT token
+        access_token_expires = datetime.timedelta(minutes=30)  # Token expiration time
+        access_token = create_access_token(
+            data={"sub": str(company_id)}, expires_delta=access_token_expires
+        )
 
-        # Return the company (without the password hash)
-        return company_info
+        # Return the token
+        return {"access_token": access_token, "token_type": "bearer"}
 
     except mysql.connector.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
     finally:
-        cursor.close()
-        db.close()
-
-@router.post("/register")
-async def register_company(
-    company_data: CompanyRegistration = Body(...),  # Use CompanyResponse model
-    db: mysql.connector.MySQLConnection = Depends(get_db),
-):
-    """
-    Register a new company.
-    """
-    try:
-        cursor = db.cursor()
-
-        # Hash the password
-        hashed_password = bcrypt.hashpw(company_data.password.encode("utf-8"), bcrypt.gensalt())
-
-        # Insert the company into the Company table
-        query_company = """
-            INSERT INTO Company (Name, Industry_Type, Contact_Person, Website)
-            VALUES (%s, %s, %s, %s)
-        """
-        cursor.execute(query_company, (company_data.name, company_data.industry_type, company_data.contact_person, company_data.website))
-        company_id = cursor.lastrowid  # Get the auto-generated ID
-
-        # Insert the email into the Company_Email table
-        query_email = """
-            INSERT INTO Company_Email (Company_ID, Email_ID)
-            VALUES (%s, %s)
-        """
-        cursor.execute(query_email, (company_id, company_data.email))
-
-        # Insert the phone number into the Company_Phone table
-        query_phone = """
-            INSERT INTO Company_Phone (Company_ID, Phone_No)
-            VALUES (%s, %s)
-        """
-        cursor.execute(query_phone, (company_id, company_data.phone_no))
-
-        # Insert the location into the Company_Location table
-        query_location = """
-            INSERT INTO Company_Location (Company_ID, Location)
-            VALUES (%s, %s)
-        """
-        cursor.execute(query_location, (company_id, company_data.location))
-
-        # Insert the credentials into the Company_Credentials table
-        query_credentials = """
-            INSERT INTO Company_Credentials (Company_ID, Password_Hash)
-            VALUES (%s, %s)
-        """
-        cursor.execute(query_credentials, (company_id, hashed_password.decode("utf-8")))
-
-        db.commit()  # Commit the transaction
-
-        return {"message": "Company registered successfully", "company_id": company_id}
-
-    except mysql.connector.Error as e:
-        db.rollback()  # Rollback in case of error
-        raise HTTPException(status_code=500, detail=f"Registration failed: {e}")
-    finally:
-        cursor.close()
-        db.close()
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()

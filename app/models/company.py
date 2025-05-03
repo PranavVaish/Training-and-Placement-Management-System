@@ -47,12 +47,11 @@ class CompanyResponse(BaseModel):
     Job_Roles: str
 
 class CompanyRegistration(BaseModel):
+    Company_ID: int
     Name: str = Field(..., max_length=100)
     Industry_Type: str = Field(..., max_length=100)
     Contact_Person: str = Field(..., max_length=100)
     Website: str = Field(..., max_length=100)
     Phone_No: str = Field(..., max_length=15)
     Location: str = Field(..., max_length=100)
-    Hiring_Period: str = Field(..., max_length=50)
-    Job_Roles: str
     Password: str

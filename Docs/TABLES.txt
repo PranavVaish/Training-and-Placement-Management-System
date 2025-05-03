@@ -1,4 +1,4 @@
---ADMIN TABLES
+--ADMIN TABLES (DONE)
 
 CREATE TABLE Admin (
     Admin_ID INT PRIMARY KEY,
@@ -19,11 +19,11 @@ CREATE TABLE Phone (
     Phone_No VARCHAR(15) PRIMARY KEY,
     Admin_ID INT,
     FOREIGN KEY (Admin_ID) REFERENCES Admin(Admin_ID)
-);
+); 
 
 -------------------------------------------------------------------
 
---STUDENT TABLES
+--STUDENT TABLES (DONE)
 
 CREATE TABLE Student (
     Student_ID INT PRIMARY KEY,
@@ -77,7 +77,7 @@ CREATE TABLE Job_Location (
 
 ---------------------------------------------------------------
 
---COMPANY TABLES
+--COMPANY TABLES (DONE)
 
 CREATE TABLE Company (
     Company_ID INT PRIMARY KEY,
