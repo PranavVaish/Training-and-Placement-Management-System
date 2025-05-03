@@ -1,0 +1,238 @@
+--ADMIN TABLES
+
+CREATE TABLE Admin (
+    Admin_ID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Role VARCHAR(50),
+    Password VARCHAR(100) NOT NULL
+);
+
+
+CREATE TABLE Email (
+    Email_ID VARCHAR(100) PRIMARY KEY,
+    Admin_ID INT,
+    FOREIGN KEY (Admin_ID) REFERENCES Admin(Admin_ID)
+);
+
+
+CREATE TABLE Phone (
+    Phone_No VARCHAR(15) PRIMARY KEY,
+    Admin_ID INT,
+    FOREIGN KEY (Admin_ID) REFERENCES Admin(Admin_ID)
+);
+
+-------------------------------------------------------------------
+
+--STUDENT TABLES
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    CGPA DECIMAL(3,2),
+    Graduation_Year INT,
+    Department VARCHAR(100)
+);
+
+CREATE TABLE Student_Email (
+    Email_ID VARCHAR(100) PRIMARY KEY,
+    Student_ID INT,
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID)
+);
+
+CREATE TABLE Student_Phone (
+    Phone_No VARCHAR(15) PRIMARY KEY,
+    Student_ID INT,
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID)
+);
+
+-------------------------------------------------------------------
+
+--JOB TABLE
+
+CREATE TABLE Job (
+    Job_ID INT PRIMARY KEY,
+    Job_Title VARCHAR(100) NOT NULL,
+    Job_Description TEXT,
+    Salary DECIMAL(10,2),
+    Company_ID INT,
+    Job_Type VARCHAR(50),
+    Vacancies INT,
+    Application_Deadline DATE,
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+);
+
+CREATE TABLE Job_Eligibility (
+    Job_ID INT,
+    Eligibility_Criterion VARCHAR(100),
+    PRIMARY KEY (Job_ID, Eligibility_Criterion),
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID)
+);
+
+CREATE TABLE Job_Location (
+    Job_ID INT,
+    Location VARCHAR(100),
+    PRIMARY KEY (Job_ID, Location),
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID)
+);
+
+---------------------------------------------------------------
+
+--COMPANY TABLES
+
+CREATE TABLE Company (
+    Company_ID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Industry_Type VARCHAR(100),
+    Contact_Person VARCHAR(100),
+    Website VARCHAR(100)
+);
+
+CREATE TABLE Company_Email (
+    Email_ID VARCHAR(100) PRIMARY KEY,
+    Company_ID INT,
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+);
+
+CREATE TABLE Company_Phone (
+    Phone_No VARCHAR(15) PRIMARY KEY,
+    Company_ID INT,
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+);
+
+CREATE TABLE Company_Location (
+    Company_ID INT,
+    Location VARCHAR(100),
+    PRIMARY KEY (Company_ID, Location),
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+);
+
+CREATE TABLE Company_Hiring_History (
+    Company_ID INT,
+    Hiring_Period VARCHAR(50),
+    Job_Roles TEXT,
+    PRIMARY KEY (Company_ID, Hiring_Period),
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+);
+
+-------------------------------------------------------------------
+
+--APPLICATION SET (WEAK ENTITY)
+
+CREATE TABLE Application (
+    Application_ID INT PRIMARY KEY,
+    Student_ID INT,
+    Job_ID INT,
+    Application_Date DATE,
+    Interview_Schedule INT,
+    Status VARCHAR(50),
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID),
+    FOREIGN KEY (Interview_Schedule) REFERENCES Interview_Schedule(Interview_ID)
+);
+
+-----------------------------------------------------------------
+
+ --Interview Schedule Set (Weak Entity)
+
+CREATE TABLE Interview_Schedule (
+    Interview_ID INT PRIMARY KEY,
+    Application_ID INT,
+    Date DATE,
+    Time TIME,
+    Mode VARCHAR(50),
+    Interviewer_Name VARCHAR(100),
+    FOREIGN KEY (Application_ID) REFERENCES Application(Application_ID)
+);
+
+----------------------------------------------------------------
+
+--Placement Records Set
+
+CREATE TABLE Placement_Record (
+    Placement_ID INT PRIMARY KEY,
+    Student_ID INT,
+    Job_ID INT,
+    Company_ID INT,
+    Package DECIMAL(10,2),
+    Placement_Date DATE,
+    Placement_Location VARCHAR(100),
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID),
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+);
+
+
+----------------------------------------------------------------
+
+--Feedback Set
+
+CREATE TABLE Feedback (
+    Feedback_ID INT PRIMARY KEY,
+    Student_ID INT,
+    Company_ID INT,
+    Rating INT,
+    Comments TEXT,
+    Feedback_Type VARCHAR(50),
+    Trainer_ID INT,
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID),
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
+);
+
+-------------------------------------------------------------------
+
+--Trainer Set
+
+CREATE TABLE Trainer (
+    Trainer_ID INT PRIMARY KEY,
+    Expertise VARCHAR(100),
+    Name VARCHAR(100),
+    Organisation VARCHAR(100)
+);
+
+CREATE TABLE Trainer_Email (
+    Email VARCHAR(100) PRIMARY KEY,
+    Trainer_ID INT,
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
+);
+
+CREATE TABLE Trainer_Phone (
+    Phone_No VARCHAR(15) PRIMARY KEY,
+    Trainer_ID INT,
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
+);
+
+-----------------------------------------------------------------
+
+--TRAINING PROGRAM
+
+CREATE TABLE Training_Program (
+    Training_ID INT PRIMARY KEY,
+    Training_Name VARCHAR(100),
+    Training_Description TEXT,
+    Duration INT,  -- Duration in days/weeks/etc.
+    Trainer_ID INT,
+    Start_Date DATE,
+    End_Date DATE,
+    Mode VARCHAR(50),  -- e.g., Online, Offline, Hybrid
+    Certification_Provided BOOLEAN,
+    Training_Cost DECIMAL(10,2),
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
+);
+
+-------------------------------------------------------------------
+
+--TRAINING ENROLLMENT
+
+CREATE TABLE Training_Enrollment (
+    Enrollment_ID INT PRIMARY KEY,
+    Training_ID INT,
+    Student_ID INT,
+    Performance_Grade VARCHAR(10),
+    Completion_Status VARCHAR(20),
+    FOREIGN KEY (Training_ID) REFERENCES Training_Program(Training_ID),
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID)
+);
+
+-------------------------------------------------------------------
+

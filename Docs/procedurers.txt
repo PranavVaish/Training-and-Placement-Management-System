@@ -1,0 +1,684 @@
+
+--Stored Procedure: GetAllTrainersRowByRow
+
+DELIMITER //
+
+CREATE PROCEDURE GetAllTrainersRowByRow()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_TrainerID INT;
+    DECLARE v_Expertise VARCHAR(100);
+    DECLARE v_Name VARCHAR(100);
+    DECLARE v_Organisation VARCHAR(100);
+
+    -- Declare the cursor
+    DECLARE trainer_cursor CURSOR FOR
+        SELECT Trainer_ID, Expertise, Name, Organisation FROM Trainer;
+
+    -- Declare the exit handler
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Open the cursor
+    OPEN trainer_cursor;
+
+    read_loop: LOOP
+        FETCH trainer_cursor INTO v_TrainerID, v_Expertise, v_Name, v_Organisation;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Output each row
+        SELECT 
+            v_TrainerID AS Trainer_ID, 
+            v_Expertise AS Expertise, 
+            v_Name AS Name, 
+            v_Organisation AS Organisation;
+
+        -- You can also perform other processing here if needed
+
+    END LOOP;
+
+    -- Close the cursor
+    CLOSE trainer_cursor;
+END //
+
+DELIMITER ;
+
+------------------------------------------------------------------------
+
+--Stored Procedure: GetTrainingProgramsRowByRow
+
+DELIMITER //
+
+CREATE PROCEDURE GetTrainingProgramsRowByRow()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_TrainingID INT;
+    DECLARE v_TrainingName VARCHAR(100);
+    DECLARE v_TrainingDescription TEXT;
+    DECLARE v_Duration INT;
+    DECLARE v_StartDate DATE;
+    DECLARE v_EndDate DATE;
+    DECLARE v_Mode VARCHAR(50);
+    DECLARE v_CertificationProvided BOOLEAN;
+    DECLARE v_TrainingCost DECIMAL(10,2);
+    DECLARE v_TrainerName VARCHAR(100);
+
+    -- Cursor to fetch training programs along with trainer name
+    DECLARE training_cursor CURSOR FOR
+        SELECT 
+            tp.Training_ID,
+            tp.Training_Name,
+            tp.Training_Description,
+            tp.Duration,
+            tp.Start_Date,
+            tp.End_Date,
+            tp.Mode,
+            tp.Certification_Provided,
+            tp.Training_Cost,
+            t.Name
+        FROM Training_Program tp
+        JOIN Trainer t ON tp.Trainer_ID = t.Trainer_ID;
+
+    -- Handler for end of rows
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Open cursor
+    OPEN training_cursor;
+
+    read_loop: LOOP
+        FETCH training_cursor INTO
+            v_TrainingID,
+            v_TrainingName,
+            v_TrainingDescription,
+            v_Duration,
+            v_StartDate,
+            v_EndDate,
+            v_Mode,
+            v_CertificationProvided,
+            v_TrainingCost,
+            v_TrainerName;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Output one row at a time
+        SELECT 
+            v_TrainingID AS Training_ID,
+            v_TrainingName AS Training_Name,
+            v_TrainingDescription AS Description,
+            v_Duration AS Duration,
+            v_StartDate AS Start_Date,
+            v_EndDate AS End_Date,
+            v_Mode AS Mode,
+            v_CertificationProvided AS Certification_Provided,
+            v_TrainingCost AS Training_Cost,
+            v_TrainerName AS Trainer_Name;
+
+    END LOOP;
+
+    CLOSE training_cursor;
+END //
+
+DELIMITER ;
+
+-----------------------------------------------------------------------
+
+--Stored Procedure: GetTrainingEnrollmentsByStudent
+
+DELIMITER //
+
+CREATE PROCEDURE GetTrainingEnrollmentsByStudent(
+    IN p_StudentID INT
+)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_EnrollmentID INT;
+    DECLARE v_TrainingID INT;
+    DECLARE v_TrainingName VARCHAR(100);
+    DECLARE v_PerformanceGrade VARCHAR(10);
+    DECLARE v_CompletionStatus VARCHAR(20);
+
+    -- Cursor: fetch enrollments for the given student, along with training name
+    DECLARE enroll_cursor CURSOR FOR
+        SELECT 
+            te.Enrollment_ID,
+            te.Training_ID,
+            tp.Training_Name,
+            te.Performance_Grade,
+            te.Completion_Status
+        FROM Training_Enrollment te
+        JOIN Training_Program tp ON te.Training_ID = tp.Training_ID
+        WHERE te.Student_ID = p_StudentID;
+
+    -- Handler to detect end of rows
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Open the cursor
+    OPEN enroll_cursor;
+
+    read_loop: LOOP
+        FETCH enroll_cursor INTO
+            v_EnrollmentID,
+            v_TrainingID,
+            v_TrainingName,
+            v_PerformanceGrade,
+            v_CompletionStatus;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Output one row at a time
+        SELECT 
+            v_EnrollmentID AS Enrollment_ID,
+            v_TrainingID AS Training_ID,
+            v_TrainingName AS Training_Name,
+            v_PerformanceGrade AS Performance_Grade,
+            v_CompletionStatus AS Completion_Status;
+
+    END LOOP;
+
+    CLOSE enroll_cursor;
+END //
+
+DELIMITER ;
+
+--------------------------------------------------------------------
+
+--Stored Procedure: InsertInterviewSchedule
+
+
+DELIMITER //
+
+CREATE PROCEDURE InsertInterviewSchedule (
+    IN p_ApplicationID INT,
+    IN p_Interview_Time TIME,
+    IN p_Mode VARCHAR(50),
+    IN p_Platform VARCHAR(100),
+    IN p_Interview_Link VARCHAR(255)
+)
+BEGIN
+    DECLARE v_Interview_ID INT;
+    DECLARE v_Job_ID INT;
+    DECLARE id_exists INT DEFAULT 1;
+
+    -- Step 1: Check if application exists and get Job_ID
+    SELECT Job_ID INTO v_Job_ID
+    FROM Application
+    WHERE Application_ID = p_ApplicationID;
+
+    -- Step 2: Generate a unique Interview_ID
+    WHILE id_exists = 1 DO
+        SET v_Interview_ID = FLOOR(100000 + (RAND() * 900000)); -- 6-digit random ID
+        SELECT COUNT(*) INTO id_exists
+        FROM Interview_Schedule
+        WHERE Interview_ID = v_Interview_ID;
+    END WHILE;
+
+    -- Step 3: Insert into Interview_Schedule with NULL date
+    INSERT INTO Interview_Schedule (
+        Interview_ID, Job_ID, Interview_Date,
+        Interview_Time, Mode, Platform, Interview_Link
+    ) VALUES (
+        v_Interview_ID, v_Job_ID, NULL,
+        p_Interview_Time, p_Mode, p_Platform, p_Interview_Link
+    );
+
+    -- Step 4: Update Application table to link this interview
+    UPDATE Application
+    SET Interview_Schedule = v_Interview_ID
+    WHERE Application_ID = p_ApplicationID;
+END //
+
+DELIMITER ;
+
+-------------------------------------------------------------------------------------
+
+--Stored Procedure: GetJobListingsWithCompanyName
+
+DELIMITER //
+
+CREATE PROCEDURE GetNotExpiredJobListingsWithCompanyName()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+
+    -- Declare variables to hold each column
+    DECLARE v_JobID INT;
+    DECLARE v_JobTitle VARCHAR(100);
+    DECLARE v_Salary DECIMAL(10,2);
+    DECLARE v_CompanyName VARCHAR(100);
+    DECLARE v_JobType VARCHAR(50);
+    DECLARE v_Deadline DATE;
+
+    -- Cursor for not expired (active) job listings with company name
+    DECLARE job_cursor CURSOR FOR
+        SELECT 
+            j.Job_ID, j.Job_Title, j.Salary,
+            c.Name, j.Job_Type, j.Application_Deadline
+        FROM Job j
+        JOIN Company c ON j.Company_ID = c.Company_ID
+        WHERE j.Application_Deadline >= CURDATE();
+
+    -- Handler for end of data
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN job_cursor;
+
+    read_loop: LOOP
+        FETCH job_cursor INTO v_JobID, v_JobTitle, v_Salary,
+                             v_CompanyName, v_JobType, v_Deadline;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Output one row at a time
+        SELECT 
+            v_JobID AS Job_ID,
+            v_JobTitle AS Job_Title,
+            v_Salary AS Salary,
+            v_CompanyName AS Company_Name,
+            v_JobType AS Job_Type,
+            v_Deadline AS Application_Deadline;
+    END LOOP;
+
+    CLOSE job_cursor;
+END //
+
+DELIMITER ;
+
+-------------------------------------------------------------------------------------------------
+
+--  Stored Procedure: Retrieve Placement Records for listing
+
+DELIMITER $$
+
+CREATE PROCEDURE GetPlacementRecordsRowByRow()
+BEGIN
+    -- Declare variables to hold each column value
+    DECLARE done INT DEFAULT 0;
+    DECLARE v_Placement_ID INT;
+    DECLARE v_Student_Name VARCHAR(100);
+    DECLARE v_Company_Name VARCHAR(100);
+    DECLARE v_Job_Title VARCHAR(100);
+    DECLARE v_Package DECIMAL(10,2);
+    DECLARE v_Placement_Date DATE;
+    DECLARE v_Placement_Location VARCHAR(100);
+    
+    -- Declare cursor for selecting the records
+    DECLARE placement_cursor CURSOR FOR
+        SELECT 
+            pr.Placement_ID,
+            s.Student_Name,
+            c.Company_Name,
+            j.Job_Title,
+            pr.Package,
+            pr.Placement_Date,
+            pr.Placement_Location
+        FROM 
+            Placement_Record pr
+        JOIN 
+            Student s ON pr.Student_ID = s.Student_ID
+        JOIN 
+            Company c ON pr.Company_ID = c.Company_ID
+        JOIN 
+            Job j ON pr.Job_ID = j.Job_ID;
+    
+    -- Handler for when no more rows
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    
+    -- Open the cursor
+    OPEN placement_cursor;
+    
+    read_loop: LOOP
+        -- Fetch data into variables
+        FETCH placement_cursor INTO v_Placement_ID, v_Student_Name, v_Company_Name, v_Job_Title, v_Package, v_Placement_Date, v_Placement_Location;
+        
+        -- Exit loop when done
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        -- You can process row here — for now, we’ll just SELECT it
+        SELECT 
+            v_Placement_ID AS Placement_ID,
+            v_Student_Name AS Student_Name,
+            v_Company_Name AS Company_Name,
+            v_Job_Title AS Job_Title,
+            v_Package AS Package,
+            v_Placement_Date AS Placement_Date,
+            v_Placement_Location AS Placement_Location;
+        
+    END LOOP;
+    
+    -- Close cursor
+    CLOSE placement_cursor;
+END$$
+
+DELIMITER ;
+
+-------------------------------------------------------------------------------------------------
+
+--
+
+DELIMITER $$
+
+CREATE PROCEDURE GetPlacementReport()
+BEGIN
+    -- Declare variables
+    DECLARE current_year INT DEFAULT YEAR(CURDATE());
+    DECLARE current_date DATE DEFAULT CURDATE();
+    DECLARE prev_year INT DEFAULT YEAR(CURDATE()) - 1;
+    DECLARE same_date_prev_year DATE DEFAULT DATE_SUB(CURDATE(), INTERVAL 1 YEAR);
+    
+    -- Current year totals
+    DECLARE total_current INT DEFAULT 0;
+    DECLARE total_prev INT DEFAULT 0;
+    DECLARE percent_change_total DECIMAL(10,2);
+    
+    -- Average package
+    DECLARE avg_package_current DECIMAL(10,2) DEFAULT 0;
+    DECLARE avg_package_prev DECIMAL(10,2) DEFAULT 0;
+    DECLARE percent_change_package DECIMAL(10,2);
+    
+    -- Placement rate
+    DECLARE total_students INT DEFAULT 0;
+    DECLARE placed_students_current INT DEFAULT 0;
+    DECLARE placed_students_prev INT DEFAULT 0;
+    DECLARE placement_rate_current DECIMAL(10,2) DEFAULT 0;
+    DECLARE placement_rate_prev DECIMAL(10,2) DEFAULT 0;
+    DECLARE percent_change_rate DECIMAL(10,2);
+    
+    -- Get total placements for current year till today
+    SELECT COUNT(*) INTO total_current
+    FROM Placement_Record
+    WHERE YEAR(Placement_Date) = current_year AND Placement_Date <= current_date;
+    
+    -- Get total placements for previous year till same date
+    SELECT COUNT(*) INTO total_prev
+    FROM Placement_Record
+    WHERE YEAR(Placement_Date) = prev_year AND Placement_Date <= same_date_prev_year;
+    
+    -- Calculate percentage change in placements
+    IF total_prev = 0 THEN
+        SET percent_change_total = 100;
+    ELSE
+        SET percent_change_total = ((total_current - total_prev) / total_prev) * 100;
+    END IF;
+    
+    -- Get average package for current year
+    SELECT IFNULL(AVG(Package), 0) INTO avg_package_current
+    FROM Placement_Record
+    WHERE YEAR(Placement_Date) = current_year AND Placement_Date <= current_date;
+    
+    -- Get average package for previous year
+    SELECT IFNULL(AVG(Package), 0) INTO avg_package_prev
+    FROM Placement_Record
+    WHERE YEAR(Placement_Date) = prev_year AND Placement_Date <= same_date_prev_year;
+    
+    -- Calculate percentage change in package
+    IF avg_package_prev = 0 THEN
+        SET percent_change_package = 100;
+    ELSE
+        SET percent_change_package = ((avg_package_current - avg_package_prev) / avg_package_prev) * 100;
+    END IF;
+    
+    -- Get total students
+    SELECT COUNT(*) INTO total_students FROM Student;
+    
+    -- Get placed students current year till today
+    SELECT COUNT(DISTINCT Student_ID) INTO placed_students_current
+    FROM Placement_Record
+    WHERE YEAR(Placement_Date) = current_year AND Placement_Date <= current_date;
+    
+    -- Get placed students previous year till same date
+    SELECT COUNT(DISTINCT Student_ID) INTO placed_students_prev
+    FROM Placement_Record
+    WHERE YEAR(Placement_Date) = prev_year AND Placement_Date <= same_date_prev_year;
+    
+    -- Calculate placement rate current
+    IF total_students = 0 THEN
+        SET placement_rate_current = 0;
+    ELSE
+        SET placement_rate_current = (placed_students_current / total_students) * 100;
+    END IF;
+    
+    -- Calculate placement rate previous
+    IF total_students = 0 THEN
+        SET placement_rate_prev = 0;
+    ELSE
+        SET placement_rate_prev = (placed_students_prev / total_students) * 100;
+    END IF;
+    
+    -- Calculate percentage change in placement rate
+    IF placement_rate_prev = 0 THEN
+        SET percent_change_rate = 100;
+    ELSE
+        SET percent_change_rate = ((placement_rate_current - placement_rate_prev) / placement_rate_prev) * 100;
+    END IF;
+    
+    -- Final output
+    SELECT 
+        total_current AS Total_Placement_Current_Year,
+        percent_change_total AS Percentage_Change_in_Total_Placement,
+        avg_package_current AS Average_Package_Current_Year,
+        percent_change_package AS Percentage_Change_in_Package,
+        placement_rate_current AS Placement_Rate_Current_Year,
+        percent_change_rate AS Percentage_Change_in_Placement_Rate;
+    
+END$$
+
+DELIMITER ;
+
+--------------------------------------------------------------------------------------------------------------
+
+-- Stored Procedure: Get Top 5 Industries by Placement Count
+
+
+DELIMITER $$
+
+CREATE PROCEDURE GetTop5IndustriesByPlacement()
+BEGIN
+    SELECT 
+        c.Industry_Type,
+        COUNT(pr.Placement_ID) AS No_of_Placements
+    FROM 
+        Placement_Record pr
+    JOIN 
+        Company c ON pr.Company_ID = c.Company_ID
+    GROUP BY 
+        c.Industry_Type
+    ORDER BY 
+        No_of_Placements DESC
+    LIMIT 5;
+END$$
+
+DELIMITER ;
+
+--------------------------------------------------------------------------------------------------------------
+
+-- Stored Procedure: Get Full Company Data (Emails, Phones, Locations All Separate)
+
+DELIMITER $$
+
+CREATE PROCEDURE GetCompanyDataWithDetails()
+BEGIN
+    SELECT 
+        c.Company_ID,
+        c.Name AS Company_Name,
+        c.Industry_Type,
+        c.Contact_Person,
+        c.Website,
+        ce.Email_ID AS Email,
+        cp.Phone_No AS Phone,
+        cl.Location AS Location
+    FROM 
+        Company c
+    LEFT JOIN 
+        Company_Email ce ON c.Company_ID = ce.Company_ID
+    LEFT JOIN 
+        Company_Phone cp ON c.Company_ID = cp.Company_ID
+    LEFT JOIN 
+        Company_Location cl ON c.Company_ID = cl.Company_ID
+    ORDER BY 
+        c.Name;
+END$$
+
+DELIMITER ;
+
+----------------------------------------------------------------------------------------------------------------
+
+--Stored Procedure to Retrieve Student Data:
+
+DELIMITER $$
+
+CREATE PROCEDURE GetStudentData()
+BEGIN
+    SELECT 
+        s.Student_ID,
+        s.Name AS Student_Name,
+        s.Department,
+        s.CGPA,
+        s.Graduation_Year,
+        se.Email_ID AS Email,
+        sp.Phone_No AS Phone
+    FROM 
+        Student s
+    LEFT JOIN 
+        Student_Email se ON s.Student_ID = se.Student_ID
+    LEFT JOIN 
+        Student_Phone sp ON s.Student_ID = sp.Student_ID
+    ORDER BY 
+        s.Name;
+END$$
+
+DELIMITER ;
+
+-----------------------------------------------------------------------------------------------------------
+
+--Stored Procedure: Retrieve Hiring History, Department, Candidate, Job Role, and Hiring Period
+
+DELIMITER $$
+
+CREATE PROCEDURE GetHiringHistoryDetails()
+BEGIN
+    SELECT 
+        c.Name AS Company_Name,
+        s.Name AS Candidate_Name,
+        s.Department,
+        ch.Hiring_Period,
+        ch.Job_Roles
+    FROM 
+        Company_Hiring_History ch
+    JOIN 
+        Company c ON ch.Company_ID = c.Company_ID
+    JOIN 
+        Placement_Record pr ON pr.Company_ID = c.Company_ID
+    JOIN 
+        Student s ON pr.Student_ID = s.Student_ID
+    ORDER BY 
+        c.Name, ch.Hiring_Period, s.Name;
+END$$
+
+DELIMITER ;
+
+---------------------------------------------------------------------------------------------------
+
+--Stored Procedure: Retrieve Admin Data
+
+DELIMITER $$
+
+CREATE PROCEDURE GetAdminData()
+BEGIN
+    SELECT 
+        a.Admin_ID,
+        a.Name AS Admin_Name,
+        a.Role,
+        e.Email_ID AS Email,
+        p.Phone_No AS Phone
+    FROM 
+        Admin a
+    LEFT JOIN 
+        Email e ON a.Admin_ID = e.Admin_ID
+    LEFT JOIN 
+        Phone p ON a.Admin_ID = p.Admin_ID
+    ORDER BY 
+        a.Name;
+END$$
+
+DELIMITER ;
+
+-----------------------------------------------------------------------------------------------------
+
+--Stored Procedure: Retrieve Total Number of Students
+
+DELIMITER $$
+
+CREATE PROCEDURE GetTotalStudents()
+BEGIN
+    SELECT COUNT(*) AS Total_Students FROM Student;
+END$$
+
+DELIMITER ;
+
+----------------------------------------------------------------------------------------------------
+
+--Stored Procedure: Retrieve Total Number of Companies Registered
+
+DELIMITER $$
+
+CREATE PROCEDURE GetTotalCompanies()
+BEGIN
+    SELECT COUNT(*) AS Total_Companies FROM Company;
+END$$
+
+DELIMITER ;
+
+----------------------------------------------------------------------------------------------------
+
+--Stored Procedure: Get Number of Active Training Programs
+
+DELIMITER $$
+
+CREATE PROCEDURE GetActiveTrainingPrograms()
+BEGIN
+    SELECT COUNT(*) AS Active_Programs
+    FROM Training_Program
+    WHERE CURDATE() BETWEEN Start_Date AND End_Date;
+END$$
+
+DELIMITER ;
+
+-----------------------------------------------------------------------------------------------------
+
+--Stored Procedure: Get Total Placements This Year
+
+DELIMITER $$
+
+CREATE PROCEDURE GetTotalPlacementsThisYear()
+BEGIN
+    SELECT COUNT(*) AS Total_Placements
+    FROM Placement_Record
+    WHERE YEAR(Placement_Date) = YEAR(CURDATE());
+END$$
+
+DELIMITER ;
+
+-------------------------------------------------------------------------------------------------------
+
+--stored procedure for distinct department
+
+DELIMITER $$
+
+CREATE PROCEDURE GetDistinctDepartments()
+BEGIN
+    SELECT DISTINCT Department 
+    FROM Student
+    ORDER BY Department;
+END$$
+
+DELIMITER ;
+
+------------------------------------------------------------------------------------------------------
