@@ -149,167 +149,161 @@ export default function PlacementRecordsPage() {
       <div className="container mx-auto py-8 px-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Placement Records</h1>
-            <p className="text-gray-600 mt-1">Track student placement achievements and statistics</p>
+        <h1 className="text-3xl font-bold">Placement Records</h1>
+        <p className="text-gray-600 mt-1">Track student placement achievements and statistics</p>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              <Input 
-                placeholder="Search placements..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-full sm:w-[250px]"
-              />
-            </div>
-            
-            <Select value={yearFilter} onValueChange={setYearFilter}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="Year" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Years</SelectItem>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+          <Input 
+            placeholder="Search placements..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-full sm:w-[250px]"
+          />
+        </div>
+        
+        <Select value={yearFilter} onValueChange={setYearFilter}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Year" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Years</SelectItem>
+            {years.map((year) => (
+          <SelectItem key={year} value={year}>
+            {year}
+          </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
           </div>
         </div>
         
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Total Placements</p>
-                  <h3 className="text-2xl font-bold mt-1">{totalPlacements}</h3>
-                  <p className="text-sm text-green-600 mt-1">
-                    +15% <span className="text-gray-400">from last year</span>
-                  </p>
-                </div>
-                <div className="p-3 rounded-full bg-blue-50">
-                  <Briefcase className="h-6 w-6 text-portal-DEFAULT" />
-                </div>
-              </div>
-            </CardContent>
+        <CardContent className="p-6">
+          <div className="flex justify-between items-start">
+            <div>
+          <p className="text-sm font-medium text-gray-500">Total Placements</p>
+          <h3 className="text-2xl font-bold mt-1">{totalPlacements}</h3>
+          <p className="text-sm text-green-600 mt-1">
+            +15% <span className="text-gray-400">from last year</span>
+          </p>
+            </div>
+            <div className="p-3 rounded-full bg-blue-50">
+          <Briefcase className="h-6 w-6 text-portal-DEFAULT" />
+            </div>
+          </div>
+        </CardContent>
           </Card>
           
           <Card>
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Average Package</p>
-                  <h3 className="text-2xl font-bold mt-1">{avgPackage}</h3>
-                  <p className="text-sm text-green-600 mt-1">
-                    +8% <span className="text-gray-400">from last year</span>
-                  </p>
-                </div>
-                <div className="p-3 rounded-full bg-green-50">
-                  <DollarSign className="h-6 w-6 text-green-500" />
-                </div>
-              </div>
-            </CardContent>
+        <CardContent className="p-6">
+          <div className="flex justify-between items-start">
+            <div>
+          <p className="text-sm font-medium text-gray-500">Average Package</p>
+          <h3 className="text-2xl font-bold mt-1">{avgPackage}</h3>
+          <p className="text-sm text-green-600 mt-1">
+            +8% <span className="text-gray-400">from last year</span>
+          </p>
+            </div>
+            <div className="p-3 rounded-full bg-green-50">
+          <DollarSign className="h-6 w-6 text-green-500" />
+            </div>
+          </div>
+        </CardContent>
           </Card>
           
           <Card>
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Placement Rate</p>
-                  <h3 className="text-2xl font-bold mt-1">89%</h3>
-                  <p className="text-sm text-green-600 mt-1">
-                    +5% <span className="text-gray-400">from last year</span>
-                  </p>
-                </div>
-                <div className="p-3 rounded-full bg-purple-50">
-                  <BarChart3 className="h-6 w-6 text-portal-DEFAULT" />
-                </div>
-              </div>
-            </CardContent>
+        <CardContent className="p-6">
+          <div className="flex justify-between items-start">
+            <div>
+          <p className="text-sm font-medium text-gray-500">Placement Rate</p>
+          <h3 className="text-2xl font-bold mt-1">89%</h3>
+          <p className="text-sm text-green-600 mt-1">
+            +5% <span className="text-gray-400">from last year</span>
+          </p>
+            </div>
+            <div className="p-3 rounded-full bg-purple-50">
+          <BarChart3 className="h-6 w-6 text-portal-DEFAULT" />
+            </div>
+          </div>
+        </CardContent>
           </Card>
         </div>
         
         {/* Department Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
           {departments.map((dept, index) => {
-            const deptData = deptPlacements.find(d => d.department === dept);
-            return (
-              <Card key={index}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-gray-500">{dept}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{deptData?.count || 0}</div>
-                  <div className="mt-1 text-xs text-gray-500">placed students</div>
-                </CardContent>
-              </Card>
-            );
+        const deptData = deptPlacements.find(d => d.department === dept);
+        return (
+          <Card key={index}>
+            <CardHeader className="pb-2">
+          <CardTitle className="text-sm text-gray-500">{dept}</CardTitle>
+            </CardHeader>
+            <CardContent>
+          <div className="text-2xl font-bold">{deptData?.count || 0}</div>
+          <div className="mt-1 text-xs text-gray-500">placed students</div>
+            </CardContent>
+          </Card>
+        );
           })}
         </div>
         
         {/* Placement Records Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Placement Records</CardTitle>
-            <CardDescription>
-              Showing {filteredPlacements.length} of {placements.length} placement records
-            </CardDescription>
+        <CardTitle>Placement Records</CardTitle>
+        <CardDescription>
+          Showing {filteredPlacements.length} of {placements.length} placement records
+        </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="text-left text-sm text-gray-500 border-b">
-                    <th className="py-3 px-4">ID</th>
-                    <th className="py-3 px-4">Student</th>
-                    <th className="py-3 px-4">Company</th>
-                    <th className="py-3 px-4">Position</th>
-                    <th className="py-3 px-4">Package</th>
-                    <th className="py-3 px-4">Location</th>
-                    <th className="py-3 px-4">Placement Date</th>
-                    <th className="py-3 px-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPlacements.map((placement) => (
-                    <tr key={placement.id} className="border-b hover:bg-gray-50">
-                      <td className="py-4 px-4 text-sm">{placement.id}</td>
-                      <td className="py-4 px-4 font-medium">
-                        <div>
-                          {placement.studentName}
-                          <p className="text-xs text-gray-500">{placement.studentId}</p>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">{placement.companyName}</td>
-                      <td className="py-4 px-4">{placement.jobTitle}</td>
-                      <td className="py-4 px-4 font-medium">
-                        <span className="text-green-600">{placement.package}</span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-1 text-gray-400" />
-                          {placement.jobLocation}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">{placement.placementDate}</td>
-                      <td className="py-4 px-4">
-                        <Button variant="outline" size="sm">
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+          <tr className="text-left text-sm text-gray-500 border-b">
+            <th className="py-3 px-4">ID</th>
+            <th className="py-3 px-4">Student</th>
+            <th className="py-3 px-4">Company</th>
+            <th className="py-3 px-4">Position</th>
+            <th className="py-3 px-4">Package</th>
+            <th className="py-3 px-4">Location</th>
+            <th className="py-3 px-4">Placement Date</th>
+          </tr>
+            </thead>
+            <tbody>
+          {filteredPlacements.map((placement) => (
+            <tr key={placement.id} className="border-b hover:bg-gray-50">
+              <td className="py-4 px-4 text-sm">{placement.id}</td>
+              <td className="py-4 px-4 font-medium">
+            <div>
+              {placement.studentName}
+              <p className="text-xs text-gray-500">{placement.studentId}</p>
             </div>
+              </td>
+              <td className="py-4 px-4">{placement.companyName}</td>
+              <td className="py-4 px-4">{placement.jobTitle}</td>
+              <td className="py-4 px-4 font-medium">
+            <span className="text-green-600">{placement.package}</span>
+              </td>
+              <td className="py-4 px-4">
+            <div className="flex items-center">
+              <MapPin className="h-4 w-4 mr-1 text-gray-400" />
+              {placement.jobLocation}
+            </div>
+              </td>
+              <td className="py-4 px-4">{placement.placementDate}</td>
+            </tr>
+          ))}
+            </tbody>
+          </table>
+        </div>
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+        </MainLayout>
   );
 }

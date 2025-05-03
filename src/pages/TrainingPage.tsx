@@ -337,11 +337,11 @@ export default function TrainingPage() {
           </div>
         </div>
         
-        <Tabs defaultValue="programs" className="w-full">
-          <TabsList className="mb-8 grid w-full grid-cols-1 sm:grid-cols-4 max-w-md mx-auto">
+        <Tabs defaultValue="programs" className="w-auto">
+          <TabsList className="mb-8 grid w-auto grid-cols-3 sm:grid-cols-3 max-w-md mx-auto justify-center">
             <TabsTrigger value="programs">Programs</TabsTrigger>
             <TabsTrigger value="trainers">Trainers</TabsTrigger>
-            <TabsTrigger value="enrollment">My Enrollments</TabsTrigger>
+            {/* <TabsTrigger value="enrollment">My Enrollments</TabsTrigger> */}
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
           </TabsList>
           
@@ -452,49 +452,109 @@ export default function TrainingPage() {
             </div>
           </TabsContent>
           
-          <TabsContent value="trainers">
+            <TabsContent value="trainers">
             <Card>
               <CardHeader>
-                <CardTitle>Program Trainers</CardTitle>
-                <CardDescription>
-                  Meet our expert trainers and instructors
-                </CardDescription>
+              <CardTitle>Program Trainers</CardTitle>
+              <CardDescription>
+                Meet our expert trainers and instructors
+              </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="text-left text-sm text-gray-500 border-b">
-                        <th className="py-3 px-4">Trainer ID</th>
-                        <th className="py-3 px-4">Name</th>
-                        <th className="py-3 px-4">Contact</th>
-                        <th className="py-3 px-4">Expertise</th>
-                        <th className="py-3 px-4">Organization</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {trainers.map((trainer) => (
-                        <tr key={trainer.id} className="border-b hover:bg-gray-50">
-                          <td className="py-4 px-4 text-sm">{trainer.id}</td>
-                          <td className="py-4 px-4 font-medium">{trainer.name}</td>
-                          <td className="py-4 px-4">
-                            <div>
-                              <p>{trainer.email}</p>
-                              <p className="text-sm text-gray-500">{trainer.phone}</p>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4">{trainer.expertise}</td>
-                          <td className="py-4 px-4">{trainer.organization}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                <thead>
+                  <tr className="text-left text-sm text-gray-500 border-b">
+                  <th className="py-3 px-4">Trainer ID</th>
+                  <th className="py-3 px-4">Name</th>
+                  <th className="py-3 px-4">Contact</th>
+                  <th className="py-3 px-4">Expertise</th>
+                  <th className="py-3 px-4">Organization</th>
+                  <th className="py-3 px-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {trainers.map((trainer) => (
+                  <tr key={trainer.id} className="border-b hover:bg-gray-50">
+                    <td className="py-4 px-4 text-sm">{trainer.id}</td>
+                    <td className="py-4 px-4 font-medium">{trainer.name}</td>
+                    <td className="py-4 px-4">
+                      <div>
+                        <p>{trainer.email}</p>
+                        <p className="text-sm text-gray-500">{trainer.phone}</p>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">{trainer.expertise}</td>
+                    <td className="py-4 px-4">{trainer.organization}</td>
+                    <td className="py-4 px-4">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="text-red-600">
+                        Remove
+                      </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[400px]">
+                      <DialogHeader>
+                        <DialogTitle>Remove Trainer</DialogTitle>
+                        <DialogDescription>
+                        Enter admin credentials to remove trainer "{trainer.name}".
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form
+                        onSubmit={(e) => {
+                        e.preventDefault();
+                        const form = e.target as HTMLFormElement;
+                        const adminId = (form.elements.namedItem('adminId') as HTMLInputElement).value;
+                        const adminPassword = (form.elements.namedItem('adminPassword') as HTMLInputElement).value;
+                        if (adminId === "admin" && adminPassword === "password123") {
+                          console.log(`Trainer ${trainer.id} removed successfully.`);
+                          toast.success(`Trainer ${trainer.name} removed successfully!`);
+                        } else {
+                          toast.error("Invalid admin credentials.");
+                        }
+                        }}
+                        className="space-y-4"
+                      >
+                        <div className="grid gap-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="adminId" className="text-right">
+                          Admin ID
+                          </Label>
+                          <Input id="adminId" name="adminId" placeholder="Enter admin ID" className="col-span-3" required />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="adminPassword" className="text-right">
+                          Password
+                          </Label>
+                          <Input
+                          id="adminPassword"
+                          name="adminPassword"
+                          type="password"
+                          placeholder="Enter admin password"
+                          className="col-span-3"
+                          required
+                          />
+                        </div>
+                        </div>
+                        <DialogFooter>
+                        <Button type="submit" className="bg-red-600 text-white">
+                          Confirm Removal
+                        </Button>
+                        </DialogFooter>
+                      </form>
+                      </DialogContent>
+                    </Dialog>
+                    </td>
+                  </tr>
+                  ))}
+                </tbody>
+                </table>
+              </div>
               </CardContent>
             </Card>
-          </TabsContent>
+            </TabsContent>
           
-          <TabsContent value="enrollment">
+          {/* <TabsContent value="enrollment">
             <Card>
               <CardHeader>
                 <CardTitle>My Enrollments</CardTitle>
@@ -550,7 +610,7 @@ export default function TrainingPage() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
           
           <TabsContent value="feedback">
             <Card>
