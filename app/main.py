@@ -1,10 +1,8 @@
 from fastapi import FastAPI, HTTPException, Depends, Body
 from pydantic import BaseModel, EmailStr, Field
 import mysql.connector
-import jwt
 import datetime
-import os
-import secrets  # Import the secrets module for generating secure random numbers
+from utils import create_access_token, generate_refresh_token
 
 from db.setup import setup_database
 from db.connections import get_db
@@ -16,9 +14,6 @@ from routes.companies import router as company_router, login_company
 from routes.admin import router as admin_router, login_admin
 from routes.jobs import router as job_router
 
-
-SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key")  # Use an environment variable for the secret key
-ALGORITHM = "HS256"  # Algorithm for JWT
 
 @asynccontextmanager
 async def initialize_database():
@@ -63,26 +58,6 @@ async def login_user(user_data: GenericLogin, db: mysql.connector.MySQLConnectio
             status_code=400,
             detail="Invalid role. Please specify 'student', 'company', or 'admin'."
         )
-
-
-def create_access_token(data: dict, expires_delta: datetime.timedelta | None = None):
-    """
-    Generate a JWT token.
-    """
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-def generate_refresh_token():
-    """
-    Generate a secure refresh token.
-    """
-    return secrets.token_urlsafe(32)  # Generate a 32-byte random string
 
 
 @app.post("/refresh")  # Use POST request

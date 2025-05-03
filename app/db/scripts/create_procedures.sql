@@ -115,3 +115,213 @@ BEGIN
 END //
 
 DELIMITER ;
+
+
+-- Job Listing Procedures
+--Stored Procedure: Get All Active Jobs with Company Name
+DELIMITER //
+
+CREATE PROCEDURE GetNotExpiredJobListingsWithCompanyName()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+
+    -- Declare variables to hold each column
+    DECLARE v_JobID INT;
+    DECLARE v_JobTitle VARCHAR(100);
+    DECLARE v_Salary DECIMAL(10,2);
+    DECLARE v_CompanyName VARCHAR(100);
+    DECLARE v_JobType VARCHAR(50);
+    DECLARE v_Deadline DATE;
+
+    -- Cursor for not expired (active) job listings with company name
+    DECLARE job_cursor CURSOR FOR
+        SELECT 
+            j.Job_ID, j.Job_Title, j.Salary,
+            c.Name, j.Job_Type, j.Application_Deadline
+        FROM Job j
+        JOIN Company c ON j.Company_ID = c.Company_ID
+        WHERE j.Application_Deadline >= CURDATE();
+
+    -- Handler for end of data
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN job_cursor;
+
+    read_loop: LOOP
+        FETCH job_cursor INTO v_JobID, v_JobTitle, v_Salary,
+                             v_CompanyName, v_JobType, v_Deadline;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Output one row at a time
+        SELECT 
+            v_JobID AS Job_ID,
+            v_JobTitle AS Job_Title,
+            v_Salary AS Salary,
+            v_CompanyName AS Company_Name,
+            v_JobType AS Job_Type,
+            v_Deadline AS Application_Deadline;
+    END LOOP;
+
+    CLOSE job_cursor;
+END //
+
+DELIMITER ;
+
+--Stored Procedure: Get All Expired Jobs of a Company
+DELIMITER //
+CREATE PROCEDURE GetExpiredJobListingsByCompany(
+    IN p_CompanyID INT
+)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+
+    -- Declare variables to hold each column
+    DECLARE v_JobID INT;
+    DECLARE v_JobTitle VARCHAR(100);
+    DECLARE v_Salary DECIMAL(10,2);
+    DECLARE v_CompanyName VARCHAR(100);
+    DECLARE v_JobType VARCHAR(50);
+    DECLARE v_Deadline DATE;
+
+    -- Cursor for expired job listings with company name for a specific company
+    DECLARE job_cursor CURSOR FOR
+        SELECT 
+            j.Job_ID, j.Job_Title, j.Salary,
+            c.Name, j.Job_Type, j.Application_Deadline
+        FROM Job j
+        JOIN Company c ON j.Company_ID = c.Company_ID
+        WHERE j.Application_Deadline < CURDATE()
+          AND j.Company_ID = p_CompanyID;
+
+    -- Handler for end of data
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN job_cursor;
+
+    read_loop: LOOP
+        FETCH job_cursor INTO v_JobID, v_JobTitle, v_Salary,
+                             v_CompanyName, v_JobType, v_Deadline;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Output one row at a time
+        SELECT 
+            v_JobID AS Job_ID,
+            v_JobTitle AS Job_Title,
+            v_Salary AS Salary,
+            v_CompanyName AS Company_Name,
+            v_JobType AS Job_Type,
+            v_Deadline AS Application_Deadline;
+    END LOOP;
+
+    CLOSE job_cursor;
+END //
+DELIMITER ;
+
+--Stored Procedure: Get All Expired Jobs of a Company
+DELIMITER //
+CREATE PROCEDURE GetActiveJobListingsByCompany(
+    IN p_CompanyID INT
+)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+
+    -- Declare variables to hold each column
+    DECLARE v_JobID INT;
+    DECLARE v_JobTitle VARCHAR(100);
+    DECLARE v_Salary DECIMAL(10,2);
+    DECLARE v_CompanyName VARCHAR(100);
+    DECLARE v_JobType VARCHAR(50);
+    DECLARE v_Deadline DATE;
+
+    -- Cursor for expired job listings with company name for a specific company
+    DECLARE job_cursor CURSOR FOR
+        SELECT 
+            j.Job_ID, j.Job_Title, j.Salary,
+            c.Name, j.Job_Type, j.Application_Deadline
+        FROM Job j
+        JOIN Company c ON j.Company_ID = c.Company_ID
+        WHERE j.Application_Deadline >= CURDATE()
+          AND j.Company_ID = p_CompanyID;
+
+    -- Handler for end of data
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    OPEN job_cursor;
+
+    read_loop: LOOP
+        FETCH job_cursor INTO v_JobID, v_JobTitle, v_Salary,
+                             v_CompanyName, v_JobType, v_Deadline;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Output one row at a time
+        SELECT 
+            v_JobID AS Job_ID,
+            v_JobTitle AS Job_Title,
+            v_Salary AS Salary,
+            v_CompanyName AS Company_Name,
+            v_JobType AS Job_Type,
+            v_Deadline AS Application_Deadline;
+    END LOOP;
+
+    CLOSE job_cursor;
+END //
+DELIMITER ;
+
+-- Stored Procedure: Add Job with Multiple Details
+DELIMITER //
+
+CREATE PROCEDURE AddJobWithMultipleDetails(
+    IN p_JobID INT,
+    IN p_JobTitle VARCHAR(100),
+    IN p_JobDescription TEXT,
+    IN p_Salary DECIMAL(10,2),
+    IN p_CompanyID INT,
+    IN p_JobType VARCHAR(50),
+    IN p_Vacancies INT,
+    IN p_ApplicationDeadline DATE,
+    IN p_EligibilityCriteriaList TEXT,   -- comma-separated
+    IN p_LocationList TEXT               -- comma-separated
+)
+BEGIN
+    DECLARE i INT DEFAULT 1;
+    DECLARE total_eligibility INT;
+    DECLARE total_location INT;
+    DECLARE criterion VARCHAR(100);
+    DECLARE location VARCHAR(100);
+
+    -- Insert into Job table
+    INSERT INTO Job (Job_ID, Job_Title, Job_Description, Salary, Company_ID, Job_Type, Vacancies, Application_Deadline)
+    VALUES (p_JobID, p_JobTitle, p_JobDescription, p_Salary, p_CompanyID, p_JobType, p_Vacancies, p_ApplicationDeadline);
+
+    -- Count how many items are in the comma-separated strings
+    SET total_eligibility = LENGTH(p_EligibilityCriteriaList) - LENGTH(REPLACE(p_EligibilityCriteriaList, ',', '')) + 1;
+    SET total_location = LENGTH(p_LocationList) - LENGTH(REPLACE(p_LocationList, ',', '')) + 1;
+
+    -- Insert into Job_Eligibility
+    SET i = 1;
+    WHILE i <= total_eligibility DO
+        SET criterion = TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(p_EligibilityCriteriaList, ',', i), ',', -1));
+        INSERT INTO Job_Eligibility (Job_ID, Eligibility_Criterion)
+        VALUES (p_JobID, criterion);
+        SET i = i + 1;
+    END WHILE;
+
+    -- Insert into Job_Location
+    SET i = 1;
+    WHILE i <= total_location DO
+        SET location = TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(p_LocationList, ',', i), ',', -1));
+        INSERT INTO Job_Location (Job_ID, Location)
+        VALUES (p_JobID, location);
+        SET i = i + 1;
+    END WHILE;
+END //
+
+DELIMITER ;

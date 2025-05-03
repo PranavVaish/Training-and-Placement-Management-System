@@ -86,3 +86,31 @@ CREATE TABLE Company_Hiring_History (
     PRIMARY KEY (Company_ID, Hiring_Period),
     FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
 );
+
+
+--JOB TABLE
+CREATE TABLE Job (
+    Job_ID INT PRIMARY KEY,
+    Job_Title VARCHAR(100) NOT NULL,
+    Job_Description TEXT,
+    Salary DECIMAL(10,2),
+    Company_ID INT,
+    Job_Type VARCHAR(50),
+    Vacancies INT,
+    Application_Deadline DATE,
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+);
+
+CREATE TABLE Job_Eligibility (
+    Job_ID INT,
+    Eligibility_Criterion VARCHAR(100),
+    PRIMARY KEY (Job_ID, Eligibility_Criterion),
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID)
+);
+
+CREATE TABLE Job_Location (
+    Job_ID INT,
+    Location VARCHAR(100),
+    PRIMARY KEY (Job_ID, Location),
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID)
+);
