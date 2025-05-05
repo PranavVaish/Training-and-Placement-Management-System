@@ -170,6 +170,10 @@ BEGIN
     DECLARE v_CompanyName VARCHAR(100);
     DECLARE v_JobType VARCHAR(50);
     DECLARE v_Deadline DATE;
+    DECLARE v_Job_Description TEXT;
+    DECLARE v_Vacancies INT;
+    DECLARE v_Location VARCHAR(100);
+    DECLARE v_eligibilty_criteria TEXT;
 
     -- Cursor for not expired (active) job listings with company name
     DECLARE job_cursor CURSOR FOR
@@ -191,7 +195,9 @@ BEGIN
 
     read_loop: LOOP
         FETCH job_cursor INTO v_JobID, v_JobTitle, v_Salary,
-                             v_CompanyName, v_JobType, v_Deadline;
+                            v_CompanyName, v_JobType, v_Deadline,
+                            v_Job_Description, v_Vacancies, v_Location,
+                            v_eligibilty_criteria;
 
         IF done THEN
             LEAVE read_loop;
@@ -204,7 +210,11 @@ BEGIN
             v_Salary AS Salary,
             v_CompanyName AS Company_Name,
             v_JobType AS Job_Type,
-            v_Deadline AS Application_Deadline;
+            v_Deadline AS Application_Deadline,
+            v_Job_Description AS Job_Description,
+            v_Vacancies AS Vacancies,
+            v_Location AS Location,
+            v_eligibilty_criteria AS Eligibility_Criteria;
     END LOOP;
 
     CLOSE job_cursor;
