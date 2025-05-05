@@ -282,9 +282,7 @@ BEGIN
     DECLARE job_cursor CURSOR FOR
         SELECT 
             j.Job_ID, j.Job_Title, j.Salary,
-            c.Name, j.Job_Type, j.Application_Deadline,
-            j.Job_Description, j.Vacancies, k.Location,
-            je.Eligibility_Criterion
+            c.Name, j.Job_Type, j.Application_Deadline
         FROM Job j
         Join Job_Location k on j.Job_ID = k.Job_ID
         Join Job_Eligibility je on j.Job_ID = je.Job_ID

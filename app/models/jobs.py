@@ -18,6 +18,17 @@ class JobResponse(BaseModel):
 class JobListResponse(BaseModel):
     jobs: List[JobResponse]
 
+class JobByCompanyResponse(BaseModel):
+    Job_ID: int
+    Title: str
+    Salary: float
+    Company_Name: str
+    Job_Type: str
+    Application_Deadline: date
+
+class JobByCompanyListResponse(BaseModel):
+    jobs: List[JobByCompanyResponse]
+
 class JobCreate(BaseModel):
     Job_Title: str = Field(..., alias="title")
     Job_Type: str = Field(..., alias="type")
@@ -27,3 +38,4 @@ class JobCreate(BaseModel):
     Salary: float = Field(..., alias="salary")
     Job_Description: str = Field(..., alias="description")
     Eligibility_Criteria_List: List[str] = Field(..., alias="eligibility")
+    Company_ID: int = Field(..., alias="company_id")
