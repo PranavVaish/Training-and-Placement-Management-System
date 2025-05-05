@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle, 
-  CardFooter 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -28,17 +28,17 @@ export default function TrainingPage() {
   // State variables
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProgram, setSelectedProgram] = useState(null);
-  
+
   // Data states
   const [programs, setPrograms] = useState([]);
   const [trainers, setTrainers] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
-  
+
   // Loading states
   const [loadingPrograms, setLoadingPrograms] = useState(true);
   const [loadingTrainers, setLoadingTrainers] = useState(true);
   const [loadingEnrollments, setLoadingEnrollments] = useState(true);
-  
+
   // Error states
   const [programsError, setProgramsError] = useState(null);
   const [trainersError, setTrainersError] = useState(null);
@@ -71,7 +71,7 @@ export default function TrainingPage() {
     try {
       setLoadingPrograms(true);
       setProgramsError(null);
-      const response = await axios.get(`${API_BASE_URL}/programs`);
+      const response = await axios.get(`http://127.0.0.1:8000/training/programs`);
       setPrograms(response.data);
     } catch (error) {
       console.error("Error fetching training programs:", error);
@@ -102,7 +102,7 @@ export default function TrainingPage() {
       setLoadingEnrollments(true);
       setEnrollmentsError(null);
       const response = await axios.get(`${API_BASE_URL}/enrollments`, {
-        params: { 
+        params: {
           studentId: 'ST12345' // Replace with actual student ID when you have authentication
         }
       });
@@ -123,7 +123,7 @@ export default function TrainingPage() {
   }, []);
 
   // Filter programs based on search term
-  const filteredPrograms = programs.filter(program => 
+  const filteredPrograms = programs.filter(program =>
     program.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     program.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -150,7 +150,7 @@ export default function TrainingPage() {
   // Handler for enrollment submission
   const handleEnrollSubmit = async (e) => {
     e.preventDefault();
-    
+
     const form = e.target;
     const enrollmentData = {
       studentId: form.studentId.value,
@@ -160,7 +160,7 @@ export default function TrainingPage() {
       trainingId: selectedProgram.id,
       paymentMethod: form.paymentMethod.value
     };
-    
+
     try {
       const response = await axios.post(`${API_BASE_URL}/enrollments`, enrollmentData);
       console.log('Enrolled for training:', response.data);
@@ -235,21 +235,21 @@ export default function TrainingPage() {
             <h1 className="text-3xl font-bold">Training Programs</h1>
             <p className="text-gray-600 mt-1">Enhance your skills with our professional training courses</p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              <Input 
-                placeholder="Search programs..." 
+              <Input
+                placeholder="Search programs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full sm:w-[300px]"
               />
             </div>
-            
+
             <Dialog>
               <DialogTrigger asChild>
-                <Button 
+                <Button
                   className="bg-dark-orange text-white"
                 >
                   <UserRound className="mr-2 h-4 w-4" />
@@ -278,7 +278,7 @@ export default function TrainingPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={trainerForm.control}
@@ -293,7 +293,7 @@ export default function TrainingPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={trainerForm.control}
                         name="phone"
@@ -308,7 +308,7 @@ export default function TrainingPage() {
                         )}
                       />
                     </div>
-                    
+
                     <FormField
                       control={trainerForm.control}
                       name="trainerId"
@@ -322,7 +322,7 @@ export default function TrainingPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={trainerForm.control}
                       name="expertise"
@@ -336,7 +336,7 @@ export default function TrainingPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={trainerForm.control}
                       name="organization"
@@ -350,7 +350,7 @@ export default function TrainingPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <DialogFooter>
                       <Button type="submit" className="bg-dark-charcoal text-white">Register</Button>
                     </DialogFooter>
@@ -360,14 +360,14 @@ export default function TrainingPage() {
             </Dialog>
           </div>
         </div>
-        
+
         <Tabs defaultValue="programs" className="w-auto">
           <TabsList className="mb-8 grid w-auto grid-cols-3 sm:grid-cols-3 max-w-md mx-auto justify-center">
             <TabsTrigger value="programs">Programs</TabsTrigger>
             <TabsTrigger value="trainers">Trainers</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="programs">
             {loadingPrograms ? (
               <LoadingState />
@@ -417,7 +417,7 @@ export default function TrainingPage() {
                       <CardFooter>
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button 
+                            <Button
                               className="w-full bg-dark-purple text-white"
                               onClick={() => handleTrainingRegistration(program)}
                             >
@@ -488,7 +488,7 @@ export default function TrainingPage() {
               </div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="trainers">
             <Card>
               <CardHeader>
@@ -593,7 +593,7 @@ export default function TrainingPage() {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="feedback">
             <Card>
               <CardHeader>
@@ -622,7 +622,7 @@ export default function TrainingPage() {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={feedbackForm.control}
                           name="trainingId"
@@ -630,7 +630,7 @@ export default function TrainingPage() {
                             <FormItem>
                               <FormLabel>Training Program</FormLabel>
                               {programs.length > 0 ? (
-                                <Select 
+                                <Select
                                   onValueChange={field.onChange}
                                   defaultValue={field.value}
                                 >
@@ -656,7 +656,7 @@ export default function TrainingPage() {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={feedbackForm.control}
                           name="trainerId"
@@ -664,7 +664,7 @@ export default function TrainingPage() {
                             <FormItem>
                               <FormLabel>Trainer</FormLabel>
                               {trainers.length > 0 ? (
-                                <Select 
+                                <Select
                                   onValueChange={field.onChange}
                                   defaultValue={field.value}
                                 >
@@ -690,14 +690,14 @@ export default function TrainingPage() {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={feedbackForm.control}
                           name="rating"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Rating</FormLabel>
-                              <Select 
+                              <Select
                                 onValueChange={field.onChange}
                                 defaultValue={field.value}
                               >
@@ -719,7 +719,7 @@ export default function TrainingPage() {
                           )}
                         />
                       </div>
-                      
+
                       <FormField
                         control={feedbackForm.control}
                         name="comments"
@@ -727,17 +727,17 @@ export default function TrainingPage() {
                           <FormItem>
                             <FormLabel>Comments</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                placeholder="Share your experience, suggestions, and feedback" 
-                                className="min-h-[150px]" 
-                                {...field} 
+                              <Textarea
+                                placeholder="Share your experience, suggestions, and feedback"
+                                className="min-h-[150px]"
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
+
                       <Button type="submit" className="bg-dark-charcoal text-white">
                         <Star className="mr-2 h-4 w-4" />
                         Submit Feedback

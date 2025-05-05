@@ -75,26 +75,29 @@ export default function JobsPage() {
 
   const handleApply = async (e, jobId) => {
     e.preventDefault();
-    const studentId = e.currentTarget.elements.namedItem('studentId').value.trim();
-    const password = e.currentTarget.elements.namedItem('password').value;
     const resumeFile = e.currentTarget.elements.namedItem('resume').files[0];
+    const universalId = localStorage.getItem('universal_id') || '';
 
-    if (!studentId) {
-      alert('Student ID is required.');
+    if (!universalId) {
+      alert('Universal ID not found. Please log in again.');
       return;
     }
 
-    if (appliedJobs[studentId]?.includes(jobId)) {
+    if (!resumeFile) {
+      alert('Please upload a resume.');
+      return;
+    }
+
+    if (appliedJobs[universalId]?.includes(jobId)) {
       alert('You have already applied for this job.');
       return;
     }
 
     try {
       const formData = new FormData();
-      formData.append('studentId', studentId);
-      formData.append('password', password);
+      formData.append('universalId', universalId);
       formData.append('resume', resumeFile);
-      formData.append('jobId', jobId);
+      formData.append('jobId', jobId); // Explicitly include jobId
 
       const response = await fetch('http://127.0.0.1:8000/students/apply', {
         method: 'POST',
@@ -108,7 +111,7 @@ export default function JobsPage() {
 
       setAppliedJobs(prev => ({
         ...prev,
-        [studentId]: [...(prev[studentId] || []), jobId],
+        [universalId]: [...(prev[universalId] || []), jobId],
       }));
 
       alert('Application submitted successfully!');
@@ -310,37 +313,14 @@ export default function JobsPage() {
             <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
               <h3 className="text-xl font-bold mb-4">Apply for {featuredJob.title || 'Job'}</h3>
               <form onSubmit={(e) => handleApply(e, featuredJob.id)}>
-                <div className="mb-4">
-                  <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">
-                    Student ID
-                  </label>
-                  <Input
-                    id="studentId"
-                    name="studentId"
-                    type="text"
-                    required
-                    placeholder="Enter your Student ID"
-                    className="mt-1 w-full"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                    Password
-                  </label>
-                  <Input
-                    id="password"
-                    type="password"
-                    required
-                    placeholder="Enter your password"
-                    className="mt-1 w-full"
-                  />
-                </div>
+                <input type="hidden" name="jobId" value={featuredJob.id} />
                 <div className="mb-4">
                   <label htmlFor="resume" className="block text-sm font-medium text-gray-700">
                     Upload Resume
                   </label>
                   <Input
                     id="resume"
+                    name="resume"
                     type="file"
                     required
                     className="mt-1 w-full"

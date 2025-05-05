@@ -21,31 +21,32 @@ export default function StudentDashboard() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editedProfile, setEditedProfile] = useState(null);
   const [activeApplicationTab, setActiveApplicationTab] = useState('jobListings');
-  
+
   // States for data from API
   const [studentProfile, setStudentProfile] = useState(null);
   const [jobApplications, setJobApplications] = useState([]);
   const [scheduledInterviews, setScheduledInterviews] = useState([]);
   const [trainingEnrollments, setTrainingEnrollments] = useState([]);
-  
+
   // Loading states
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isLoadingApplications, setIsLoadingApplications] = useState(true);
   const [isLoadingInterviews, setIsLoadingInterviews] = useState(true);
   const [isLoadingEnrollments, setIsLoadingEnrollments] = useState(true);
-  
+
   // Error states
   const [profileError, setProfileError] = useState(null);
   const [applicationsError, setApplicationsError] = useState(null);
   const [interviewsError, setInterviewsError] = useState(null);
   const [enrollmentsError, setEnrollmentsError] = useState(null);
 
+  const student_id = localStorage.getItem('universal_id'); // Assuming you store the student ID in localStorage
   // Fetch student profile data
   useEffect(() => {
     const fetchStudentProfile = async () => {
       setIsLoadingProfile(true);
       try {
-        const response = await axios.get(`${API_BASE_URL}/student/profile`);
+        const response = await axios.get(`http://127.0.0.1:8000/students/${student_id}`);
         setStudentProfile(response.data);
         setProfileError(null);
       } catch (error) {
@@ -123,7 +124,7 @@ export default function StudentDashboard() {
   // Helper function to get status badge color
   const getStatusColor = (status) => {
     if (!status) return 'bg-gray-100 text-gray-800';
-    
+
     switch (status.toLowerCase()) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
@@ -223,31 +224,31 @@ export default function StudentDashboard() {
                 <>
                   <div>
                     <h3 className="font-medium text-gray-500">Name</h3>
-                    <p>{studentProfile.name}</p>
+                    <p>{studentProfile.Name}</p>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-500">Student ID</h3>
-                    <p>{studentProfile.id}</p>
+                    <p>{studentProfile.Student_ID}</p>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-500">Email</h3>
-                    <p>{studentProfile.email}</p>
+                    <p>{studentProfile.Email_ID}</p>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-500">Phone</h3>
-                    <p>{studentProfile.phone}</p>
+                    <p>{studentProfile.Phone_No}</p>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-500">Department</h3>
-                    <p>{studentProfile.department}</p>
+                    <p>{studentProfile.Department}</p>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-500">CGPA</h3>
-                    <p>{studentProfile.cgpa}</p>
+                    <p>{studentProfile.CGPA}</p>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-500">Graduation Year</h3>
-                    <p>{studentProfile.graduationYear}</p>
+                    <p>{studentProfile.Graduation_Year}</p>
                   </div>
                 </>
               )}
@@ -263,20 +264,20 @@ export default function StudentDashboard() {
                   <Link to="/jobs">Browse Jobs</Link>
                 </Button>
               </div>
-              
+
               {/* Toggle buttons for Job Listings and Interview Schedule */}
               <div className="flex border-b mt-4">
                 <button
-                  className={`pb-2 px-4 font-medium flex items-center ${activeApplicationTab === 'jobListings' 
-                    ? 'border-b-2 border-primary text-primary' 
+                  className={`pb-2 px-4 font-medium flex items-center ${activeApplicationTab === 'jobListings'
+                    ? 'border-b-2 border-primary text-primary'
                     : 'text-gray-500'}`}
                   onClick={() => setActiveApplicationTab('jobListings')}
                 >
                   <Briefcase className="h-4 w-4 mr-2" /> Job Listings
                 </button>
                 <button
-                  className={`pb-2 px-4 font-medium flex items-center ${activeApplicationTab === 'interviewSchedule' 
-                    ? 'border-b-2 border-primary text-primary' 
+                  className={`pb-2 px-4 font-medium flex items-center ${activeApplicationTab === 'interviewSchedule'
+                    ? 'border-b-2 border-primary text-primary'
                     : 'text-gray-500'}`}
                   onClick={() => setActiveApplicationTab('interviewSchedule')}
                 >
