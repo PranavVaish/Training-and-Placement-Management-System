@@ -11,8 +11,8 @@ async def get_all_jobs(db: mysql.connector.MySQLConnection = Depends(get_db)):
     """
     Retrieve all active jobs with company name from the database using a stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.callproc("GetNotExpiredJobListingsWithCompanyName")
 
         results = []
@@ -63,7 +63,7 @@ async def create_job(
     Create a new job listing using the AddJobWithMultipleDetails stored procedure.
     Only companies are allowed to create jobs.
     """
-    cursor = None
+    cursor = db.cursor()
     try:
         if not authorization:
             raise HTTPException(status_code=401, detail="Authorization header is missing")
@@ -82,7 +82,7 @@ async def create_job(
         query = """
             SELECT Company_ID FROM Company WHERE Company_ID = %s
         """
-        cursor = db.cursor()
+        
         cursor.execute(query, (company_id,))
         company = cursor.fetchone()
 
@@ -128,8 +128,8 @@ async def get_active_jobs_by_company(company_id: int, db: mysql.connector.MySQLC
     """
     Retrieve all active jobs for a specific company from the database using a stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.callproc("GetActiveJobListingsByCompany", (company_id,))
 
         results = []
@@ -175,8 +175,8 @@ async def get_expired_jobs_by_company(company_id: int, db: mysql.connector.MySQL
     """
     Retrieve all expired jobs for a specific company from the database using a stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.callproc("GetExpiredJobListingsByCompany", (company_id,))
 
         results = []

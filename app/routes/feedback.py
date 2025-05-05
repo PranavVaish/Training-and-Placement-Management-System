@@ -13,8 +13,8 @@ async def create_feedback(
     """
     Create a new feedback using the AddFeedback stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.callproc(
             "AddFeedback",
             (
@@ -45,10 +45,10 @@ async def get_feedback_form(
     db: mysql.connector.MySQLConnection = Depends(get_db)
 ):
     """
-    Retrieve all trainers and training programs.
+    Retrieve all data for the feedback form, including trainers and training programs.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
 
         # Fetch all trainers
         cursor.callproc("GetAllTrainersRowByRow")

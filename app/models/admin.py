@@ -22,7 +22,7 @@ class AdminLogin(BaseModel):
     password: str
 
 class AdminResponse(BaseModel):
-    Admin_ID: int
+    Admin_ID: int = Field(..., alias="adminId")
     Name: str
     Role: str
     Phone_Number: str = Field(..., max_length=10)
