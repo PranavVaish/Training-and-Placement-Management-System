@@ -84,10 +84,8 @@ def setup_database():
     scripts_root = current_file.parent # Go up three levels to reach project root
     
     # Database connection settings - consider using environment variables
-    db_user = os.environ.get('DB_USER', 'root')
-    db_password = os.environ.get('DB_PASSWORD', 'root')
     db_host = os.environ.get('DB_HOST', 'localhost')
-    db_port = int(os.environ.get('DB_PORT', '3306'))
+    db_port = int(os.environ.get('DB_PORT', 3306))
     db_name = os.environ.get('DB_NAME', 'mydb')
     
     connection = None
@@ -98,8 +96,8 @@ def setup_database():
         # Connect to the database
         print(f"Connecting to database {db_name} at {db_host}:{db_port}")
         connection = mysql.connector.connect(
-            user=db_user,
-            password=db_password,
+            user=os.environ.get('DB_USER', 'root'),
+            password=os.environ.get('DB_PASSWORD', 'root'),
             host=db_host,
             port=db_port,
             database=db_name

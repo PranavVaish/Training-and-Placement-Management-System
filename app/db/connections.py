@@ -1,17 +1,12 @@
 import mysql.connector
-
-db_user = "root"
-db_password = "root"
-db_host = "localhost"
-db_port = 3306
-db_name = "mydb"
+import os
 
 dbconfig = {
-    "user": db_user,
-    "password": db_password,
-    "host": db_host,
-    "port": db_port,
-    "database": db_name,
+    "user": os.environ.get("DATABASE_USER", "root"),
+    "password": os.environ.get("DATABASE_PASSWORD", "password"),
+    "host": os.environ.get("DATABASE_HOST", "localhost"),
+    "port": os.environ.get("DATABASE_PORT", 3306),
+    "database": os.environ.get("DATABASE_NAME", "mydb"),
     "raise_on_warnings": True
 }
 

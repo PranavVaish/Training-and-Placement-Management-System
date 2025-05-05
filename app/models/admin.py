@@ -28,9 +28,9 @@ class AdminResponse(BaseModel):
     Phone_Number: str = Field(..., max_length=15)
 
 class AdminRegistration(BaseModel):
-    name: str = Field(..., max_length=100)
-    role: str = Field(..., max_length=50)
-    email: EmailStr = Field(..., max_length=100)
-    phone_number: str = Field(..., max_length=15, alias="phone")
+    name: str = Field(..., max_length=100, alias="name")
+    role: str = Field(..., max_length=50, alias="role")
+    email: EmailStr = Field(..., max_length=100, alias="email")
+    phone_number: str = Field(..., alias="phone")
     id: int = Field(..., gt=0, alias="adminId")
-    password: str = Field(..., min_length=8, max_length=100)
+    password: str = Field(..., min_length=8, max_length=100, alias="password")

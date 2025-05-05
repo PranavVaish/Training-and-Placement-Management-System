@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends, Body
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 import mysql.connector
 import datetime
 from utils import create_access_token, generate_refresh_token
@@ -36,10 +36,10 @@ app = FastAPI(lifespan=lifespan)
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],  # Allow requests from your React app
+    allow_origins=["http://localhost:8080"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods (POST, GET, PUT, DELETE, etc.)
-    allow_headers=["*"],  # Allow all headers (Content-Type, etc.)
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

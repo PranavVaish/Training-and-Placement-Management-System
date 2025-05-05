@@ -78,13 +78,12 @@ async def register_admin(
             admin_data.id,
             admin_data.name,
             admin_data.role,
-            hashed_password.decode('utf-8'),
+            hashed_password,
             admin_data.email,
             admin_data.phone_number
         ])
 
         db.commit()
-
         return {"message": "Admin registered successfully"}
 
     except mysql.connector.Error as e:
