@@ -13,138 +13,54 @@ import {
   Input
 } from '@/components/ui/input';
 import {
-  Edit, Plus, Users, Calendar, ClipboardList
+  Edit, Plus, Users, Calendar, ClipboardList, Loader2
 } from 'lucide-react';
 
 export default function CompanyDashboard() {
-  const [companyProfile, setCompanyProfile] = useState({
-    name: 'Tech Innovations Inc.',
-    id: 'CMP12345',
-    email: 'hr@techinnovations.com',
-    phone: '(123) 456-7890',
-    industryType: 'Technology',
-    website: 'www.techinnovations.com',
-    location: 'New York, USA',
-    contactPerson: 'Jane Wilson'
-  });
+  // State for data
+  const [companyProfile, setCompanyProfile] = useState(null);
+  const [jobListings, setJobListings] = useState([]);
+  const [hiringHistory, setHiringHistory] = useState([]);
+  const [interviewSchedules, setInterviewSchedules] = useState([]);
+  const [applications, setApplications] = useState([]);
 
-  const [jobListings, setJobListings] = useState([
-    {
-      id: 'JOB123',
-      title: 'Software Developer Intern',
-      type: 'Internship',
-      location: 'New York',
-      department: 'Engineering',
-      postedDate: '2025-03-10',
-      vacancy: 15,
-      status: 'Active',
-      deadline: '2025-05-01',
-      salary: '$2,000/month',
-      description: 'Assist in developing and maintaining software vacancy under the guidance of senior developers.',
-      eligiblity: 'Currently pursuing a degree in Computer Science or related field.'
-    },
-    {
-      id: 'JOB456',
-      title: 'Frontend Developer',
-      type: 'Full-time',
-      location: 'Remote',
-      department: 'Engineering',
-      postedDate: '2025-03-12',
-      vacancy: 24,
-      status: 'Active',
-      deadline: '2025-06-01',
-      salary: '$80,000/year',
-      description: 'Develop and maintain user-facing features for web vacancy using modern frontend technologies.',
-      eligiblity: '2+ years of experience in frontend development and proficiency in React.js.'
-    },
-    {
-      id: 'JOB789',
-      title: 'Data Analyst',
-      type: 'Full-time',
-      location: 'New York',
-      department: 'Data Science',
-      postedDate: '2025-03-15',
-      vacancy: 18,
-      status: 'Active',
-      deadline: '2025-04-20',
-      salary: '$70,000/year',
-      description: 'Analyze data to provide actionable insights and support decision-making processes.',
-      eligiblity: 'Bachelors degree in Statistics, Mathematics, or related field and experience with data visualization tools.'
-    },
-  ]);
-
-  const [hiringHistory] = useState([
-    {
-      id: 'HIR001',
-      jobId: 'JOB001',
-      position: 'UX Designer',
-      hireDate: '2025-01-15',
-      candidate: 'Michael Brown',
-      department: 'Design',
-      status: 'Onboarded'
-    },
-    {
-      id: 'HIR002',
-      jobId: 'JOB002',
-      position: 'Backend Developer',
-      hireDate: '2025-02-10',
-      candidate: 'Sarah Johnson',
-      department: 'Engineering',
-      status: 'Onboarded'
-    },
-  ]);
-
-  // New state for interview schedules
-  const [interviewSchedules, setInterviewSchedules] = useState([
-    {
-      interview_id: 'INT001',
-      application_id: 'APP001',
-      candidate_name: 'Alex Rodriguez',
-      job_title: 'Frontend Developer',
-      date: '2025-05-10',
-      time: '10:00 AM',
-      mode: 'Video Call',
-      interviewer_name: 'David Williams',
-      status: 'Scheduled'
-    },
-    {
-      interview_id: 'INT002',
-      application_id: 'APP002',
-      candidate_name: 'Jamie Lee',
-      job_title: 'Software Developer Intern',
-      date: '2025-05-12',
-      time: '2:30 PM',
-      mode: 'In-person',
-      interviewer_name: 'Sarah Thompson',
-      status: 'Scheduled'
-    }
-  ]);
-
+  // State for UI
   const [activeTab, setActiveTab] = useState('listings');
   const [showEditModal, setShowEditModal] = useState(false);
   const [showJobModal, setShowJobModal] = useState(false);
   const [showInterviewModal, setShowInterviewModal] = useState(false);
+  
+  // Loading and error states
+  const [loading, setLoading] = useState({
+    profile: true,
+    jobs: true,
+    history: true,
+    interviews: true,
+    applications: true
+  });
+  const [error, setError] = useState({
+    profile: null,
+    jobs: null,
+    history: null,
+    interviews: null,
+    applications: null
+  });
 
-  const [editProfile, setEditProfile] = useState({ ...companyProfile });
-
+  // Form states
+  const [editProfile, setEditProfile] = useState({});
   const [newJob, setNewJob] = useState({
-    id: '',
     title: '',
     type: '',
     location: '',
     department: '',
-    postedDate: new Date().toISOString().split('T')[0],
     vacancy: 0,
     status: 'Active',
     deadline: '',
     salary: '',
     description: '',
-    eligiblity: ''
+    eligibility: ''
   });
-
-  // New state for scheduling interviews
   const [newInterview, setNewInterview] = useState({
-    interview_id: '',
     application_id: '',
     candidate_name: '',
     job_title: '',
@@ -155,88 +71,237 @@ export default function CompanyDashboard() {
     status: 'Scheduled'
   });
 
-  // Sample applications data
-  const [applications] = useState([
-    {
-      application_id: 'APP003',
-      candidate_name: 'Taylor Jordan',
-      job_title: 'Data Analyst',
-      job_id: 'JOB789',
-      applied_date: '2025-04-25',
-      status: 'Under Review'
-    },
-    {
-      application_id: 'APP004',
-      candidate_name: 'Morgan Casey',
-      job_title: 'Frontend Developer',
-      job_id: 'JOB456',
-      applied_date: '2025-04-22',
-      status: 'Under Review'
-    },
-    {
-      application_id: 'APP005',
-      candidate_name: 'Riley Quinn',
-      job_title: 'Software Developer Intern',
-      job_id: 'JOB123',
-      applied_date: '2025-04-20',
-      status: 'Under Review'
-    }
-  ]);
+  // API base URL - replace with your actual FastAPI endpoint
+  const API_BASE_URL = 'http://localhost:8000/api';
 
-  // Auto-filter out expired job listings
+  // Fetch company profile
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    setJobListings(prev =>
-      prev.filter(job => job.deadline >= today)
-    );
+    const fetchCompanyProfile = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/company/profile`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch company profile');
+        }
+        const data = await response.json();
+        setCompanyProfile(data);
+        setEditProfile(data);
+      } catch (err) {
+        console.error('Error fetching company profile:', err);
+        setError(prev => ({ ...prev, profile: err.message }));
+      } finally {
+        setLoading(prev => ({ ...prev, profile: false }));
+      }
+    };
+
+    fetchCompanyProfile();
   }, []);
 
-  const handleProfileSave = () => {
-    setCompanyProfile({ ...editProfile });
-    setShowEditModal(false);
+  // Fetch job listings
+  useEffect(() => {
+    const fetchJobListings = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/jobs`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch job listings');
+        }
+        const data = await response.json();
+        setJobListings(data);
+      } catch (err) {
+        console.error('Error fetching job listings:', err);
+        setError(prev => ({ ...prev, jobs: err.message }));
+      } finally {
+        setLoading(prev => ({ ...prev, jobs: false }));
+      }
+    };
+
+    fetchJobListings();
+  }, []);
+
+  // Fetch hiring history
+  useEffect(() => {
+    const fetchHiringHistory = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/hiring/history`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch hiring history');
+        }
+        const data = await response.json();
+        setHiringHistory(data);
+      } catch (err) {
+        console.error('Error fetching hiring history:', err);
+        setError(prev => ({ ...prev, history: err.message }));
+      } finally {
+        setLoading(prev => ({ ...prev, history: false }));
+      }
+    };
+
+    fetchHiringHistory();
+  }, []);
+
+  // Fetch interview schedules
+  useEffect(() => {
+    const fetchInterviewSchedules = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/interviews`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch interview schedules');
+        }
+        const data = await response.json();
+        setInterviewSchedules(data);
+      } catch (err) {
+        console.error('Error fetching interview schedules:', err);
+        setError(prev => ({ ...prev, interviews: err.message }));
+      } finally {
+        setLoading(prev => ({ ...prev, interviews: false }));
+      }
+    };
+
+    fetchInterviewSchedules();
+  }, []);
+
+  // Fetch applications
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/applications`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch applications');
+        }
+        const data = await response.json();
+        setApplications(data);
+      } catch (err) {
+        console.error('Error fetching applications:', err);
+        setError(prev => ({ ...prev, applications: err.message }));
+      } finally {
+        setLoading(prev => ({ ...prev, applications: false }));
+      }
+    };
+
+    fetchApplications();
+  }, []);
+
+  // Update company profile
+  const handleProfileSave = async () => {
+    try {
+      setLoading(prev => ({ ...prev, profile: true }));
+      const response = await fetch(`${API_BASE_URL}/company/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editProfile),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update company profile');
+      }
+      
+      const updatedProfile = await response.json();
+      setCompanyProfile(updatedProfile);
+      setShowEditModal(false);
+    } catch (err) {
+      console.error('Error updating company profile:', err);
+      setError(prev => ({ ...prev, profile: err.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, profile: false }));
+    }
   };
 
-  const handleJobCreate = () => {
-    const newJobWithId = {
-      ...newJob,
-      id: 'JOB' + Math.floor(Math.random() * 10000)
-    };
-    setJobListings(prev => [...prev, newJobWithId]);
-    setNewJob({
-      id: '',
-      title: '',
-      type: '',
-      location: '',
-      department: '',
-      postedDate: new Date().toISOString().split('T')[0],
-      vacancy: 0,
-      status: 'Active',
-      deadline: '',
-      salary: '',
-      description: '',
-      eligiblity: ''
-    });
-    setShowJobModal(false);
+  // Create new job
+  const handleJobCreate = async () => {
+    try {
+      setLoading(prev => ({ ...prev, jobs: true }));
+      const response = await fetch(`${API_BASE_URL}/jobs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newJob),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create job');
+      }
+      
+      const createdJob = await response.json();
+      setJobListings(prev => [...prev, createdJob]);
+      setNewJob({
+        title: '',
+        type: '',
+        location: '',
+        department: '',
+        vacancy: 0,
+        status: 'Active',
+        deadline: '',
+        salary: '',
+        description: '',
+        eligibility: ''
+      });
+      setShowJobModal(false);
+    } catch (err) {
+      console.error('Error creating job:', err);
+      setError(prev => ({ ...prev, jobs: err.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, jobs: false }));
+    }
   };
 
-  const handleScheduleInterview = () => {
-    const interviewWithId = {
-      ...newInterview,
-      interview_id: 'INT' + Math.floor(Math.random() * 10000)
-    };
-    setInterviewSchedules(prev => [...prev, interviewWithId]);
-    setNewInterview({
-      interview_id: '',
-      application_id: '',
-      candidate_name: '',
-      job_title: '',
-      date: '',
-      time: '',
-      mode: '',
-      interviewer_name: '',
-      status: 'Scheduled'
-    });
-    setShowInterviewModal(false);
+  // Schedule interview
+  const handleScheduleInterview = async () => {
+    try {
+      setLoading(prev => ({ ...prev, interviews: true }));
+      const response = await fetch(`${API_BASE_URL}/interviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newInterview),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to schedule interview');
+      }
+      
+      const scheduledInterview = await response.json();
+      setInterviewSchedules(prev => [...prev, scheduledInterview]);
+      
+      // Update the application status
+      const appResponse = await fetch(`${API_BASE_URL}/applications/${newInterview.application_id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'Interview Scheduled' }),
+      });
+      
+      if (!appResponse.ok) {
+        console.warn('Failed to update application status');
+      }
+      
+      // Refresh applications list
+      const updatedApplicationsResponse = await fetch(`${API_BASE_URL}/applications`);
+      if (updatedApplicationsResponse.ok) {
+        const updatedApplications = await updatedApplicationsResponse.json();
+        setApplications(updatedApplications);
+      }
+      
+      setNewInterview({
+        application_id: '',
+        candidate_name: '',
+        job_title: '',
+        date: '',
+        time: '',
+        mode: '',
+        interviewer_name: '',
+        status: 'Scheduled'
+      });
+      setShowInterviewModal(false);
+    } catch (err) {
+      console.error('Error scheduling interview:', err);
+      setError(prev => ({ ...prev, interviews: err.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, interviews: false }));
+    }
   };
 
   const handleApplicationSelect = (application) => {
@@ -249,6 +314,20 @@ export default function CompanyDashboard() {
     setShowInterviewModal(true);
   };
 
+  // Loading component
+  const LoadingSpinner = () => (
+    <div className="flex items-center justify-center p-8">
+      <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+    </div>
+  );
+
+  // Empty state component
+  const EmptyState = ({ message = "No Data Found" }) => (
+    <div className="flex flex-col items-center justify-center p-8 text-center">
+      <p className="text-gray-500">{message}</p>
+    </div>
+  );
+
   return (
     <MainLayout>
       <div className="container mx-auto py-8 px-4">
@@ -260,20 +339,30 @@ export default function CompanyDashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Company Profile</CardTitle>
-                <Button variant="outline" size="sm" onClick={() => setShowEditModal(true)}>
-                  <Edit className="h-4 w-4 mr-2" /> Edit
-                </Button>
+                {!loading.profile && companyProfile && (
+                  <Button variant="outline" size="sm" onClick={() => setShowEditModal(true)}>
+                    <Edit className="h-4 w-4 mr-2" /> Edit
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {Object.entries(companyProfile).map(([key, value]) => (
-                key !== 'id' && (
-                  <div key={key}>
-                    <h3 className="font-medium text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1')}</h3>
-                    <p>{value}</p>
-                  </div>
-                )
-              ))}
+              {loading.profile ? (
+                <LoadingSpinner />
+              ) : error.profile ? (
+                <p className="text-red-500">Error: {error.profile}</p>
+              ) : !companyProfile ? (
+                <EmptyState message="No company profile data found" />
+              ) : (
+                Object.entries(companyProfile).map(([key, value]) => (
+                  key !== 'id' && (
+                    <div key={key}>
+                      <h3 className="font-medium text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1')}</h3>
+                      <p>{String(value)}</p>
+                    </div>
+                  )
+                ))
+              )}
             </CardContent>
           </Card>
 
@@ -286,11 +375,11 @@ export default function CompanyDashboard() {
                   <CardDescription>Manage job listings and interviews</CardDescription>
                 </div>
                 <div className="space-x-2">
-                  {activeTab === 'listings' ? (
+                  {activeTab === 'listings' && !loading.jobs && (
                     <Button onClick={() => setShowJobModal(true)}>
                       <Plus className="h-4 w-4 mr-2" /> Create New Job
                     </Button>
-                  ) : null}
+                  )}
                 </div>
               </div>
               <div className="flex border-b mt-4">
@@ -315,24 +404,29 @@ export default function CompanyDashboard() {
             <CardContent>
               {activeTab === 'listings' ? (
                 // Job Listings Content
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="text-left text-sm text-gray-500 border-b">
-                        <th className="py-3 px-2">Job Title</th>
-                        <th className="py-3 px-2">Location</th>
-                        <th className="py-3 px-2">Type</th>
-                        <th className="py-3 px-2">Salary</th>
-                        <th className="py-3 px-2">Vacancies</th>
-                        <th className="py-3 px-2">Deadline</th>
-                        <th className="py-3 px-2">Description</th>
-                        <th className="py-3 px-2">Eligiblity</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {jobListings.map((job) => {
-                        const isDeadlinePassed = new Date(job.deadline) < new Date();
-                        return (
+                loading.jobs ? (
+                  <LoadingSpinner />
+                ) : error.jobs ? (
+                  <p className="text-red-500">Error: {error.jobs}</p>
+                ) : jobListings.length === 0 ? (
+                  <EmptyState message="No job listings found" />
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="text-left text-sm text-gray-500 border-b">
+                          <th className="py-3 px-2">Job Title</th>
+                          <th className="py-3 px-2">Location</th>
+                          <th className="py-3 px-2">Type</th>
+                          <th className="py-3 px-2">Salary</th>
+                          <th className="py-3 px-2">Vacancies</th>
+                          <th className="py-3 px-2">Deadline</th>
+                          <th className="py-3 px-2">Description</th>
+                          <th className="py-3 px-2">Eligibility</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {jobListings.map((job) => (
                           <tr key={job.id} className="border-b">
                             <td className="py-3 px-2 font-medium">{job.title}</td>
                             <td className="py-3 px-2">{job.location}</td>
@@ -343,92 +437,108 @@ export default function CompanyDashboard() {
                             </td>
                             <td className="py-3 px-2">{job.deadline}</td>
                             <td className="py-3 px-2">{job.description}</td>
-                            <td className="py-3 px-2">{job.eligiblity}</td>
+                            <td className="py-3 px-2">{job.eligibility || job.eligiblity}</td>
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
               ) : (
                 // Interview Schedule Content
                 <div>
                   <div className="mb-6">
                     <h3 className="text-lg font-medium mb-3">Pending Applications</h3>
+                    {loading.applications ? (
+                      <LoadingSpinner />
+                    ) : error.applications ? (
+                      <p className="text-red-500">Error: {error.applications}</p>
+                    ) : applications.length === 0 ? (
+                      <EmptyState message="No pending applications found" />
+                    ) : (
+                      <div className="overflow-x-auto border rounded-md">
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="text-left text-sm text-gray-500 border-b bg-gray-50">
+                              <th className="py-3 px-4">Application ID</th>
+                              <th className="py-3 px-4">Candidate</th>
+                              <th className="py-3 px-4">Position</th>
+                              <th className="py-3 px-4">Applied Date</th>
+                              <th className="py-3 px-4">Status</th>
+                              <th className="py-3 px-4">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {applications.filter(app => app.status === "Under Review").map((app) => (
+                              <tr key={app.application_id} className="border-b">
+                                <td className="py-3 px-4">{app.application_id}</td>
+                                <td className="py-3 px-4 font-medium">{app.candidate_name}</td>
+                                <td className="py-3 px-4">{app.job_title}</td>
+                                <td className="py-3 px-4">{app.applied_date}</td>
+                                <td className="py-3 px-4">
+                                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                    {app.status}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <Button 
+                                    size="sm"
+                                    onClick={() => handleApplicationSelect(app)}
+                                  >
+                                    Schedule Interview
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
+                  <h3 className="text-lg font-medium mb-3">Scheduled Interviews</h3>
+                  {loading.interviews ? (
+                    <LoadingSpinner />
+                  ) : error.interviews ? (
+                    <p className="text-red-500">Error: {error.interviews}</p>
+                  ) : interviewSchedules.length === 0 ? (
+                    <EmptyState message="No interviews scheduled" />
+                  ) : (
                     <div className="overflow-x-auto border rounded-md">
                       <table className="w-full border-collapse">
                         <thead>
                           <tr className="text-left text-sm text-gray-500 border-b bg-gray-50">
-                            <th className="py-3 px-4">Application ID</th>
+                            <th className="py-3 px-4">Interview ID</th>
                             <th className="py-3 px-4">Candidate</th>
                             <th className="py-3 px-4">Position</th>
-                            <th className="py-3 px-4">Applied Date</th>
+                            <th className="py-3 px-4">Date</th>
+                            <th className="py-3 px-4">Time</th>
+                            <th className="py-3 px-4">Mode</th>
+                            <th className="py-3 px-4">Interviewer</th>
                             <th className="py-3 px-4">Status</th>
-                            <th className="py-3 px-4">Action</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {applications.map((app) => (
-                            <tr key={app.application_id} className="border-b">
-                              <td className="py-3 px-4">{app.application_id}</td>
-                              <td className="py-3 px-4 font-medium">{app.candidate_name}</td>
-                              <td className="py-3 px-4">{app.job_title}</td>
-                              <td className="py-3 px-4">{app.applied_date}</td>
+                          {interviewSchedules.map((interview) => (
+                            <tr key={interview.interview_id} className="border-b">
+                              <td className="py-3 px-4">{interview.interview_id}</td>
+                              <td className="py-3 px-4 font-medium">{interview.candidate_name}</td>
+                              <td className="py-3 px-4">{interview.job_title}</td>
+                              <td className="py-3 px-4">{interview.date}</td>
+                              <td className="py-3 px-4">{interview.time}</td>
+                              <td className="py-3 px-4">{interview.mode}</td>
+                              <td className="py-3 px-4">{interview.interviewer_name}</td>
                               <td className="py-3 px-4">
-                                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                  {app.status}
+                                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                  {interview.status}
                                 </span>
-                              </td>
-                              <td className="py-3 px-4">
-                                <Button 
-                                  size="sm"
-                                  onClick={() => handleApplicationSelect(app)}
-                                >
-                                  Schedule Interview
-                                </Button>
                               </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
-                  </div>
-
-                  <h3 className="text-lg font-medium mb-3">Scheduled Interviews</h3>
-                  <div className="overflow-x-auto border rounded-md">
-                    <table className="w-full border-collapse">
-                      <thead>
-                        <tr className="text-left text-sm text-gray-500 border-b bg-gray-50">
-                          <th className="py-3 px-4">Interview ID</th>
-                          <th className="py-3 px-4">Candidate</th>
-                          <th className="py-3 px-4">Position</th>
-                          <th className="py-3 px-4">Date</th>
-                          <th className="py-3 px-4">Time</th>
-                          <th className="py-3 px-4">Mode</th>
-                          <th className="py-3 px-4">Interviewer</th>
-                          <th className="py-3 px-4">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {interviewSchedules.map((interview) => (
-                          <tr key={interview.interview_id} className="border-b">
-                            <td className="py-3 px-4">{interview.interview_id}</td>
-                            <td className="py-3 px-4 font-medium">{interview.candidate_name}</td>
-                            <td className="py-3 px-4">{interview.job_title}</td>
-                            <td className="py-3 px-4">{interview.date}</td>
-                            <td className="py-3 px-4">{interview.time}</td>
-                            <td className="py-3 px-4">{interview.mode}</td>
-                            <td className="py-3 px-4">{interview.interviewer_name}</td>
-                            <td className="py-3 px-4">
-                              <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                                {interview.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -443,61 +553,85 @@ export default function CompanyDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="text-left text-sm text-gray-500 border-b">
-                      <th className="py-3 px-2">Hire ID</th>
-                      <th className="py-3 px-2">Position</th>
-                      <th className="py-3 px-2">Department</th>
-                      <th className="py-3 px-2">Candidate</th>
-                      <th className="py-3 px-2">Hire Date</th>
-                      <th className="py-3 px-2">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {hiringHistory.map((hire) => (
-                      <tr key={hire.id} className="border-b">
-                        <td className="py-3 px-2">{hire.id}</td>
-                        <td className="py-3 px-2 font-medium">{hire.position}</td>
-                        <td className="py-3 px-2">{hire.department}</td>
-                        <td className="py-3 px-2">{hire.candidate}</td>
-                        <td className="py-3 px-2">{hire.hireDate}</td>
-                        <td className="py-3 px-2">
-                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                            {hire.status}
-                          </span>
-                        </td>
+              {loading.history ? (
+                <LoadingSpinner />
+              ) : error.history ? (
+                <p className="text-red-500">Error: {error.history}</p>
+              ) : hiringHistory.length === 0 ? (
+                <EmptyState message="No hiring history found" />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="text-left text-sm text-gray-500 border-b">
+                        <th className="py-3 px-2">Hire ID</th>
+                        <th className="py-3 px-2">Position</th>
+                        <th className="py-3 px-2">Department</th>
+                        <th className="py-3 px-2">Candidate</th>
+                        <th className="py-3 px-2">Hire Date</th>
+                        <th className="py-3 px-2">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {hiringHistory.map((hire) => (
+                        <tr key={hire.id} className="border-b">
+                          <td className="py-3 px-2">{hire.id}</td>
+                          <td className="py-3 px-2 font-medium">{hire.position}</td>
+                          <td className="py-3 px-2">{hire.department}</td>
+                          <td className="py-3 px-2">{hire.candidate}</td>
+                          <td className="py-3 px-2">{hire.hireDate}</td>
+                          <td className="py-3 px-2">
+                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                              {hire.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
         {/* Edit Profile Modal */}
-        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Company Profile</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3">
-              {['name', 'email', 'phone', 'website', 'contactPerson'].map(field => (
-                <Input
-                  key={field}
-                  value={editProfile[field]}
-                  onChange={(e) => setEditProfile({ ...editProfile, [field]: e.target.value })}
-                  placeholder={field.replace(/([A-Z])/g, ' $1')}
-                />
-              ))}
-            </div>
-            <DialogFooter>
-              <Button onClick={handleProfileSave}>Save</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {companyProfile && (
+          <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Company Profile</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                {['name', 'email', 'phone', 'website', 'contactPerson', 'industryType', 'location'].map(field => (
+                  <div key={field}>
+                    <label className="text-sm font-medium block mb-1 capitalize">
+                      {field.replace(/([A-Z])/g, ' $1')}
+                    </label>
+                    <Input
+                      value={editProfile[field] || ''}
+                      onChange={(e) => setEditProfile({ ...editProfile, [field]: e.target.value })}
+                      placeholder={field.replace(/([A-Z])/g, ' $1')}
+                    />
+                  </div>
+                ))}
+              </div>
+              <DialogFooter>
+                <Button 
+                  onClick={handleProfileSave} 
+                  disabled={loading.profile}
+                >
+                  {loading.profile ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : 'Save'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
 
         {/* New Job Modal */}
         <Dialog open={showJobModal} onOpenChange={setShowJobModal}>
@@ -506,17 +640,43 @@ export default function CompanyDashboard() {
               <DialogTitle>Create New Job</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
-              {['title', 'location', 'type', 'salary', 'deadline'].map(field => (
-                <Input
-                  key={field}
-                  value={newJob[field]}
-                  onChange={(e) => setNewJob({ ...newJob, [field]: e.target.value })}
-                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                />
+              {[
+                { name: 'title', label: 'Job Title', type: 'text' },
+                { name: 'type', label: 'Employment Type', type: 'text' },
+                { name: 'location', label: 'Location', type: 'text' },
+                { name: 'department', label: 'Department', type: 'text' },
+                { name: 'vacancy', label: 'Number of Vacancies', type: 'number' },
+                { name: 'deadline', label: 'Application Deadline', type: 'date' },
+                { name: 'salary', label: 'Salary', type: 'text' },
+                { name: 'description', label: 'Job Description', type: 'text' },
+                { name: 'eligibility', label: 'Eligibility Requirements', type: 'text' }
+              ].map(field => (
+                <div key={field.name}>
+                  <label className="text-sm font-medium block mb-1">{field.label}</label>
+                  <Input
+                    type={field.type}
+                    value={newJob[field.name]}
+                    onChange={(e) => setNewJob({ 
+                      ...newJob, 
+                      [field.name]: field.type === 'number' ? Number(e.target.value) : e.target.value 
+                    })}
+                    placeholder={field.label}
+                  />
+                </div>
               ))}
             </div>
             <DialogFooter>
-              <Button onClick={handleJobCreate}>Post Job</Button>
+              <Button 
+                onClick={handleJobCreate}
+                disabled={loading.jobs}
+              >
+                {loading.jobs ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Posting...
+                  </>
+                ) : 'Post Job'}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -545,10 +705,9 @@ export default function CompanyDashboard() {
                 <div>
                   <label className="text-sm font-medium block mb-1">Time</label>
                   <Input
-                    type="text"
+                    type="time"
                     value={newInterview.time}
                     onChange={(e) => setNewInterview({ ...newInterview, time: e.target.value })}
-                    placeholder="e.g. 10:00 AM"
                   />
                 </div>
                 <div>
@@ -570,7 +729,17 @@ export default function CompanyDashboard() {
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleScheduleInterview}>Schedule</Button>
+              <Button 
+                onClick={handleScheduleInterview}
+                disabled={loading.interviews}
+              >
+                {loading.interviews ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Scheduling...
+                  </>
+                ) : 'Schedule'}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
