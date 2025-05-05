@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 import mysql.connector
 from db.connections import get_db
-from models.placement import PlacementReport, PlacementRecord, TopIndustry 
+from models.records import PlacementReport, PlacementRecord, TopIndustry 
 from typing import List, Dict, Any
 
 router = APIRouter()

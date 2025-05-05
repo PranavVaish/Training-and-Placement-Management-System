@@ -25,4 +25,10 @@ class CreateTrainingProgram(BaseModel):
     training_name: str = Field(..., alias="trainingName")
     training_description: str = Field(..., alias="trainingDescription")
     duration: int = Field(..., alias="duration")
-    trainer_name: str
+    trainer_name: str = Field(..., alias="trainerName")
+    start_date: date = Field(..., alias="startDate")
+    end_date: date = Field(..., alias="endDate")
+    mode: str = Field(..., alias="mode")
+    certification_provided: bool = Field(..., alias="certificationProvided")
+    cost: float = Field(..., alias="cost")
+    admin_id: int = Field(..., alias="adminId")

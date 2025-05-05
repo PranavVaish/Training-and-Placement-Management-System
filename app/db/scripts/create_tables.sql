@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS Feedback (
 
 -- TRAINING PROGRAM
 CREATE TABLE IF NOT EXISTS Training_Program (
-    Training_ID INT PRIMARY KEY,
+    Training_ID INT PRIMARY KEY AUTO_INCREMENT,
     Training_Name VARCHAR(100),
     Training_Description TEXT,
     Duration INT,  -- Duration in days/weeks/etc.

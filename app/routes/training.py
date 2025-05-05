@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Body, Depends, HTTPException
 import mysql.connector
 from db.connections import get_db
-from models.training import TrainerRegistration, TrainerProgram  # Assuming you have a TrainerRegistration model
+from models.training import TrainerRegistration, TrainerProgram, CreateTrainingProgram
 
 router = APIRouter()
 
@@ -73,13 +73,47 @@ async def get_trainers(
 
 @router.post("/create-program")
 async def create_training_program(
-    program_data: TrainerProgram = Body(...),
+    program_data: CreateTrainingProgram = Body(...),
     db: mysql.connector.MySQLConnection = Depends(get_db),
 ):
     """
     Create a new training program using a stored procedure.
+    Only allowed if the user is an admin.
     """
-    ...
+    cursor = db.cursor()
+    try:
+        admin_id = program_data.admin_id
+        cursor.execute("SELECT 1 FROM Admin WHERE Admin_ID = %s", (admin_id,))
+        result = cursor.fetchone()
+        if not result:
+            raise HTTPException(status_code=403, detail="User is not authorized to create a training program")
+
+        # Call the stored procedure
+        cursor.callproc("AddTrainingProgram", (
+            program_data.training_name,
+            program_data.training_description,
+            program_data.duration,
+            program_data.trainer_id,
+            program_data.start_date,
+            program_data.end_date,
+            program_data.mode,
+            program_data.certification_provided,
+            program_data.training_cost,
+        ))
+
+        # Commit the changes
+        db.commit()
+
+        return {"message": "Training program created successfully"}
+
+    except mysql.connector.Error as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create training program: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
 
 
 @router.get("/programs", response_model=list[TrainerProgram])
