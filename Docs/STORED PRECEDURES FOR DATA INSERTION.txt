@@ -38,30 +38,6 @@ DELIMITER ;
 
 --------------------------------------------------------------------------------
 
---Stored Procedure: EnrollStudentInTraining
-
-DELIMITER //
-
-CREATE PROCEDURE EnrollStudentInTraining(
-    IN p_EnrollmentID INT,
-    IN p_TrainingID INT,
-    IN p_StudentID INT,
-    IN p_PerformanceGrade VARCHAR(10),
-    IN p_CompletionStatus VARCHAR(20)
-)
-BEGIN
-    -- Insert into Training_Enrollment table
-    INSERT INTO Training_Enrollment (
-        Enrollment_ID, Training_ID, Student_ID,
-        Performance_Grade, Completion_Status
-    )
-    VALUES (
-        p_EnrollmentID, p_TrainingID, p_StudentID,
-        p_PerformanceGrade, p_CompletionStatus
-    );
-END //
-
-DELIMITER ;
 
 --------------------------------------------------------------------------------
 
@@ -69,33 +45,6 @@ DELIMITER ;
 
 --------------------------------------------------------------------------------------
 
---ADD APPLICATION
-
-DELIMITER //
-
-CREATE PROCEDURE AddApplication (
-    IN p_Application_ID INT,
-    IN p_Student_ID INT,
-    IN p_Job_ID INT,
-    IN p_Application_Date DATE,
-    IN p_Interview_Schedule INT,
-    IN p_Status VARCHAR(50)
-)
-BEGIN
-    -- Check if Student, Job, and Interview_Schedule records exist
-    IF EXISTS (SELECT 1 FROM Student WHERE Student_ID = p_Student_ID) AND
-       EXISTS (SELECT 1 FROM Job WHERE Job_ID = p_Job_ID) AND
-       EXISTS (SELECT 1 FROM Interview_Schedule WHERE Interview_ID = p_Interview_Schedule) THEN
-       
-        INSERT INTO Application (Application_ID, Student_ID, Job_ID, Application_Date, Interview_Schedule, Status)
-        VALUES (p_Application_ID, p_Student_ID, p_Job_ID, p_Application_Date, p_Interview_Schedule, p_Status);
-    ELSE
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Invalid Student_ID, Job_ID, or Interview_Schedule ID';
-    END IF;
-END //
-
-DELIMITER ;
 
 -------------------------------------------------------------------------------------
 

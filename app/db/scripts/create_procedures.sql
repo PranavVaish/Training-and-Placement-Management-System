@@ -617,3 +617,69 @@ BEGIN
     INSERT INTO Application (Student_ID, Job_ID, Application_Date, Status)
     VALUES (p_student_id, p_job_id, p_application_date, p_status);
 END;
+
+
+-- Stored Procedure: Retrieve Placement Records for listing
+DROP PROCEDURE IF EXISTS GetPlacementRecordsRowByRow;
+CREATE PROCEDURE IF NOT EXISTS GetPlacementRecordsRowByRow()
+BEGIN
+    -- Declare variables to hold each column value
+    DECLARE done INT DEFAULT 0;
+    DECLARE v_Placement_ID INT;
+    DECLARE v_Student_Name VARCHAR(100);
+    DECLARE v_Company_Name VARCHAR(100);
+    DECLARE v_Job_Title VARCHAR(100);
+    DECLARE v_Package DECIMAL(10,2);
+    DECLARE v_Placement_Date DATE;
+    Company_ID: int
+    DECLARE v_Placement_Location VARCHAR(100);
+    
+    -- Declare cursor for selecting the records
+    DECLARE placement_cursor CURSOR FOR
+        SELECT 
+            pr.Placement_ID,
+            s.Student_Name,
+            c.Company_Name,
+            j.Job_Title,
+            pr.Package,
+            pr.Placement_Date,
+            pr.Placement_Location
+        FROM 
+            Placement_Record pr
+        JOIN 
+            Student s ON pr.Student_ID = s.Student_ID
+        JOIN 
+            Company c ON pr.Company_ID = c.Company_ID
+        JOIN 
+            Job j ON pr.Job_ID = j.Job_ID;
+    
+    -- Handler for when no more rows
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    
+    -- Open the cursor
+    OPEN placement_cursor;
+    
+    read_loop: LOOP
+        -- Fetch data into variables
+        FETCH placement_cursor INTO v_Placement_ID, v_Student_Name, v_Company_Name, v_Job_Title, v_Package, v_Placement_Date, v_Placement_Location;
+        
+        -- Exit loop when done
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        -- You can process row here — for now, we’ll just SELECT it
+        SELECT 
+            v_Placement_ID AS Placement_ID,
+            v_Student_Name AS Student_Name,
+            v_Company_Name AS Company_Name,
+            v_Job_Title AS Job_Title,
+            v_Package AS Package,
+            v_Placement_Date AS Placement_Date,
+            v_Placement_Location AS Placement_Location;
+        
+    END LOOP;
+    
+    -- Close cursor
+    CLOSE placement_cursor;
+END;

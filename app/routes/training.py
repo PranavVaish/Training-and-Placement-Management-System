@@ -71,6 +71,17 @@ async def get_trainers(
             db.close()
 
 
+@router.post("/create-program")
+async def create_training_program(
+    program_data: TrainerProgram = Body(...),
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+):
+    """
+    Create a new training program using a stored procedure.
+    """
+    ...
+
+
 @router.get("/programs", response_model=list[TrainerProgram])
 async def get_training_programs(
     db: mysql.connector.MySQLConnection = Depends(get_db),
