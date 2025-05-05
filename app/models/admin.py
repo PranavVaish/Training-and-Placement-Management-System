@@ -18,19 +18,19 @@ class Admin_Phone(BaseModel):
 """
 
 class AdminLogin(BaseModel):
-    id: int = Field(..., max_length=100, alias="user_id")
+    id: int = Field(..., alias="user_id")
     password: str
 
 class AdminResponse(BaseModel):
     Admin_ID: int
     Name: str
     Role: str
-    Phone_Number: str = Field(..., max_length=15)
+    Phone_Number: str = Field(..., max_length=10)
 
 class AdminRegistration(BaseModel):
-    name: str = Field(..., max_length=100, alias="name")
-    role: str = Field(..., max_length=50, alias="role")
-    email: EmailStr = Field(..., max_length=100, alias="email")
-    phone_number: str = Field(..., alias="phone")
+    name: str = Field(..., alias="name")
+    role: str = Field(..., alias="role")
+    email: EmailStr = Field(..., alias="email")
+    phone_number: str = Field(..., max_length=10, alias="phone")
     id: int = Field(..., gt=0, alias="adminId")
-    password: str = Field(..., min_length=8, max_length=100, alias="password")
+    password: str = Field(..., alias="password")

@@ -3,7 +3,7 @@ import os
 
 dbconfig = {
     "user": os.environ.get("DATABASE_USER", "root"),
-    "password": os.environ.get("DATABASE_PASSWORD", "password"),
+    "password": os.environ.get("DATABASE_PASSWORD", "root"),
     "host": os.environ.get("DATABASE_HOST", "localhost"),
     "port": os.environ.get("DATABASE_PORT", 3306),
     "database": os.environ.get("DATABASE_NAME", "mydb"),

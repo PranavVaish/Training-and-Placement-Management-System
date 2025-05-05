@@ -12,7 +12,7 @@ from utils import create_access_token
 router = APIRouter()
 
 @router.get("/", response_model=List[AdminResponse])
-async def get_admin(db: MySQLConnection = Depends(get_db)):
+async def get_admin(db: mysql.connector.MySQLConnection = Depends(get_db)):
     """
     Retrieve admin data using the GetAdminData stored procedure.
     """
@@ -58,21 +58,20 @@ async def get_admin_dashboard(db: MySQLConnection = Depends(get_db)):
     """
     Retrieve admin dashboard data using the GetAdminDashboard stored procedure.
     """
-    ...
+    
 
 @router.post("/register")
 async def register_admin(
     admin_data: AdminRegistration = Body(...),
-    db: MySQLConnection = Depends(get_db)
+    db: mysql.connector.MySQLConnection = Depends(get_db)
 ):
     """
     Register a new admin using the AddAdminWithContact stored procedure.
     """
     # Hash the password
     hashed_password = bcrypt.hashpw(admin_data.password.encode('utf-8'), bcrypt.gensalt())
-
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         # Call the AddAdminWithContact stored procedure
         cursor.callproc("AddAdminWithContact", [
             admin_data.id,
