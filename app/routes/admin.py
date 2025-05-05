@@ -4,7 +4,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 import mysql.connector
 from db.connections import get_db
 from mysql.connector import MySQLConnection
-from models.admin import AdminLogin, AdminResponse
+from models.admin import AdminLogin, AdminResponse, AdminRegistration
 from typing import List
 
 router = APIRouter()
@@ -52,6 +52,41 @@ async def get_admin(db: MySQLConnection = Depends(get_db)):
             db.close()
 
 
+@router.post("/register")
+async def register_admin(
+    admin_data: AdminRegistration = Body(...),
+    db: MySQLConnection = Depends(get_db)
+):
+    """
+    Register a new admin using the AddAdminWithContact stored procedure.
+    """
+    # Hash the password
+    hashed_password = bcrypt.hashpw(admin_data.password.encode('utf-8'), bcrypt.gensalt())
+
+    try:
+        cursor = db.cursor()
+        # Call the AddAdminWithContact stored procedure
+        cursor.callproc("AddAdminWithContact", [
+            admin_data.id,
+            admin_data.name,
+            admin_data.role,
+            hashed_password.decode('utf-8'),
+            admin_data.email,
+            admin_data.phone_number
+        ])
+
+        db.commit()
+
+        return {"message": "Admin registered successfully"}
+
+    except mysql.connector.Error as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
 
 async def login_admin(
     admin_data: AdminLogin = Body(...),  # Use AdminLogin model

@@ -55,7 +55,7 @@ def read_root():
 
 class GenericLogin(BaseModel):
     role: str = Field(..., description="Role of the user (e.g., 'student', 'company', 'admin')")
-    email: EmailStr = Field(..., max_length=100)
+    id: int = Field(..., gt=0, alias="user_id")
     password: str
 
 @app.post("/login")
@@ -66,14 +66,14 @@ async def login_user(user_data: GenericLogin, db: mysql.connector.MySQLConnectio
     role = user_data.role.lower()
     if role == "student":
         # Call the student login function
-        student_login_data = StudentLogin(email=user_data.email, password=user_data.password)
+        student_login_data = StudentLogin(user_id=user_data.id, password=user_data.password)
         return await login_student(student_login_data, db)
     elif role == "company":
         # Call the company login function
-        return await login_company(user_data.email, user_data.password, db)
+        return await login_company(user_data.id, user_data.password, db)
     elif role == "admin":
         # Call the admin login function
-        return await login_admin(user_data.email, user_data.password, db)
+        return await login_admin(user_data.id, user_data.password, db)
     else:
         raise HTTPException(
             status_code=400,

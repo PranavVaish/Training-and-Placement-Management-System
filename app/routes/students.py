@@ -156,16 +156,14 @@ async def login_student(
     """
     # Construct the raw SQL query to fetch student credentials
     query = """
-        SELECT sc.Student_ID, sc.Password_Hash
-        FROM Student_Credentials sc
-        JOIN Student s ON s.Student_ID = sc.Student_ID
-        JOIN Student_Email se ON s.Student_ID = se.Student_ID
-        WHERE se.Email_ID = %s
+        SELECT sc.Student_ID, sc.Password
+        FROM Student sc
+        WHERE sc.Student_ID = %s
     """
 
     try:
         cursor = db.cursor()
-        cursor.execute(query, (student_data.email,))
+        cursor.execute(query, (student_data.id,))
         student_credentials = cursor.fetchone()
 
         if not student_credentials:
@@ -174,7 +172,7 @@ async def login_student(
         student_id, password_hash = student_credentials
 
         # Verify the password
-        if not bcrypt.checkpw(student_data.password.encode('utf-8'), password_hash.encode('utf-8')):
+        if not bcrypt.checkpw(student_data.password.encode('utf-8'), password_hash):
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
         # Generate JWT token

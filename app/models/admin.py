@@ -25,4 +25,12 @@ class AdminResponse(BaseModel):
     Admin_ID: int
     Name: str
     Role: str
-    Phone_Number: str = Field(..., max_length=15)  # Phone number can be None
+    Phone_Number: str = Field(..., max_length=15)
+
+class AdminRegistration(BaseModel):
+    name: str = Field(..., max_length=100)
+    role: str = Field(..., max_length=50)
+    email: EmailStr = Field(..., max_length=100)
+    phone_number: str = Field(..., max_length=15)
+    id: int = Field(..., gt=0)
+    password: str = Field(..., min_length=8, max_length=100)

@@ -13,7 +13,7 @@ class StudentRegistration(BaseModel):
     password: str = Field(...)
 
 class StudentLogin(BaseModel):
-    email: EmailStr = Field(..., max_length=100)
+    id: int = Field(..., gt=0, alias="user_id")
     password: str  # Hashed password
 
 class StudentResponse(BaseModel):
