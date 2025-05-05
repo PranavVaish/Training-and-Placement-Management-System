@@ -3,14 +3,14 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 
 class StudentRegistration(BaseModel):
-    student_id: int = Field(..., alias="Student_ID")
-    name: str = Field(..., max_length=100, alias="Name")
-    cgpa: float = Field(..., alias="CGPA")
-    graduation_year: int = Field(..., alias="Graduation_Year")
-    department: str = Field(..., max_length=100, alias="Department")
-    email: EmailStr = Field(..., max_length=100, alias="Email_ID")
-    phone_number: str = Field(..., max_length=15, alias="Phone_Number")
-    password: str = Field(..., alias="Password")
+    student_id: int = Field(..., alias="studentId")
+    name: str = Field(..., max_length=100)
+    cgpa: float = Field(...)
+    graduation_year: int = Field(..., alias="graduationYear")
+    department: str = Field(..., max_length=100)
+    email: EmailStr = Field(..., max_length=100)
+    phone_number: str = Field(..., max_length=15, alias="phone")
+    password: str = Field(...)
 
 class StudentLogin(BaseModel):
     email: EmailStr = Field(..., max_length=100)

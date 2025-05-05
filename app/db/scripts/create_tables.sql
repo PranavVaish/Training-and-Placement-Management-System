@@ -165,7 +165,7 @@ CREATE TABLE IF NOT EXISTS Feedback (
 
 
 -- TRAINING PROGRAM
-CREATE TABLE Training_Program (
+CREATE TABLE IF NOT EXISTS Training_Program (
     Training_ID INT PRIMARY KEY,
     Training_Name VARCHAR(100),
     Training_Description TEXT,
@@ -180,7 +180,7 @@ CREATE TABLE Training_Program (
 );
 
 -- TRAINING ENROLLMENT
-CREATE TABLE Training_Enrollment (
+CREATE TABLE IF NOT EXISTS Training_Enrollment (
     Enrollment_ID INT PRIMARY KEY AUTO_INCREMENT,
     Training_ID INT,
     Student_ID INT,
@@ -200,11 +200,11 @@ CREATE TABLE IF NOT EXISTS Application (
     Application_Date DATE,
     Status VARCHAR(50),
     FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
-    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID),
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID)
 );
 
 -- Interview Schedule Set (Weak Entity)
-CREATE TABLE Interview_Schedule (
+CREATE TABLE IF NOT EXISTS Interview_Schedule (
     Interview_ID INT PRIMARY KEY AUTO_INCREMENT,
     Application_ID INT,
     Date DATE,

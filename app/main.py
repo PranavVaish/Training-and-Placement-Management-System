@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr, Field
 import mysql.connector
 import datetime
 from utils import create_access_token, generate_refresh_token
+from fastapi.middleware.cors import CORSMiddleware
 
 from db.connections import get_db
 from models.student import StudentLogin
@@ -15,26 +16,29 @@ from routes.training import router as training_router
 from routes.feedback import router as feedback_router
 
 from contextlib import asynccontextmanager
-from db.setup import setup_database  # Import the setup_database function
+from db.setup import setup_database  
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: setup the database
     try:
         setup_database()
     except Exception as e:
-        # Log the error but don't prevent application startup
-        print(f"Warning: Database setup failed: {e}")
-        # Optionally, if you want to fail the startup:
-        # raise e
-    
-    yield  # This is where FastAPI serves requests
-    
-    # Shutdown: perform cleanup if needed
+        print(f"Warning: Database setup failed: {e}")    
+    yield
     pass
 
 app = FastAPI(lifespan=lifespan)
+
+
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],  # Allow requests from your React app
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods (POST, GET, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allow all headers (Content-Type, etc.)
+)
 
 
 app.include_router(students_router, prefix="/students")

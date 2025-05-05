@@ -98,7 +98,7 @@ async def get_student(student_id: int, db: mysql.connector.MySQLConnection = Dep
 
 @router.post("/register")
 async def register_student(
-    student_data: StudentRegistration = Body(...),  # Use StudentRegistration model
+    student_data: StudentRegistration = Body(...),
     db: mysql.connector.MySQLConnection = Depends(get_db),
 ):
     """

@@ -1,7 +1,7 @@
 -- Registration Procedures
 -- Stored Procedure: Register Admin
 DROP PROCEDURE IF EXISTS AddAdminWithContact;
-CREATE PROCEDURE IF NOT EXISTS AddAdminWithContact(
+CREATE PROCEDURE AddAdminWithContact(
     IN p_AdminID INT,
     IN p_Name VARCHAR(100),
     IN p_Role VARCHAR(50),
@@ -25,7 +25,7 @@ END;
 
 -- Stored Procedure: Retrieve Admin Data
 DROP PROCEDURE IF EXISTS GetAdminData;
-CREATE PROCEDURE IF NOT EXISTS GetAdminData()
+CREATE PROCEDURE GetAdminData()
 BEGIN
     SELECT 
         a.Admin_ID,
@@ -45,7 +45,7 @@ END;
 
 -- Stored Procedure: Register Student
 DROP PROCEDURE IF EXISTS AddStudentWithContact;
-CREATE PROCEDURE IF NOT EXISTS AddStudentWithContact(
+CREATE PROCEDURE AddStudentWithContact(
     IN p_StudentID INT,
     IN p_Name VARCHAR(100),
     IN p_CGPA DECIMAL(3,2),
@@ -71,28 +71,29 @@ END;
 
 -- ADD FEEDBACK
 DROP PROCEDURE IF EXISTS AddFeedback;
-CREATE PROCEDURE IF NOT EXISTS AddFeedback (
+CREATE PROCEDURE AddFeedback (
     IN p_Student_ID INT,
     IN p_Rating INT,
     IN p_Comments TEXT,
     IN p_Trainer_ID INT
 )
-IS 
-    v_Feedback_ID INT;
-    id_exists INT DEFAULT 1;
-    WHILE id_exists = 1 DO
+BEGIN
+    DECLARE v_Feedback_ID INT;
+    DECLARE id_exists INT DEFAULT 1;
+
+    generate_id: REPEAT
         SET v_Feedback_ID = FLOOR(100000 + (RAND() * 900000)); -- 6-digit random ID
         SELECT COUNT(*) INTO id_exists
         FROM Feedback
-        WHERE Feedback_ID = v_Feedback_ID
-    END WHILE;
-BEGIN
+        WHERE Feedback_ID = v_Feedback_ID;
+    UNTIL id_exists = 0 END REPEAT;
+
     -- Check if Student exists
     IF EXISTS (SELECT 1 FROM Student WHERE Student_ID = p_Student_ID) AND
        EXISTS (SELECT 1 FROM Trainer WHERE Trainer_ID = p_Trainer_ID) THEN
 
         INSERT INTO Feedback (Feedback_ID, Student_ID, Rating, Comments, Trainer_ID)
-        VALUES (p_Feedback_ID, p_Student_ID, p_Rating, p_Comments, p_Trainer_ID);
+        VALUES (v_Feedback_ID, p_Student_ID, p_Rating, p_Comments, p_Trainer_ID);
     ELSE
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Invalid Student_ID, or Trainer_ID';
@@ -101,7 +102,7 @@ END;
 
 -- Stored Procedure: Register Company
 DROP PROCEDURE IF EXISTS AddCompanyWithDetails;
-CREATE PROCEDURE IF NOT EXISTS AddCompanyWithDetails(
+CREATE PROCEDURE AddCompanyWithDetails(
     IN p_CompanyID INT,
     IN p_Name VARCHAR(100),
     IN p_IndustryType VARCHAR(100),
@@ -132,7 +133,7 @@ END;
 
 -- Stored Procedure: Register Trainer
 DROP PROCEDURE IF EXISTS AddTrainerWithDetails;
-CREATE PROCEDURE IF NOT EXISTS AddTrainerWithDetails(
+CREATE PROCEDURE AddTrainerWithDetails(
     IN p_TrainerID INT,
     IN p_Expertise VARCHAR(100),
     IN p_Name VARCHAR(100),
@@ -158,7 +159,7 @@ END;
 -- Job Listing Procedures
 -- Stored Procedure: Get All Active Jobs with Company Name
 DROP PROCEDURE IF EXISTS GetNotExpiredJobListingsWithCompanyName;
-CREATE PROCEDURE IF NOT EXISTS GetNotExpiredJobListingsWithCompanyName()
+CREATE PROCEDURE GetNotExpiredJobListingsWithCompanyName()
 BEGIN
     DECLARE done INT DEFAULT FALSE;
 
@@ -207,7 +208,7 @@ END;
 
 -- Stored Procedure: Get All Expired Jobs of a Company
 DROP PROCEDURE IF EXISTS GetExpiredJobListingsByCompany;
-CREATE PROCEDURE IF NOT EXISTS GetExpiredJobListingsByCompany(
+CREATE PROCEDURE GetExpiredJobListingsByCompany(
     IN p_CompanyID INT
 )
 BEGIN
@@ -259,7 +260,7 @@ END;
 
 -- Stored Procedure: Get All Active Jobs of a Company
 DROP PROCEDURE IF EXISTS GetActiveJobListingsByCompany;
-CREATE PROCEDURE IF NOT EXISTS GetActiveJobListingsByCompany(
+CREATE PROCEDURE GetActiveJobListingsByCompany(
     IN p_CompanyID INT
 )
 BEGIN
@@ -318,7 +319,7 @@ END;
 
 -- Stored Procedure: Add Job with Multiple Details
 DROP PROCEDURE IF EXISTS AddJobWithMultipleDetails;
-CREATE PROCEDURE IF NOT EXISTS AddJobWithMultipleDetails(
+CREATE PROCEDURE AddJobWithMultipleDetails(
     IN p_JobID INT,
     IN p_JobTitle VARCHAR(100),
     IN p_JobDescription TEXT,
@@ -368,7 +369,7 @@ END;
 -- Trainer Procedures
 -- Stored Procedure: GetAllTrainersRowByRow
 DROP PROCEDURE IF EXISTS GetAllTrainersRowByRow;
-CREATE PROCEDURE IF NOT EXISTS GetAllTrainersRowByRow()
+CREATE PROCEDURE GetAllTrainersRowByRow()
 BEGIN
     DECLARE done INT DEFAULT FALSE;
     DECLARE v_TrainerID INT;
@@ -412,8 +413,6 @@ BEGIN
             v_Email AS Email,
             v_PhoneNo AS Phone_No;
 
-        -- You can also perform other processing here if needed
-
     END LOOP;
 
     -- Close the cursor
@@ -422,7 +421,7 @@ END;
 
 -- Stored Procedure: GetTrainingProgramsRowByRow
 DROP PROCEDURE IF EXISTS GetTrainingProgramsRowByRow;
-CREATE PROCEDURE IF NOT EXISTS GetTrainingProgramsRowByRow()
+CREATE PROCEDURE GetTrainingProgramsRowByRow()
 BEGIN
     DECLARE done INT DEFAULT FALSE;
     DECLARE v_TrainingID INT;
@@ -496,7 +495,7 @@ END;
 
 -- Stored Procedure: Retrieve Hiring History, Department, Candidate, Job Role, and Hiring Period
 DROP PROCEDURE IF EXISTS GetHiringHistoryDetails;
-CREATE PROCEDURE IF NOT EXISTS GetHiringHistoryDetails(
+CREATE PROCEDURE GetHiringHistoryDetails(
     IN p_CompanyID INT
 )
 BEGIN
@@ -522,7 +521,7 @@ END;
 
 -- Stored Procedure: GetTrainingEnrollmentsByStudent
 DROP PROCEDURE IF EXISTS GetTrainingEnrollmentsByStudent;
-CREATE PROCEDURE IF NOT EXISTS GetTrainingEnrollmentsByStudent(
+CREATE PROCEDURE GetTrainingEnrollmentsByStudent(
     IN p_StudentID INT
 )
 BEGIN
@@ -574,11 +573,11 @@ BEGIN
     END LOOP;
 
     CLOSE enroll_cursor;
-END ;
+END;
 
 -- Stored Procedure: Enroll Student in Training
 DROP PROCEDURE IF EXISTS EnrollStudentInTraining;
-CREATE PROCEDURE IF NOT EXISTS EnrollStudentInTraining(
+CREATE PROCEDURE EnrollStudentInTraining(
     IN p_training_id INT,
     IN p_student_id INT
 )
@@ -598,10 +597,9 @@ BEGIN
     VALUES (p_training_id, p_student_id, NULL, 'Enrolled');
 END;
 
-
 -- Stored Procedure: Apply to Job
 DROP PROCEDURE IF EXISTS ApplyToJob;
-CREATE PROCEDURE IF NOT EXISTS ApplyToJob(
+CREATE PROCEDURE ApplyToJob(
     IN p_student_id INT,
     IN p_job_id INT,
     IN p_application_date DATE,
@@ -618,10 +616,9 @@ BEGIN
     VALUES (p_student_id, p_job_id, p_application_date, p_status);
 END;
 
-
 -- Stored Procedure: Retrieve Placement Records for listing
 DROP PROCEDURE IF EXISTS GetPlacementRecordsRowByRow;
-CREATE PROCEDURE IF NOT EXISTS GetPlacementRecordsRowByRow()
+CREATE PROCEDURE GetPlacementRecordsRowByRow()
 BEGIN
     -- Declare variables to hold each column value
     DECLARE done INT DEFAULT 0;
@@ -631,15 +628,15 @@ BEGIN
     DECLARE v_Job_Title VARCHAR(100);
     DECLARE v_Package DECIMAL(10,2);
     DECLARE v_Placement_Date DATE;
-    Company_ID: int
+    DECLARE v_Company_ID INT;
     DECLARE v_Placement_Location VARCHAR(100);
     
     -- Declare cursor for selecting the records
     DECLARE placement_cursor CURSOR FOR
         SELECT 
             pr.Placement_ID,
-            s.Student_Name,
-            c.Company_Name,
+            s.Name AS Student_Name,
+            c.Name AS Company_Name,
             j.Job_Title,
             pr.Package,
             pr.Placement_Date,
@@ -668,7 +665,7 @@ BEGIN
             LEAVE read_loop;
         END IF;
         
-        -- You can process row here — for now, we’ll just SELECT it
+        -- You can process row here — for now, we'll just SELECT it
         SELECT 
             v_Placement_ID AS Placement_ID,
             v_Student_Name AS Student_Name,
@@ -686,7 +683,7 @@ END;
 
 -- Stored Procedure: Get Top 5 Industries by Placement Count
 DROP PROCEDURE IF EXISTS GetTop5IndustriesByPlacement;
-CREATE PROCEDURE IF NOT EXISTS GetTop5IndustriesByPlacement()
+CREATE PROCEDURE GetTop5IndustriesByPlacement()
 BEGIN
     SELECT 
         c.Industry_Type,
@@ -704,11 +701,11 @@ END;
 
 -- Stored Procedure: Get Placement Report
 DROP PROCEDURE IF EXISTS GetPlacementReport;
-CREATE PROCEDURE IF NOT EXISTS GetPlacementReport()
+CREATE PROCEDURE GetPlacementReport()
 BEGIN
     -- Declare variables
     DECLARE current_year INT DEFAULT YEAR(CURDATE());
-    DECLARE current_date DATE DEFAULT CURDATE();
+    DECLARE current_dt DATE DEFAULT CURDATE();
     DECLARE prev_year INT DEFAULT YEAR(CURDATE()) - 1;
     DECLARE same_date_prev_year DATE DEFAULT DATE_SUB(CURDATE(), INTERVAL 1 YEAR);
     
@@ -733,7 +730,7 @@ BEGIN
     -- Get total placements for current year till today
     SELECT COUNT(*) INTO total_current
     FROM Placement_Record
-    WHERE YEAR(Placement_Date) = current_year AND Placement_Date <= current_date;
+    WHERE YEAR(Placement_Date) = current_year AND Placement_Date <= current_dt;
     
     -- Get total placements for previous year till same date
     SELECT COUNT(*) INTO total_prev
@@ -750,7 +747,7 @@ BEGIN
     -- Get average package for current year
     SELECT IFNULL(AVG(Package), 0) INTO avg_package_current
     FROM Placement_Record
-    WHERE YEAR(Placement_Date) = current_year AND Placement_Date <= current_date;
+    WHERE YEAR(Placement_Date) = current_year AND Placement_Date <= current_dt;
     
     -- Get average package for previous year
     SELECT IFNULL(AVG(Package), 0) INTO avg_package_prev
@@ -770,7 +767,7 @@ BEGIN
     -- Get placed students current year till today
     SELECT COUNT(DISTINCT Student_ID) INTO placed_students_current
     FROM Placement_Record
-    WHERE YEAR(Placement_Date) = current_year AND Placement_Date <= current_date;
+    WHERE YEAR(Placement_Date) = current_year AND Placement_Date <= current_dt;
     
     -- Get placed students previous year till same date
     SELECT COUNT(DISTINCT Student_ID) INTO placed_students_prev
@@ -806,5 +803,4 @@ BEGIN
         percent_change_package AS Percentage_Change_in_Package,
         placement_rate_current AS Placement_Rate_Current_Year,
         percent_change_rate AS Percentage_Change_in_Placement_Rate;
-    
 END;

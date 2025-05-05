@@ -51,6 +51,8 @@ async def get_admin(db: MySQLConnection = Depends(get_db)):
         if db:
             db.close()
 
+
+
 async def login_admin(
     admin_data: AdminLogin = Body(...),  # Use AdminLogin model
     db: MySQLConnection = Depends(get_db),
