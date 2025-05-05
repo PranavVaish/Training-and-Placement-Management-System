@@ -53,6 +53,12 @@ async def get_admin(db: MySQLConnection = Depends(get_db)):
         if db:
             db.close()
 
+@router.get("/dashboard")
+async def get_admin_dashboard(db: MySQLConnection = Depends(get_db)):
+    """
+    Retrieve admin dashboard data using the GetAdminDashboard stored procedure.
+    """
+    ...
 
 @router.post("/register")
 async def register_admin(

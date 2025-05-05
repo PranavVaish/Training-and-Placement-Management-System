@@ -31,6 +31,6 @@ class AdminRegistration(BaseModel):
     name: str = Field(..., max_length=100)
     role: str = Field(..., max_length=50)
     email: EmailStr = Field(..., max_length=100)
-    phone_number: str = Field(..., max_length=15)
-    id: int = Field(..., gt=0)
+    phone_number: str = Field(..., max_length=15, alias="phone")
+    id: int = Field(..., gt=0, alias="adminId")
     password: str = Field(..., min_length=8, max_length=100)

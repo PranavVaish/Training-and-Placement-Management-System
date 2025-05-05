@@ -46,12 +46,12 @@ class CompanyResponse(BaseModel):
     Email_ID: EmailStr
 
 class CompanyRegistration(BaseModel):
-    company_id: int
+    company_id: int = Field(..., alias="companyId")
     name: str = Field(..., max_length=100)
-    industry_type: str = Field(..., max_length=100)
-    contact_person: str = Field(..., max_length=100)
+    industry_type: str = Field(..., max_length=100, alias="industryType")
+    contact_person: str = Field(..., max_length=100, alias="contactPerson")
     website: str = Field(..., max_length=100)
     email: EmailStr
-    phone_no: str = Field(..., max_length=15)
+    phone_no: str = Field(..., max_length=15, alias="phone")
     location: str = Field(..., max_length=100)
     password: str
