@@ -14,15 +14,9 @@ async def get_all_jobs(db: mysql.connector.MySQLConnection = Depends(get_db)):
     try:
         cursor.callproc("GetNotExpiredJobListingsWithCompanyName")
 
-        results = []
+        all_jobs = []
         for result in cursor.stored_results():
             jobs = result.fetchall()
-
-            if not jobs:
-                raise HTTPException(status_code=404, detail="Jobs not found")
-
-            # Convert the tuple to a dictionary or a Job object
-            job_list = []
             for job in jobs:
                 job_data = {
                     "Job_ID": job[0],
@@ -36,11 +30,10 @@ async def get_all_jobs(db: mysql.connector.MySQLConnection = Depends(get_db)):
                     "Location_List": job[8].split(",") if job[8] else [],
                     "Eligibility_Criteria_List": job[9].split(",") if job[9] else [],
                 }
-                job_list.append(JobResponse(**job_data))
-            results.append(job_list)
+                all_jobs.append(JobResponse(**job_data))
 
-        if results:
-            return JobListResponse(jobs=results[0])
+        if all_jobs:
+            return JobListResponse(jobs=all_jobs)
         else:
             raise HTTPException(status_code=404, detail="Jobs not found")
 
