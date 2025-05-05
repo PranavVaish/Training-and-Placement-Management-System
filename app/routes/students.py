@@ -196,8 +196,7 @@ async def login_student(
 @router.post("/apply")
 async def apply_to_job(
     application_data: JobApplication = Body(...),
-    db: mysql.connector.MySQLConnection = Depends(get_db),
-    current_user: dict = Depends(create_access_token),
+    db: mysql.connector.MySQLConnection = Depends(get_db)
 ):
     """
     Apply to a job using the Application table.
@@ -206,18 +205,20 @@ async def apply_to_job(
     try:
 
         # Extract student_id from the access token
-        student_id = current_user.get("sub")
-        if not student_id:
-            raise HTTPException(status_code=401, detail="Invalid access token")
+        student_id = application_data.student_id
+        query = "SELECT 1 FROM Student WHERE Student_ID = %s"
+        cursor.execute(query, (student_id,))
+        student_exists = cursor.fetchone()
+        if not student_exists:
+            raise HTTPException(status_code=403, detail="Only Students can apply for jobs")
 
         # Call the stored procedure
         application_date = datetime.date.today()
         status = "Pending"
-        cursor.callproc("ApplyToJob", (student_id, application_data.job_id, application_date, status))
+        cursor.callproc("ApplyToJob", (student_id, application_data.job_id, application_data.resume, application_date, status))
 
         # Commit the changes
         db.commit()
-
         return {"message": "Application submitted successfully"}
 
     except mysql.connector.Error as e:
