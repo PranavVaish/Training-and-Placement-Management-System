@@ -63,17 +63,6 @@ async def create_job(
     """
     cursor = db.cursor()
     try:
-        # if not authorization:
-        #     raise HTTPException(status_code=401, detail="Authorization header is missing")
-
-        # try:
-        #     token_prefix, token = authorization.split(" ")
-        #     if token_prefix.lower() != "bearer":
-        #         raise HTTPException(status_code=401, detail="Invalid authorization scheme")
-        # except ValueError:
-        #     raise HTTPException(status_code=401, detail="Invalid authorization header format")
-
-        # Verify the token and extract the company ID
         company_id = job_data.Company_ID
 
         # Check if the user is a company
@@ -120,7 +109,6 @@ async def create_job(
 
 
 @router.get("/active/{company_id}", response_model=JobByCompanyListResponse)
-@router.get("/active/{company_id}", response_model=JobByCompanyListResponse)
 async def get_active_jobs_by_company(company_id: int, db: mysql.connector.MySQLConnection = Depends(get_db)):
     """
     Retrieve all active jobs for a specific company from the database using a stored procedure.
@@ -129,32 +117,22 @@ async def get_active_jobs_by_company(company_id: int, db: mysql.connector.MySQLC
     try:
         cursor.callproc("GetActiveJobListingsByCompany", (company_id,))
 
-        results = []
+        job_list = []
         for result in cursor.stored_results():
             jobs = result.fetchall()
-
-            if not jobs:
-                raise HTTPException(status_code=404, detail="Jobs not found")
-
-            # Convert the tuple to a dictionary or a Job object
-            job_list = []
             for job in jobs:
                 job_data = {
                     "Job_ID": job[0],
-                    "Job_ID": job[0],
                     "Title": job[1],
                     "Salary": job[2],
-                    "Company_Name": job[3],
                     "Company_Name": job[3],
                     "Job_Type": job[4],
                     "Application_Deadline": job[5],
                 }
                 job_list.append(JobByCompanyResponse(**job_data))
-                job_list.append(JobByCompanyResponse(**job_data))
-            results.append(job_list)
 
-        if results:
-            return JobByCompanyListResponse(jobs=results[0])
+        if job_list:
+            return JobByCompanyListResponse(jobs=job_list)
         else:
             raise HTTPException(status_code=404, detail="Jobs not found")
 
@@ -188,7 +166,7 @@ async def get_expired_jobs_by_company(company_id: int, db: mysql.connector.MySQL
             for job in jobs:
                 job_data = {
                     "Job_ID": job[0],
-                    "Company_Name": job[3],  # Assuming company name is the 4th column
+                    "Company_Name": job[3],
                     "Title": job[1],
                     "Salary": job[2],
                     "Job_Type": job[4],
