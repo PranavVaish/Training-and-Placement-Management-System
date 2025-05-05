@@ -32,5 +32,15 @@ class JobApplication(BaseModel):
     job_id: int = Field(..., alias="jobId")
     student_id: int = Field(..., alias="universalId")
 
+class StudentApplicationResponse(BaseModel):
+    application_id: int = Field(..., alias="applicationId")
+    job_id: int = Field(..., alias="jobId")
+    job_title: str = Field(..., alias="jobTitle")
+    student_id: int = Field(..., alias="universalId")
+    status: str
+
+class StudentApplicationListResponse(BaseModel):
+    applications: list[StudentApplicationResponse]
+
 class EnrollStudent(BaseModel):
     training_id: int

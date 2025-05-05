@@ -878,3 +878,25 @@ BEGIN
         p_Mode, p_CertificationProvided, p_TrainingCost
     );
 END;
+
+-- Stored Procedure: Get Job Applications by Student
+DROP PROCEDURE IF EXISTS GetJobApplicationsByStudent;
+CREATE PROCEDURE GetJobApplicationsByStudent(
+    IN p_StudentID INT
+)
+BEGIN
+    SELECT 
+        a.Application_ID,
+        a.Job_ID,
+        j.Job_Title,
+        a.Application_Date,
+        a.Status
+    FROM 
+        Application a
+    JOIN 
+        Job j ON a.Job_ID = j.Job_ID
+    WHERE 
+        a.Student_ID = p_StudentID
+    ORDER BY 
+        a.Application_Date DESC;
+END;

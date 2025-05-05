@@ -1,10 +1,19 @@
 # Routes for Students
-import bcrypt
-from fastapi import APIRouter, Body, Depends, HTTPException
-import mysql.connector
-from db.connections import get_db
-from models.student import StudentListResponse, StudentLogin, StudentRegistration, StudentResponse, EnrollStudent, JobApplication
 import datetime
+import bcrypt
+import mysql.connector
+from fastapi import APIRouter, Body, Depends, HTTPException
+from db.connections import get_db
+from models.student import (
+    StudentListResponse,
+    StudentLogin,
+    StudentRegistration,
+    StudentResponse,
+    EnrollStudent,
+    JobApplication,
+    StudentApplicationResponse,
+    StudentApplicationListResponse,
+)
 from main import create_access_token
 
 router = APIRouter()
@@ -233,6 +242,54 @@ async def apply_to_job(
         if db:
             db.close()
 
+@router.get("/applications/{student_id}", response_model=StudentApplicationListResponse)
+async def get_applications(
+    student_id: int,
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+):
+    """
+    Retrieve all job applications for a student using the stored procedure.
+    """
+    cursor = db.cursor()
+    try:
+
+        # Check if the student exists
+        query_check = "SELECT 1 FROM Student WHERE Student_ID = %s"
+        cursor.execute(query_check, (student_id,))
+        student_exists = cursor.fetchone()
+        if not student_exists:
+            raise HTTPException(status_code=403, detail="Only Students can view applications")
+
+        # Call the stored procedure
+        cursor.callproc("GetJobApplicationsByStudent", (student_id,))
+
+        # Fetch results from the procedure
+        for result in cursor.stored_results():
+            applications = result.fetchall()
+
+        if not applications:
+            raise HTTPException(status_code=404, detail="No job applications found for this student")
+
+        # Convert the tuple to a StudentApplicationResponse object
+        application_list = []
+        for application in applications:
+            application_data = {
+                "applicationId": application[0],
+                "jobId": application[1],
+                "jobTitle": application[2],
+                "universalId": student_id,
+                "status": application[4]
+            }
+            application_list.append(StudentApplicationResponse(**application_data))
+        return StudentApplicationListResponse(applications=application_list)
+
+    except mysql.connector.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
 
 @router.get("/enrolled_courses/{student_id}")
 async def get_enrolled_courses(
