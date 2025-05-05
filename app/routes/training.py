@@ -14,8 +14,8 @@ async def register_trainer(
     """
     Register a new trainer using a stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
 
         # Call the stored procedure
         cursor.callproc("AddTrainerWithDetails", (
@@ -49,8 +49,8 @@ async def get_trainers(
     """
     Get all trainers.
     """
+    cursor = db.cursor(dictionary=True)
     try:
-        cursor = db.cursor(dictionary=True)
 
         # Call the stored procedure
         cursor.callproc("GetAllTrainersRowByRow")
@@ -89,8 +89,8 @@ async def get_training_programs(
     """
     Get all training programs.
     """
+    cursor = db.cursor(dictionary=True)
     try:
-        cursor = db.cursor(dictionary=True)
 
         # Call the stored procedure
         cursor.callproc("GetAllTrainingProgramsRowByRow")
