@@ -175,9 +175,13 @@ BEGIN
     DECLARE job_cursor CURSOR FOR
         SELECT 
             j.Job_ID, j.Job_Title, j.Salary,
-            c.Name, j.Job_Type, j.Application_Deadline
+            c.Name, j.Job_Type, j.Application_Deadline,
+            j.Job_Description, j.Vacancies, jl.Location,
+            je.Eligibility_Criterion
         FROM Job j
         JOIN Company c ON j.Company_ID = c.Company_ID
+        JOIN Job_Location jl ON j.Job_ID = jl.Job_ID
+        JOIN Job_Eligibility je ON j.Job_ID = je.Job_ID
         WHERE j.Application_Deadline >= CURDATE();
 
     -- Handler for end of data

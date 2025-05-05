@@ -5,9 +5,9 @@ from typing import List
 
 class JobResponse(BaseModel):
     Job_ID: int
-    Company_Name: str  
     Title: str
     Salary: float
+    Company_Name: str  
     Job_Type: str
     Application_Deadline: date
     Job_Description: str

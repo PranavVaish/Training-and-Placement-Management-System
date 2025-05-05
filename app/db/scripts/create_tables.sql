@@ -18,13 +18,13 @@ CREATE TABLE IF NOT EXISTS Admin (
 CREATE TABLE IF NOT EXISTS Email (
     Email_ID VARCHAR(100) ,
     Admin_ID INT,
-    FOREIGN KEY (Admin_ID) REFERENCES Admin(Admin_ID)
+    FOREIGN KEY (Admin_ID) REFERENCES Admin(Admin_ID) On DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Phone (
     Phone_No VARCHAR(15) ,
     Admin_ID INT,
-    FOREIGN KEY (Admin_ID) REFERENCES Admin(Admin_ID)
+    FOREIGN KEY (Admin_ID) REFERENCES Admin(Admin_ID) On DELETE CASCADE
 );
 
 
@@ -41,13 +41,13 @@ CREATE TABLE IF NOT EXISTS Student (
 CREATE TABLE IF NOT EXISTS Student_Email (
     Email_ID VARCHAR(100) ,
     Student_ID INT,
-    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID)
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID) on delete cascade
 );
 
 CREATE TABLE IF NOT EXISTS Student_Phone (
     Phone_No VARCHAR(15) ,
     Student_ID INT,
-    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID)
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID) on delete cascade
 );
 
 
@@ -64,20 +64,20 @@ CREATE TABLE IF NOT EXISTS Company (
 CREATE TABLE IF NOT EXISTS Company_Email (
     Email_ID VARCHAR(100),
     Company_ID INT,
-    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID) on delete cascade
 );
 
 CREATE TABLE IF NOT EXISTS Company_Phone (
     Phone_No VARCHAR(15) ,
     Company_ID INT,
-    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID) on delete cascade
 );
 
 CREATE TABLE IF NOT EXISTS Company_Location (
     Company_ID INT,
     Location VARCHAR(100),
     PRIMARY KEY (Company_ID, Location),
-    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID) on delete cascade
 );
 
 CREATE TABLE IF NOT EXISTS Company_Hiring_History (
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS Company_Hiring_History (
     Hiring_Period VARCHAR(50),
     Job_Roles TEXT,
     PRIMARY KEY (Company_ID, Hiring_Period),
-    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID) on delete cascade
 );
 
 
@@ -99,21 +99,21 @@ CREATE TABLE IF NOT EXISTS Job (
     Job_Type VARCHAR(50),
     Vacancies INT,
     Application_Deadline DATE,
-    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID) on delete cascade
 );
 
 CREATE TABLE IF NOT EXISTS Job_Eligibility (
     Job_ID INT,
     Eligibility_Criterion VARCHAR(100),
     PRIMARY KEY (Job_ID, Eligibility_Criterion),
-    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID)
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID) on delete cascade
 );
 
 CREATE TABLE IF NOT EXISTS Job_Location (
     Job_ID INT,
     Location VARCHAR(100),
     PRIMARY KEY (Job_ID, Location),
-    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID)
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID) on delete cascade
 );
 
 -- Trainer Set
@@ -127,13 +127,13 @@ CREATE TABLE IF NOT EXISTS Trainer (
 CREATE TABLE IF NOT EXISTS Trainer_Email (
     Email VARCHAR(100),
     Trainer_ID INT,
-    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID) on delete cascade
 );
 
 CREATE TABLE IF NOT EXISTS Trainer_Phone (
     Phone_No VARCHAR(15),
     Trainer_ID INT,
-    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID) on delete cascade
 );
 
 
@@ -146,9 +146,9 @@ CREATE TABLE IF NOT EXISTS Placement_Record (
     Package DECIMAL(10,2),
     Placement_Date DATE,
     Placement_Location VARCHAR(100),
-    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
-    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID),
-    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID)
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID) ON DELETE CASCADE,
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID) ON DELETE CASCADE,
+    FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID) ON DELETE CASCADE
 );
 
 
@@ -159,8 +159,8 @@ CREATE TABLE IF NOT EXISTS Feedback (
     Rating INT,
     Comments TEXT,
     Trainer_ID INT,
-    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
-    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID) ON DELETE CASCADE,
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID) ON DELETE CASCADE
 );
 
 
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS Training_Program (
     Mode VARCHAR(50),  -- e.g., Online, Offline, Hybrid
     Certification_Provided BOOLEAN,
     Training_Cost DECIMAL(10,2),
-    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID)
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID) ON DELETE CASCADE
 );
 
 -- TRAINING ENROLLMENT
@@ -186,8 +186,8 @@ CREATE TABLE IF NOT EXISTS Training_Enrollment (
     Student_ID INT,
     Performance_Grade VARCHAR(10),
     Completion_Status VARCHAR(20),
-    FOREIGN KEY (Training_ID) REFERENCES Training_Program(Training_ID),
-    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID)
+    FOREIGN KEY (Training_ID) REFERENCES Training_Program(Training_ID) ON DELETE CASCADE,
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID) ON DELETE CASCADE
 );
 
 
@@ -199,8 +199,8 @@ CREATE TABLE IF NOT EXISTS Application (
     Job_ID INT,
     Application_Date DATE,
     Status VARCHAR(50),
-    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
-    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID)
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID) ON DELETE CASCADE,
+    FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID) ON DELETE CASCADE
 );
 
 -- Interview Schedule Set (Weak Entity)
@@ -211,5 +211,5 @@ CREATE TABLE IF NOT EXISTS Interview_Schedule (
     Time TIME,
     Mode VARCHAR(50),
     Interviewer_Name VARCHAR(100),
-    FOREIGN KEY (Application_ID) REFERENCES Application(Application_ID)
+    FOREIGN KEY (Application_ID) REFERENCES Application(Application_ID) ON DELETE CASCADE
 );

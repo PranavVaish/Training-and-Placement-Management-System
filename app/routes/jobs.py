@@ -30,7 +30,11 @@ async def get_all_jobs(db: mysql.connector.MySQLConnection = Depends(get_db)):
                     "Salary": job[2],
                     "Company_Name": job[3],
                     "Job_Type": job[4],
-                    "Application_Deadline": job[5]
+                    "Application_Deadline": job[5],
+                    "Job_Description": job[6],
+                    "Vacancies": job[7],
+                    "Location_List": job[8].split(",") if job[8] else [],
+                    "Eligibility_Criteria_List": job[9].split(",") if job[9] else [],
                 }
                 job_list.append(JobResponse(**job_data))
             results.append(job_list)
@@ -59,6 +63,17 @@ async def create_job(
     """
     cursor = db.cursor()
     try:
+        # if not authorization:
+        #     raise HTTPException(status_code=401, detail="Authorization header is missing")
+
+        # try:
+        #     token_prefix, token = authorization.split(" ")
+        #     if token_prefix.lower() != "bearer":
+        #         raise HTTPException(status_code=401, detail="Invalid authorization scheme")
+        # except ValueError:
+        #     raise HTTPException(status_code=401, detail="Invalid authorization header format")
+
+        # Verify the token and extract the company ID
         company_id = job_data.Company_ID
 
         # Check if the user is a company
