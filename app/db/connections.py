@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 dbconfig = {
-    "user": os.getenv("DATABASE_USER", "fastapi"),
-    "password": os.getenv("DATABASE_PASSWORD", "test123"),
+    "user": os.getenv("DATABASE_USER", "root"),
+    "password": os.getenv("DATABASE_PASSWORD", "root"),
     "host": os.getenv("DATABASE_HOST", "localhost"),
     "port": os.getenv("DATABASE_PORT", 3306),
     "database": os.getenv("DATABASE_NAME", "mydb"),
