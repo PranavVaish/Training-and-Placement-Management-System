@@ -356,23 +356,12 @@ export default function CompanyDashboard() {
     </div>
   );
 
-  // Helper function to safely access nested properties
-  const safeRender = (obj, path, fallback = 'N/A') => {
-    if (!obj) return fallback;
-
-    const props = Array.isArray(path) ? path : path.split('.');
-    let result = props.reduce((acc, curr) => {
-      return acc && acc[curr] !== undefined && acc[curr] !== null ? acc[curr] : null;
-    }, obj);
-
-    // Handle arrays and objects gracefully
-    if (Array.isArray(result)) {
-      return result.length > 0 ? result.join(', ') : fallback;
+  // Helper function to safely access properties
+  const safeRender = (obj, prop, fallback = 'N/A') => {
+    if (!obj || obj[prop] === undefined || obj[prop] === null) {
+      return fallback;
     }
-    if (result && typeof result === 'object') {
-      return JSON.stringify(result);
-    }
-    return result !== null && result !== undefined ? String(result) : fallback;
+    return String(obj[prop]);
   };
 
   return (
@@ -472,11 +461,11 @@ export default function CompanyDashboard() {
                       <tbody>
                         {jobListings.map((job, index) => (
                           <tr key={`${job.Job_ID}-${index}`} className="border-b">
-                            <td className="py-3 px-2 font-medium">{safeRender(job, ['Title', 'title'])}</td>
-                            <td className="py-3 px-2">{safeRender(job, ['Job_Type', 'type'])}</td>
-                            <td className="py-3 px-2">{safeRender(job, ['Salary', 'salary'])}</td>
-                            <td className="py-3 px-2">{safeRender(job, ['Company_Name', 'companyName'])}</td>
-                            <td className="py-3 px-2">{safeRender(job, ['Application_Deadline', 'deadline'])}</td>
+                            <td className="py-3 px-2 font-medium">{safeRender(job, 'Job_Title')}</td>
+                            <td className="py-3 px-2">{safeRender(job, 'Job_Type')}</td>
+                            <td className="py-3 px-2">{safeRender(job, 'Salary')}</td>
+                            <td className="py-3 px-2">{safeRender(job, 'Company_Name')}</td>
+                            <td className="py-3 px-2">{safeRender(job, 'Application_Deadline')}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -564,7 +553,9 @@ export default function CompanyDashboard() {
                               <td className="py-3 px-4 font-medium">{safeRender(interview, 'candidate_name')}</td>
                               <td className="py-3 px-4">{safeRender(interview, 'job_title')}</td>
                               <td className="py-3 px-4">{safeRender(interview, 'date')}</td>
-                              <td className="py-3 px-4">{safeRender(interview, 'time')}</td>
+                              <td className="
+
+py-3 px-4">{safeRender(interview, 'time')}</td>
                               <td className="py-3 px-4">{safeRender(interview, 'mode')}</td>
                               <td className="py-3 px-4">{safeRender(interview, 'interviewer_name')}</td>
                               <td className="py-3 px-4">
