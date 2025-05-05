@@ -81,7 +81,7 @@ export default function RegisterStudent() {
       }
 
       // Navigate to dashboard
-      navigate('/dashboard/student');
+      navigate('/auth/login');
     } catch (err) {
       setError(err.message);
     } finally {

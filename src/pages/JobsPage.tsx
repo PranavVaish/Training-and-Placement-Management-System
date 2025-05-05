@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,7 @@ export default function JobsPage() {
     setError(null);
     try {
       // Replace with your actual FastAPI endpoint
-      const response = await fetch('http://your-fastapi-url/api/jobs');
+      const response = await fetch('http://127.0.0.1:8000/job/');
       if (!response.ok) {
         throw new Error('Failed to fetch jobs');
       }
@@ -49,7 +49,7 @@ export default function JobsPage() {
   };
 
   const filteredJobs = jobs.filter(job => {
-    const matchesSearchTerm = 
+    const matchesSearchTerm =
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.location.toLowerCase().includes(searchTerm.toLowerCase());
@@ -82,7 +82,7 @@ export default function JobsPage() {
       formData.append('jobId', jobId);
 
       // Replace with your actual FastAPI endpoint for job applications
-      const response = await fetch('http://your-fastapi-url/api/apply', {
+      const response = await fetch('http://127.0.0.1:8000/students/apply', {
         method: 'POST',
         body: formData,
       });
@@ -126,8 +126,8 @@ export default function JobsPage() {
             <CardContent className="p-6">
               <h2 className="text-xl font-bold text-red-600">Error Loading Jobs</h2>
               <p className="text-red-500 mt-2">{error}</p>
-              <Button 
-                className="mt-4" 
+              <Button
+                className="mt-4"
                 onClick={fetchJobs}
               >
                 Try Again
@@ -148,18 +148,18 @@ export default function JobsPage() {
             <h1 className="text-3xl font-bold">Job Listings</h1>
             <p className="text-gray-600 mt-1">Find the perfect opportunity for your career</p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              <Input 
-                placeholder="Search jobs..." 
+              <Input
+                placeholder="Search jobs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full sm:w-[300px]"
               />
             </div>
-            
+
             <Select onValueChange={(value) => setSelectedJobType(value)}>
               <SelectTrigger className="w-[160px]">
                 <SelectValue placeholder="Job Type" />
@@ -174,7 +174,7 @@ export default function JobsPage() {
             </Select>
           </div>
         </div>
-        
+
         {/* No Jobs Found State */}
         {jobs.length === 0 ? (
           <Card className="mb-8">

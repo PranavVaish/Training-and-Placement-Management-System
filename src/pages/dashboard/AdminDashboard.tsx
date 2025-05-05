@@ -31,7 +31,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import axios from 'axios';
 
 // API base URL
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'http://localhost:8000/';
 
 export default function AdminDashboard() {
   // Loading states

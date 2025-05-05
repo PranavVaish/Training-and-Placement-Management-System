@@ -29,7 +29,7 @@ export default function CompanyDashboard() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showJobModal, setShowJobModal] = useState(false);
   const [showInterviewModal, setShowInterviewModal] = useState(false);
-  
+
   // Loading and error states
   const [loading, setLoading] = useState({
     profile: true,
@@ -49,16 +49,15 @@ export default function CompanyDashboard() {
   // Form states
   const [editProfile, setEditProfile] = useState({});
   const [newJob, setNewJob] = useState({
+    company_id: localStorage.getItem('universal_id'),
     title: '',
     type: '',
-    location: '',
-    department: '',
+    location: [], // List of strings
     vacancy: 0,
-    status: 'Active',
     deadline: '',
     salary: '',
     description: '',
-    eligibility: ''
+    eligibility: [] // List of strings
   });
   const [newInterview, setNewInterview] = useState({
     application_id: '',
@@ -71,18 +70,20 @@ export default function CompanyDashboard() {
     status: 'Scheduled'
   });
 
-  // API base URL - replace with your actual FastAPI endpoint
-  const API_BASE_URL = 'http://localhost:8000/api';
+  // API base URL
+  const API_BASE_URL = 'http://127.0.0.1:8000';
+  const company_id = localStorage.getItem('universal_id');
 
   // Fetch company profile
   useEffect(() => {
     const fetchCompanyProfile = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/company/profile`);
+        const response = await fetch(`${API_BASE_URL}/companies/${company_id}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch company profile');
+          throw new Error(`Failed to fetch company profile: ${response.statusText}`);
         }
         const data = await response.json();
+        console.log('Fetched company profile:', data);
         setCompanyProfile(data);
         setEditProfile(data);
       } catch (err) {
@@ -93,39 +94,60 @@ export default function CompanyDashboard() {
       }
     };
 
-    fetchCompanyProfile();
-  }, []);
+    if (company_id) {
+      fetchCompanyProfile();
+    } else {
+      setError(prev => ({ ...prev, profile: 'Company ID is missing' }));
+      setLoading(prev => ({ ...prev, profile: false }));
+    }
+  }, [company_id]);
 
   // Fetch job listings
   useEffect(() => {
     const fetchJobListings = async () => {
+      if (!company_id) {
+        console.error('Error: Company ID is missing');
+        setError(prev => ({ ...prev, jobs: 'Company ID is missing' }));
+        setLoading(prev => ({ ...prev, jobs: false }));
+        return;
+      }
+
       try {
-        const response = await fetch(`${API_BASE_URL}/jobs`);
+        const response = await fetch(`${API_BASE_URL}/job/active/${company_id}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch job listings');
+          throw new Error(`Failed to fetch job listings: ${response.statusText}`);
         }
         const data = await response.json();
-        setJobListings(data);
+        console.log('Fetched job listings:', data);
+        // Extract the jobs array
+        const jobs = data.jobs;
+        // Validate that jobs is an array
+        if (!Array.isArray(jobs)) {
+          throw new Error('Job listings data is not an array');
+        }
+        setJobListings(jobs);
       } catch (err) {
         console.error('Error fetching job listings:', err);
         setError(prev => ({ ...prev, jobs: err.message }));
+        setJobListings([]); // Fallback to empty array
       } finally {
         setLoading(prev => ({ ...prev, jobs: false }));
       }
     };
 
     fetchJobListings();
-  }, []);
+  }, [company_id]);
 
   // Fetch hiring history
   useEffect(() => {
     const fetchHiringHistory = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/hiring/history`);
+        const response = await fetch(`${API_BASE_URL}/companies/hiring_history/${company_id}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch hiring history');
+          throw new Error(`Failed to fetch hiring history: ${response.statusText}`);
         }
         const data = await response.json();
+        console.log('Fetched hiring history:', data);
         setHiringHistory(data);
       } catch (err) {
         console.error('Error fetching hiring history:', err);
@@ -135,8 +157,13 @@ export default function CompanyDashboard() {
       }
     };
 
-    fetchHiringHistory();
-  }, []);
+    if (company_id) {
+      fetchHiringHistory();
+    } else {
+      setError(prev => ({ ...prev, history: 'Company ID is missing' }));
+      setLoading(prev => ({ ...prev, history: false }));
+    }
+  }, [company_id]);
 
   // Fetch interview schedules
   useEffect(() => {
@@ -144,9 +171,10 @@ export default function CompanyDashboard() {
       try {
         const response = await fetch(`${API_BASE_URL}/interviews`);
         if (!response.ok) {
-          throw new Error('Failed to fetch interview schedules');
+          throw new Error(`Failed to fetch interview schedules: ${response.statusText}`);
         }
         const data = await response.json();
+        console.log('Fetched interview schedules:', data);
         setInterviewSchedules(data);
       } catch (err) {
         console.error('Error fetching interview schedules:', err);
@@ -165,9 +193,10 @@ export default function CompanyDashboard() {
       try {
         const response = await fetch(`${API_BASE_URL}/applications`);
         if (!response.ok) {
-          throw new Error('Failed to fetch applications');
+          throw new Error(`Failed to fetch applications: ${response.statusText}`);
         }
         const data = await response.json();
+        console.log('Fetched applications:', data);
         setApplications(data);
       } catch (err) {
         console.error('Error fetching applications:', err);
@@ -191,11 +220,11 @@ export default function CompanyDashboard() {
         },
         body: JSON.stringify(editProfile),
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to update company profile');
+        throw new Error(`Failed to update company profile: ${response.statusText}`);
       }
-      
+
       const updatedProfile = await response.json();
       setCompanyProfile(updatedProfile);
       setShowEditModal(false);
@@ -211,31 +240,30 @@ export default function CompanyDashboard() {
   const handleJobCreate = async () => {
     try {
       setLoading(prev => ({ ...prev, jobs: true }));
-      const response = await fetch(`${API_BASE_URL}/jobs`, {
+      const response = await fetch(`${API_BASE_URL}/job/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(newJob),
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to create job');
+        throw new Error(`Failed to create job: ${response.statusText}`);
       }
-      
+
       const createdJob = await response.json();
       setJobListings(prev => [...prev, createdJob]);
       setNewJob({
+        company_id: localStorage.getItem('universal_id'),
         title: '',
         type: '',
-        location: '',
-        department: '',
+        location: [],
         vacancy: 0,
-        status: 'Active',
         deadline: '',
         salary: '',
         description: '',
-        eligibility: ''
+        eligibility: []
       });
       setShowJobModal(false);
     } catch (err) {
@@ -257,14 +285,14 @@ export default function CompanyDashboard() {
         },
         body: JSON.stringify(newInterview),
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to schedule interview');
+        throw new Error(`Failed to schedule interview: ${response.statusText}`);
       }
-      
+
       const scheduledInterview = await response.json();
       setInterviewSchedules(prev => [...prev, scheduledInterview]);
-      
+
       // Update the application status
       const appResponse = await fetch(`${API_BASE_URL}/applications/${newInterview.application_id}`, {
         method: 'PATCH',
@@ -273,18 +301,18 @@ export default function CompanyDashboard() {
         },
         body: JSON.stringify({ status: 'Interview Scheduled' }),
       });
-      
+
       if (!appResponse.ok) {
         console.warn('Failed to update application status');
       }
-      
+
       // Refresh applications list
       const updatedApplicationsResponse = await fetch(`${API_BASE_URL}/applications`);
       if (updatedApplicationsResponse.ok) {
         const updatedApplications = await updatedApplicationsResponse.json();
         setApplications(updatedApplications);
       }
-      
+
       setNewInterview({
         application_id: '',
         candidate_name: '',
@@ -328,6 +356,25 @@ export default function CompanyDashboard() {
     </div>
   );
 
+  // Helper function to safely access nested properties
+  const safeRender = (obj, path, fallback = 'N/A') => {
+    if (!obj) return fallback;
+
+    const props = Array.isArray(path) ? path : path.split('.');
+    let result = props.reduce((acc, curr) => {
+      return acc && acc[curr] !== undefined && acc[curr] !== null ? acc[curr] : null;
+    }, obj);
+
+    // Handle arrays and objects gracefully
+    if (Array.isArray(result)) {
+      return result.length > 0 ? result.join(', ') : fallback;
+    }
+    if (result && typeof result === 'object') {
+      return JSON.stringify(result);
+    }
+    return result !== null && result !== undefined ? String(result) : fallback;
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto py-8 px-4">
@@ -358,7 +405,7 @@ export default function CompanyDashboard() {
                   key !== 'id' && (
                     <div key={key}>
                       <h3 className="font-medium text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1')}</h3>
-                      <p>{String(value)}</p>
+                      <p>{safeRender(companyProfile, key)}</p>
                     </div>
                   )
                 ))
@@ -384,16 +431,16 @@ export default function CompanyDashboard() {
               </div>
               <div className="flex border-b mt-4">
                 <button
-                  className={`pb-2 px-4 font-medium flex items-center ${activeTab === 'listings' 
-                    ? 'border-b-2 border-primary text-primary' 
+                  className={`pb-2 px-4 font-medium flex items-center ${activeTab === 'listings'
+                    ? 'border-b-2 border-primary text-primary'
                     : 'text-gray-500'}`}
                   onClick={() => setActiveTab('listings')}
                 >
                   <ClipboardList className="h-4 w-4 mr-2" /> Job Listings
                 </button>
                 <button
-                  className={`pb-2 px-4 font-medium flex items-center ${activeTab === 'interviews' 
-                    ? 'border-b-2 border-primary text-primary' 
+                  className={`pb-2 px-4 font-medium flex items-center ${activeTab === 'interviews'
+                    ? 'border-b-2 border-primary text-primary'
                     : 'text-gray-500'}`}
                   onClick={() => setActiveTab('interviews')}
                 >
@@ -408,7 +455,7 @@ export default function CompanyDashboard() {
                   <LoadingSpinner />
                 ) : error.jobs ? (
                   <p className="text-red-500">Error: {error.jobs}</p>
-                ) : jobListings.length === 0 ? (
+                ) : !jobListings || jobListings.length === 0 ? (
                   <EmptyState message="No job listings found" />
                 ) : (
                   <div className="overflow-x-auto">
@@ -416,28 +463,20 @@ export default function CompanyDashboard() {
                       <thead>
                         <tr className="text-left text-sm text-gray-500 border-b">
                           <th className="py-3 px-2">Job Title</th>
-                          <th className="py-3 px-2">Location</th>
                           <th className="py-3 px-2">Type</th>
                           <th className="py-3 px-2">Salary</th>
-                          <th className="py-3 px-2">Vacancies</th>
+                          <th className="py-3 px-2">Company Name</th>
                           <th className="py-3 px-2">Deadline</th>
-                          <th className="py-3 px-2">Description</th>
-                          <th className="py-3 px-2">Eligibility</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {jobListings.map((job) => (
-                          <tr key={job.id} className="border-b">
-                            <td className="py-3 px-2 font-medium">{job.title}</td>
-                            <td className="py-3 px-2">{job.location}</td>
-                            <td className="py-3 px-2">{job.type}</td>
-                            <td className="py-3 px-2">{job.salary}</td>
-                            <td className="py-3 px-2 flex items-center">
-                              <Users className="h-4 w-4 mr-1" /> {job.vacancy}
-                            </td>
-                            <td className="py-3 px-2">{job.deadline}</td>
-                            <td className="py-3 px-2">{job.description}</td>
-                            <td className="py-3 px-2">{job.eligibility || job.eligiblity}</td>
+                        {jobListings.map((job, index) => (
+                          <tr key={`${job.Job_ID}-${index}`} className="border-b">
+                            <td className="py-3 px-2 font-medium">{safeRender(job, ['Title', 'title'])}</td>
+                            <td className="py-3 px-2">{safeRender(job, ['Job_Type', 'type'])}</td>
+                            <td className="py-3 px-2">{safeRender(job, ['Salary', 'salary'])}</td>
+                            <td className="py-3 px-2">{safeRender(job, ['Company_Name', 'companyName'])}</td>
+                            <td className="py-3 px-2">{safeRender(job, ['Application_Deadline', 'deadline'])}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -469,19 +508,19 @@ export default function CompanyDashboard() {
                             </tr>
                           </thead>
                           <tbody>
-                            {applications.filter(app => app.status === "Under Review").map((app) => (
-                              <tr key={app.application_id} className="border-b">
-                                <td className="py-3 px-4">{app.application_id}</td>
-                                <td className="py-3 px-4 font-medium">{app.candidate_name}</td>
-                                <td className="py-3 px-4">{app.job_title}</td>
-                                <td className="py-3 px-4">{app.applied_date}</td>
+                            {applications.filter(app => safeRender(app, 'status') === "Under Review").map((app) => (
+                              <tr key={safeRender(app, 'application_id')} className="border-b">
+                                <td className="py-3 px-4">{safeRender(app, 'application_id')}</td>
+                                <td className="py-3 px-4 font-medium">{safeRender(app, 'candidate_name')}</td>
+                                <td className="py-3 px-4">{safeRender(app, 'job_title')}</td>
+                                <td className="py-3 px-4">{safeRender(app, 'applied_date')}</td>
                                 <td className="py-3 px-4">
                                   <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                    {app.status}
+                                    {safeRender(app, 'status')}
                                   </span>
                                 </td>
                                 <td className="py-3 px-4">
-                                  <Button 
+                                  <Button
                                     size="sm"
                                     onClick={() => handleApplicationSelect(app)}
                                   >
@@ -520,17 +559,17 @@ export default function CompanyDashboard() {
                         </thead>
                         <tbody>
                           {interviewSchedules.map((interview) => (
-                            <tr key={interview.interview_id} className="border-b">
-                              <td className="py-3 px-4">{interview.interview_id}</td>
-                              <td className="py-3 px-4 font-medium">{interview.candidate_name}</td>
-                              <td className="py-3 px-4">{interview.job_title}</td>
-                              <td className="py-3 px-4">{interview.date}</td>
-                              <td className="py-3 px-4">{interview.time}</td>
-                              <td className="py-3 px-4">{interview.mode}</td>
-                              <td className="py-3 px-4">{interview.interviewer_name}</td>
+                            <tr key={safeRender(interview, 'interview_id')} className="border-b">
+                              <td className="py-3 px-4">{safeRender(interview, 'interview_id')}</td>
+                              <td className="py-3 px-4 font-medium">{safeRender(interview, 'candidate_name')}</td>
+                              <td className="py-3 px-4">{safeRender(interview, 'job_title')}</td>
+                              <td className="py-3 px-4">{safeRender(interview, 'date')}</td>
+                              <td className="py-3 px-4">{safeRender(interview, 'time')}</td>
+                              <td className="py-3 px-4">{safeRender(interview, 'mode')}</td>
+                              <td className="py-3 px-4">{safeRender(interview, 'interviewer_name')}</td>
                               <td className="py-3 px-4">
                                 <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                                  {interview.status}
+                                  {safeRender(interview, 'status')}
                                 </span>
                               </td>
                             </tr>
@@ -574,15 +613,15 @@ export default function CompanyDashboard() {
                     </thead>
                     <tbody>
                       {hiringHistory.map((hire) => (
-                        <tr key={hire.id} className="border-b">
-                          <td className="py-3 px-2">{hire.id}</td>
-                          <td className="py-3 px-2 font-medium">{hire.position}</td>
-                          <td className="py-3 px-2">{hire.department}</td>
-                          <td className="py-3 px-2">{hire.candidate}</td>
-                          <td className="py-3 px-2">{hire.hireDate}</td>
+                        <tr key={safeRender(hire, 'id')} className="border-b">
+                          <td className="py-3 px-2">{safeRender(hire, 'id')}</td>
+                          <td className="py-3 px-2 font-medium">{safeRender(hire, 'position')}</td>
+                          <td className="py-3 px-2">{safeRender(hire, 'department')}</td>
+                          <td className="py-3 px-2">{safeRender(hire, 'candidate')}</td>
+                          <td className="py-3 px-2">{safeRender(hire, 'hireDate')}</td>
                           <td className="py-3 px-2">
                             <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                              {hire.status}
+                              {safeRender(hire, 'status')}
                             </span>
                           </td>
                         </tr>
@@ -617,8 +656,8 @@ export default function CompanyDashboard() {
                 ))}
               </div>
               <DialogFooter>
-                <Button 
-                  onClick={handleProfileSave} 
+                <Button
+                  onClick={handleProfileSave}
                   disabled={loading.profile}
                 >
                   {loading.profile ? (
@@ -632,7 +671,6 @@ export default function CompanyDashboard() {
             </DialogContent>
           </Dialog>
         )}
-
         {/* New Job Modal */}
         <Dialog open={showJobModal} onOpenChange={setShowJobModal}>
           <DialogContent>
@@ -643,30 +681,97 @@ export default function CompanyDashboard() {
               {[
                 { name: 'title', label: 'Job Title', type: 'text' },
                 { name: 'type', label: 'Employment Type', type: 'text' },
-                { name: 'location', label: 'Location', type: 'text' },
-                { name: 'department', label: 'Department', type: 'text' },
                 { name: 'vacancy', label: 'Number of Vacancies', type: 'number' },
                 { name: 'deadline', label: 'Application Deadline', type: 'date' },
                 { name: 'salary', label: 'Salary', type: 'text' },
-                { name: 'description', label: 'Job Description', type: 'text' },
-                { name: 'eligibility', label: 'Eligibility Requirements', type: 'text' }
+                { name: 'description', label: 'Job Description', type: 'text' }
               ].map(field => (
                 <div key={field.name}>
                   <label className="text-sm font-medium block mb-1">{field.label}</label>
                   <Input
                     type={field.type}
                     value={newJob[field.name]}
-                    onChange={(e) => setNewJob({ 
-                      ...newJob, 
-                      [field.name]: field.type === 'number' ? Number(e.target.value) : e.target.value 
+                    onChange={(e) => setNewJob({
+                      ...newJob,
+                      [field.name]: field.type === 'number' ? Number(e.target.value) : e.target.value
                     })}
                     placeholder={field.label}
                   />
                 </div>
               ))}
+              <div>
+                <label className="text-sm font-medium block mb-1">Location</label>
+                <div className="space-y-2">
+                  {newJob.location.map((loc, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <Input
+                        value={loc}
+                        onChange={(e) => {
+                          const updatedLocations = [...newJob.location];
+                          updatedLocations[index] = e.target.value;
+                          setNewJob({ ...newJob, location: updatedLocations });
+                        }}
+                        placeholder="Enter location"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const updatedLocations = newJob.location.filter((_, i) => i !== index);
+                          setNewJob({ ...newJob, location: updatedLocations });
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setNewJob({ ...newJob, location: [...newJob.location, ''] })}
+                  >
+                    Add Location
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium block mb-1">Eligibility Requirements</label>
+                <div className="space-y-2">
+                  {newJob.eligibility.map((req, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <Input
+                        value={req}
+                        onChange={(e) => {
+                          const updatedEligibility = [...newJob.eligibility];
+                          updatedEligibility[index] = e.target.value;
+                          setNewJob({ ...newJob, eligibility: updatedEligibility });
+                        }}
+                        placeholder="Enter eligibility requirement"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const updatedEligibility = newJob.eligibility.filter((_, i) => i !== index);
+                          setNewJob({ ...newJob, eligibility: updatedEligibility });
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setNewJob({ ...newJob, eligibility: [...newJob.eligibility, ''] })}
+                  >
+                    Add Requirement
+                  </Button>
+                </div>
+              </div>
             </div>
             <DialogFooter>
-              <Button 
+              <Button
                 onClick={handleJobCreate}
                 disabled={loading.jobs}
               >
@@ -729,7 +834,7 @@ export default function CompanyDashboard() {
               </div>
             </div>
             <DialogFooter>
-              <Button 
+              <Button
                 onClick={handleScheduleInterview}
                 disabled={loading.interviews}
               >

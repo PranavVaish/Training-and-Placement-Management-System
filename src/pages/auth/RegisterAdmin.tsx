@@ -53,7 +53,7 @@ export default function RegisterAdmin() {
     
     try {
       // API endpoint for admin registration
-      const response = await fetch('http://localhost:8000/api/admins/register', {
+      const response = await fetch('http://127.0.0.1:8000/admin/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

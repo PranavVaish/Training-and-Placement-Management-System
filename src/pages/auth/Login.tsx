@@ -18,7 +18,7 @@ import { useToast } from '@/components/ui/use-toast'; // If you have toast notif
 export default function Login() {
   const navigate = useNavigate();
   const { toast } = useToast(); // For showing notifications
-  
+
   // Form state
   const [role, setRole] = useState<string>('student');
   const [userId, setUserId] = useState<string>('');
@@ -28,7 +28,7 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       // Create payload for FastAPI
       const payload = {
@@ -36,9 +36,9 @@ export default function Login() {
         user_id: userId,
         password
       };
-
+      localStorage.setItem('universal_id', userId);
       // Send request to FastAPI backend
-      const response = await fetch('http://your-fastapi-backend/api/login', {
+      const response = await fetch('http://127.0.0.1:8000/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,18 +57,18 @@ export default function Login() {
       if (data.access_token) {
         // Store token in localStorage or secure cookie
         localStorage.setItem('token', data.access_token);
-        
+
         // If the API returns user role, use that instead of form role
         const userRole = data.role || role;
-        
+
         // Show success notification
         toast({
           title: 'Login successful',
           description: 'Redirecting to dashboard...',
         });
-        
+
         // Redirect based on role
-        switch(userRole) {
+        switch (userRole) {
           case 'student':
             navigate('/dashboard/student');
             break;
@@ -120,39 +120,39 @@ export default function Login() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="userId">ID</Label>
-                <Input 
-                  id="userId" 
-                  type="number" 
+                <Input
+                  id="userId"
+                  type="number"
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
-                  required 
+                  required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
+                <Input
+                  id="password"
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required 
+                  required
                 />
               </div>
             </CardContent>
-            
+
             <CardFooter className="flex flex-col space-y-4">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-portal-dark"
                 disabled={isLoading}
               >
                 {isLoading ? 'Logging in...' : 'Login'}
               </Button>
-              
+
               <p className="text-sm text-center text-gray-500">
                 Don't have an account? Register as{' '}
                 <Link to="/auth/register/student" className="text-portal-DEFAULT hover:underline">Student</Link>,{' '}

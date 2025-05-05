@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Card, 
-  CardContent, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,7 @@ import MainLayout from '@/components/layout/MainLayout';
 export default function RegisterCompany() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -31,58 +31,58 @@ export default function RegisterCompany() {
     contactPerson: '',
     password: ''
   });
-  
+
   // Loading state
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Error state
   const [error, setError] = useState(null);
-  
+
   // Handle input changes
   const handleChange = (e) => {
     const { id, value } = e.target;
     setFormData({ ...formData, [id]: value });
   };
-  
+
   // Handle select changes
   const handleSelectChange = (id, value) => {
     setFormData({ ...formData, [id]: value });
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    
+
     try {
       // API endpoint for company registration
-      const response = await fetch('http://localhost:8000/api/companies/register', {
+      const response = await fetch('http://127.0.0.1:8000/companies/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.detail || 'Registration failed');
       }
-      
+
       // Success case
       toast({
         title: "Registration Successful",
         description: "Your company has been successfully registered.",
       });
-      
+
       // Store token if provided by API
       if (data.access_token) {
         localStorage.setItem('token', data.access_token);
       }
-      
+
       // Navigate to dashboard
-      navigate('/dashboard/company');
+      navigate('/auth/login');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -97,7 +97,7 @@ export default function RegisterCompany() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Company Registration</CardTitle>
           </CardHeader>
-          
+
           {error && (
             <div className="px-6 mb-4">
               <Alert variant="destructive">
@@ -105,58 +105,58 @@ export default function RegisterCompany() {
               </Alert>
             </div>
           )}
-          
+
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Company Name</Label>
-                  <Input 
+                  <Input
                     id="name"
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder="Enter company name" 
-                    required 
+                    placeholder="Enter company name"
+                    required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="email">Company Email</Label>
-                  <Input 
-                    id="email" 
+                  <Input
+                    id="email"
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="company@example.com" 
-                    required 
+                    placeholder="company@example.com"
+                    required
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input 
+                  <Input
                     id="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    placeholder="Enter company phone number" 
-                    required 
+                    placeholder="Enter company phone number"
+                    required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="companyId">Company ID/Registration Number</Label>
-                  <Input 
+                  <Input
                     id="companyId"
                     value={formData.companyId}
                     onChange={handleChange}
-                    placeholder="Enter company registration ID" 
-                    required 
+                    placeholder="Enter company registration ID"
+                    required
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="industryType">Industry Type</Label>
@@ -179,65 +179,65 @@ export default function RegisterCompany() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="website">Company Website</Label>
-                  <Input 
-                    id="website" 
+                  <Input
+                    id="website"
                     type="url"
                     value={formData.website}
                     onChange={handleChange}
-                    placeholder="https://example.com" 
-                    required 
+                    placeholder="https://example.com"
+                    required
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
-                  <Input 
+                  <Input
                     id="location"
                     value={formData.location}
                     onChange={handleChange}
-                    placeholder="City, Country" 
-                    required 
+                    placeholder="City, Country"
+                    required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="contactPerson">Contact Person Name</Label>
-                  <Input 
+                  <Input
                     id="contactPerson"
                     value={formData.contactPerson}
                     onChange={handleChange}
-                    placeholder="Name of representative" 
-                    required 
+                    placeholder="Name of representative"
+                    required
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input 
-                  id="password" 
+                <Input
+                  id="password"
                   type="password"
                   value={formData.password}
                   onChange={handleChange}
-                  required 
+                  required
                 />
               </div>
             </CardContent>
-            
+
             <CardFooter className="flex flex-col space-y-4">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-portal-DEFAULT bg-portal-dark"
                 disabled={isLoading}
               >
                 {isLoading ? 'Registering...' : 'Register as Company'}
               </Button>
-              
+
               <p className="text-sm text-center text-gray-500">
                 Already have an account?{' '}
                 <Link to="/auth/login" className="text-portal-DEFAULT hover:underline">
