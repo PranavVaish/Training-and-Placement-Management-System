@@ -30,15 +30,31 @@ export default function JobsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      // Replace with your actual FastAPI endpoint
       const response = await fetch('http://127.0.0.1:8000/job/');
       if (!response.ok) {
         throw new Error('Failed to fetch jobs');
       }
       const data = await response.json();
-      setJobs(data);
-      if (data.length > 0) {
-        setFeaturedJob(data[0]);
+      console.log('Fetched data:', data);
+      if (!data.jobs || !Array.isArray(data.jobs)) {
+        throw new Error('Expected an object with a jobs array');
+      }
+      // Map API response to expected property names
+      const mappedJobs = data.jobs.map(job => ({
+        id: job.Job_ID,
+        title: job.Title,
+        company: job.Company_Name,
+        location: job.Location_List?.join(', ') || 'N/A',
+        type: job.Job_Type,
+        salary: job.Salary ? `$${job.Salary.toLocaleString()}` : 'N/A',
+        deadline: job.Application_Deadline,
+        description: job.Job_Description,
+        eligibility: job.Eligibility_Criteria_List?.join(', ') || 'N/A',
+        vacancies: job.Vacancies,
+      }));
+      setJobs(mappedJobs);
+      if (mappedJobs.length > 0) {
+        setFeaturedJob(mappedJobs[0]);
       }
     } catch (err) {
       console.error('Error fetching jobs:', err);
@@ -48,12 +64,12 @@ export default function JobsPage() {
     }
   };
 
-  const filteredJobs = jobs.filter(job => {
+  const filteredJobs = jobs.filter((job) => {
     const matchesSearchTerm =
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesJobType = selectedJobType === 'all' || job.type.toLowerCase() === selectedJobType;
+      (job.title?.toLowerCase?.() || '').includes(searchTerm.toLowerCase()) ||
+      (job.company?.toLowerCase?.() || '').includes(searchTerm.toLowerCase()) ||
+      (job.location?.toLowerCase?.() || '').includes(searchTerm.toLowerCase());
+    const matchesJobType = selectedJobType === 'all' || (job.type?.toLowerCase?.() === selectedJobType);
     return matchesSearchTerm && matchesJobType;
   });
 
@@ -74,14 +90,12 @@ export default function JobsPage() {
     }
 
     try {
-      // Create a FormData object to send the file
       const formData = new FormData();
       formData.append('studentId', studentId);
       formData.append('password', password);
       formData.append('resume', resumeFile);
       formData.append('jobId', jobId);
 
-      // Replace with your actual FastAPI endpoint for job applications
       const response = await fetch('http://127.0.0.1:8000/students/apply', {
         method: 'POST',
         body: formData,
@@ -105,7 +119,6 @@ export default function JobsPage() {
     }
   };
 
-  // Loading state
   if (isLoading) {
     return (
       <MainLayout>
@@ -117,7 +130,6 @@ export default function JobsPage() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <MainLayout>
@@ -126,10 +138,7 @@ export default function JobsPage() {
             <CardContent className="p-6">
               <h2 className="text-xl font-bold text-red-600">Error Loading Jobs</h2>
               <p className="text-red-500 mt-2">{error}</p>
-              <Button
-                className="mt-4"
-                onClick={fetchJobs}
-              >
+              <Button className="mt-4" onClick={fetchJobs}>
                 Try Again
               </Button>
             </CardContent>
@@ -142,13 +151,11 @@ export default function JobsPage() {
   return (
     <MainLayout>
       <div className="container mx-auto py-8 px-4">
-        {/* Search & Filter */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold">Job Listings</h1>
             <p className="text-gray-600 mt-1">Find the perfect opportunity for your career</p>
           </div>
-
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -159,7 +166,6 @@ export default function JobsPage() {
                 className="pl-10 w-full sm:w-[300px]"
               />
             </div>
-
             <Select onValueChange={(value) => setSelectedJobType(value)}>
               <SelectTrigger className="w-[160px]">
                 <SelectValue placeholder="Job Type" />
@@ -175,7 +181,6 @@ export default function JobsPage() {
           </div>
         </div>
 
-        {/* No Jobs Found State */}
         {jobs.length === 0 ? (
           <Card className="mb-8">
             <CardContent className="p-8 flex flex-col items-center justify-center">
@@ -186,13 +191,10 @@ export default function JobsPage() {
           </Card>
         ) : (
           <>
-            {/* Job Table */}
             <Card>
               <CardHeader>
                 <CardTitle>Available Positions</CardTitle>
-                <CardDescription>
-                  Showing {filteredJobs.length} job listings
-                </CardDescription>
+                <CardDescription>Showing {filteredJobs.length} job listings</CardDescription>
               </CardHeader>
               <CardContent>
                 {filteredJobs.length === 0 ? (
@@ -216,17 +218,17 @@ export default function JobsPage() {
                       <tbody>
                         {filteredJobs.map((job) => (
                           <tr
-                            key={job.id}
+                            key={job.id || Math.random()}
                             className="border-b hover:bg-gray-50 cursor-pointer"
                             onClick={() => setFeaturedJob(job)}
                           >
-                            <td className="py-4 px-4 text-sm">{job.id}</td>
-                            <td className="py-4 px-4 font-medium">{job.title}</td>
-                            <td className="py-4 px-4">{job.company}</td>
-                            <td className="py-4 px-4">{job.location}</td>
-                            <td className="py-4 px-4">{job.type}</td>
-                            <td className="py-4 px-4">{job.salary}</td>
-                            <td className="py-4 px-4">{job.deadline}</td>
+                            <td className="py-4 px-4 text-sm">{job.id || 'N/A'}</td>
+                            <td className="py-4 px-4 font-medium">{job.title || 'Untitled'}</td>
+                            <td className="py-4 px-4">{job.company || 'Unknown'}</td>
+                            <td className="py-4 px-4">{job.location || 'N/A'}</td>
+                            <td className="py-4 px-4">{job.type || 'N/A'}</td>
+                            <td className="py-4 px-4">{job.salary || 'N/A'}</td>
+                            <td className="py-4 px-4">{job.deadline || 'N/A'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -236,8 +238,7 @@ export default function JobsPage() {
               </CardContent>
             </Card>
 
-            {/* Featured Job */}
-            {featuredJob && (
+            {featuredJob ? (
               <div className="mt-8 mb-16">
                 <h2 className="text-2xl font-bold mb-4">Selected Job</h2>
                 <Card>
@@ -245,16 +246,18 @@ export default function JobsPage() {
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                       <div className="flex-grow space-y-4">
                         <div>
-                          <h3 className="text-xl font-bold">{featuredJob.title}</h3>
-                          <p className="text-gray-600">{featuredJob.company} · {featuredJob.location}</p>
+                          <h3 className="text-xl font-bold">{featuredJob.title || 'N/A'}</h3>
+                          <p className="text-gray-600">
+                            {featuredJob.company || 'N/A'} · {featuredJob.location || 'N/A'}
+                          </p>
                         </div>
                         <div>
                           <h4 className="font-semibold mb-2">Job Description</h4>
-                          <p className="text-gray-700">{featuredJob.description}</p>
+                          <p className="text-gray-700">{featuredJob.description || 'No description available'}</p>
                         </div>
                         <div>
                           <h4 className="font-semibold mb-2">Eligibility</h4>
-                          <p className="text-gray-700">{featuredJob.eligibility}</p>
+                          <p className="text-gray-700">{featuredJob.eligibility || 'No eligibility info'}</p>
                         </div>
                       </div>
                       <div className="w-full md:w-64 space-y-4">
@@ -262,19 +265,19 @@ export default function JobsPage() {
                           <CardContent className="p-4 space-y-3">
                             <div className="flex justify-between">
                               <span className="text-gray-500">Type</span>
-                              <span className="font-medium">{featuredJob.type}</span>
+                              <span className="font-medium">{featuredJob.type || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-500">Salary</span>
-                              <span className="font-medium">{featuredJob.salary}</span>
+                              <span className="font-medium">{featuredJob.salary || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-500">Deadline</span>
-                              <span className="font-medium">{featuredJob.deadline}</span>
+                              <span className="font-medium">{featuredJob.deadline || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-500">Vacancies</span>
-                              <span className="font-medium">{featuredJob.vacancies}</span>
+                              <span className="font-medium">{featuredJob.vacancies || 'N/A'}</span>
                             </div>
                           </CardContent>
                         </Card>
@@ -289,15 +292,23 @@ export default function JobsPage() {
                   </CardContent>
                 </Card>
               </div>
+            ) : (
+              <div className="mt-8 mb-16">
+                <h2 className="text-2xl font-bold mb-4">Selected Job</h2>
+                <Card>
+                  <CardContent className="p-6">
+                    <p className="text-gray-500">No job selected</p>
+                  </CardContent>
+                </Card>
+              </div>
             )}
           </>
         )}
 
-        {/* Application Form Modal */}
         {showApplyForm && featuredJob && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-              <h3 className="text-xl font-bold mb-4">Apply for {featuredJob.title}</h3>
+              <h3 className="text-xl font-bold mb-4">Apply for {featuredJob.title || 'Job'}</h3>
               <form onSubmit={(e) => handleApply(e, featuredJob.id)}>
                 <div className="mb-4">
                   <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">
