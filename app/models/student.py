@@ -31,7 +31,7 @@ class StudentListResponse(BaseModel):
 class JobApplication(BaseModel):
     job_id: int = Field(..., alias="jobId")
     student_id: int = Field(..., alias="universalId")
-    resume: bytes = Field(..., alias="resueme")
+    resume: bytes = Field(..., alias="resume")
 
 class EnrollStudent(BaseModel):
     training_id: int
