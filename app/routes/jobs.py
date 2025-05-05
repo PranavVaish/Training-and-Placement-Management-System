@@ -123,7 +123,7 @@ async def get_active_jobs_by_company(company_id: int, db: mysql.connector.MySQLC
             for job in jobs:
                 job_data = {
                     "Job_ID": job[0],
-                    "Title": job[1],
+                    "Job_Title": job[1],
                     "Salary": job[2],
                     "Company_Name": job[3],
                     "Job_Type": job[4],
