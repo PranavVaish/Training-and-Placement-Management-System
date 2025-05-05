@@ -2,6 +2,9 @@ import mysql.connector
 import os
 import pathlib
 import re
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def execute_sql_file(cursor, filepath):
     """Execute a SQL file with proper handling for CREATE PROCEDURE statements."""
@@ -84,9 +87,9 @@ def setup_database():
     scripts_root = current_file.parent # Go up three levels to reach project root
     
     # Database connection settings - consider using environment variables
-    db_host = os.environ.get('DB_HOST', 'localhost')
-    db_port = int(os.environ.get('DB_PORT', 3306))
-    db_name = os.environ.get('DB_NAME', 'mydb')
+    db_host = os.getenv('DB_HOST', 'localhost')
+    db_port = int(os.getenv('DB_PORT', 3306))
+    db_name = os.getenv('DB_NAME', 'mydb')
     
     connection = None
     cursor = None
@@ -96,8 +99,8 @@ def setup_database():
         # Connect to the database
         print(f"Connecting to database {db_name} at {db_host}:{db_port}")
         connection = mysql.connector.connect(
-            user=os.environ.get('DB_USER', 'root'),
-            password=os.environ.get('DB_PASSWORD', 'root'),
+            user=os.getenv('DB_USER', 'root'),
+            password=os.getenv('DB_PASSWORD', 'root'),
             host=db_host,
             port=db_port,
             database=db_name

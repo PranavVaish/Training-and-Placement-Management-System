@@ -1,12 +1,15 @@
 import mysql.connector
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 dbconfig = {
-    "user": os.environ.get("DATABASE_USER", "root"),
-    "password": os.environ.get("DATABASE_PASSWORD", "root"),
-    "host": os.environ.get("DATABASE_HOST", "localhost"),
-    "port": os.environ.get("DATABASE_PORT", 3306),
-    "database": os.environ.get("DATABASE_NAME", "mydb"),
+    "user": os.getenv("DATABASE_USER", "root"),
+    "password": os.getenv("DATABASE_PASSWORD", "root"),
+    "host": os.getenv("DATABASE_HOST", "localhost"),
+    "port": os.getenv("DATABASE_PORT", 3306),
+    "database": os.getenv("DATABASE_NAME", "mydb"),
     "raise_on_warnings": True
 }
 

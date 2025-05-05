@@ -152,8 +152,7 @@ async def login_company(
     query = """
         SELECT c.Company_ID, c.Password
         FROM Company c
-        JOIN Company_Email ce ON c.Company_ID = ce.Company_ID
-        WHERE ce.Email_ID = %s
+        WHERE c.Company_ID = %s
     """
     try:
         cursor = db.cursor()
