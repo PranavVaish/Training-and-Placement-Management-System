@@ -20,8 +20,8 @@ async def get_student_by_id(student_id: int, db: mysql.connector.MySQLConnection
         LEFT JOIN Student_Email se ON s.Student_ID = se.Student_ID
         WHERE s.Student_ID = %s
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.execute(query, (student_id,))
         student = cursor.fetchone()
 
@@ -59,8 +59,8 @@ async def get_all_students(db: mysql.connector.MySQLConnection = Depends(get_db)
         FROM Student s
         LEFT JOIN Student_Phone sp ON s.Student_ID = sp.Student_ID
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.execute(query)
         students = cursor.fetchall()
 
@@ -98,14 +98,14 @@ async def get_student(student_id: int, db: mysql.connector.MySQLConnection = Dep
 
 @router.post("/register")
 async def register_student(
-    student_data: StudentRegistration = Body(...),
+    student_data: StudentRegistration = Body(...),  # Use StudentRegistration model
     db: mysql.connector.MySQLConnection = Depends(get_db),
 ):
     """
     Register a new student using a stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
 
         # Check if the student already exists
         query_check = """
@@ -156,14 +156,16 @@ async def login_student(
     """
     # Construct the raw SQL query to fetch student credentials
     query = """
-        SELECT sc.Student_ID, sc.Password
-        FROM Student sc
-        WHERE sc.Student_ID = %s
+        SELECT sc.Student_ID, sc.Password_Hash
+        FROM Student_Credentials sc
+        JOIN Student s ON s.Student_ID = sc.Student_ID
+        JOIN Student_Email se ON s.Student_ID = se.Student_ID
+        WHERE se.Email_ID = %s
     """
 
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
-        cursor.execute(query, (student_data.id,))
+        cursor.execute(query, (student_data.email,))
         student_credentials = cursor.fetchone()
 
         if not student_credentials:
@@ -172,7 +174,7 @@ async def login_student(
         student_id, password_hash = student_credentials
 
         # Verify the password
-        if not bcrypt.checkpw(student_data.password.encode('utf-8'), password_hash):
+        if not bcrypt.checkpw(student_data.password.encode('utf-8'), password_hash.encode('utf-8')):
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
         # Generate JWT token
@@ -202,8 +204,8 @@ async def apply_to_job(
     """
     Apply to a job using the Application table.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
 
         # Extract student_id from the access token
         student_id = current_user.get("sub")
@@ -241,8 +243,8 @@ async def get_enrolled_courses(
     """
     Retrieve all training programs a student is enrolled in using the stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
 
         # Call the stored procedure
         cursor.callproc("GetTrainingEnrollmentsByStudent", (student_id,))
@@ -285,8 +287,8 @@ async def enroll_student(
     """
     Enroll a student in a training program using their access token and a stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
 
         # Extract student_id from the access token
         student_id = current_user.get("sub")

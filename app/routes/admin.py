@@ -11,13 +11,13 @@ from utils import create_access_token
 
 router = APIRouter()
 
-@router.get("/", response_model=List[AdminResponse])
+@router.get("/profile", response_model=List[AdminResponse])
 async def get_admin(db: mysql.connector.MySQLConnection = Depends(get_db)):
     """
     Retrieve admin data using the GetAdminData stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.callproc("GetAdminData")
 
         results = []
@@ -53,12 +53,54 @@ async def get_admin(db: mysql.connector.MySQLConnection = Depends(get_db)):
         if db:
             db.close()
 
-@router.get("/dashboard")
-async def get_admin_dashboard(db: MySQLConnection = Depends(get_db)):
+@router.get("/stats")
+async def get_admin_stats(db: MySQLConnection = Depends(get_db)):
     """
-    Retrieve admin dashboard data using the GetAdminDashboard stored procedure.
+    Retrieve admin stats data using the stored procedures:
+    GetTotalPlacementsThisYear, GetActiveTrainingPrograms, GetTotalCompanies, GetTotalStudents.
     """
-    
+    cursor = db.cursor()
+    try:
+        # Call the GetTotalPlacementsThisYear procedure
+        cursor.callproc("GetTotalPlacementsThisYear")
+        total_placements = 0
+        for result in cursor.stored_results():
+            total_placements = result.fetchone()[0]
+
+        # Call the GetActiveTrainingPrograms procedure
+        cursor.callproc("GetActiveTrainingPrograms")
+        active_training_programs = 0
+        for result in cursor.stored_results():
+            active_training_programs = result.fetchone()[0]
+
+        # Call the GetTotalCompanies procedure
+        cursor.callproc("GetTotalCompanies")
+        total_companies = 0
+        for result in cursor.stored_results():
+            total_companies = result.fetchone()[0]
+
+        # Call the GetTotalStudents procedure
+        cursor.callproc("GetTotalStudents")
+        total_students = 0
+        for result in cursor.stored_results():
+            total_students = result.fetchone()[0]
+
+        # Return the aggregated stats
+        return {
+            "total_placements_this_year": total_placements,
+            "active_training_programs": active_training_programs,
+            "total_companies": total_companies,
+            "total_students": total_students,
+        }
+
+    except mysql.connector.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
 
 @router.post("/register")
 async def register_admin(
@@ -109,8 +151,8 @@ async def login_admin(
         WHERE ae.Email_ID = %s
     """
 
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.execute(query, (admin_data.id,))
         admin_credentials = cursor.fetchone()
 

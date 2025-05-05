@@ -804,3 +804,35 @@ BEGIN
         placement_rate_current AS Placement_Rate_Current_Year,
         percent_change_rate AS Percentage_Change_in_Placement_Rate;
 END;
+
+-- Stored Procedure: Get Total Placements This Year
+DROP PROCEDURE IF EXISTS GetTotalPlacementsThisYear;
+CREATE PROCEDURE GetTotalPlacementsThisYear()
+BEGIN
+    SELECT COUNT(*) AS Total_Placements
+    FROM Placement_Record
+    WHERE YEAR(Placement_Date) = YEAR(CURDATE());
+END;
+
+-- Stored Procedure: Get Number of Active Training Programs
+DROP PROCEDURE IF EXISTS GetActiveTrainingPrograms;
+CREATE PROCEDURE GetActiveTrainingPrograms()
+BEGIN
+    SELECT COUNT(*) AS Active_Programs
+    FROM Training_Program
+    WHERE CURDATE() BETWEEN Start_Date AND End_Date;
+END;
+
+-- Stored Procedure: Retrieve Total Number of Companies Registered
+DROP PROCEDURE IF EXISTS GetTotalCompanies;
+CREATE PROCEDURE GetTotalCompanies()
+BEGIN
+    SELECT COUNT(*) AS Total_Companies FROM Company;
+END;
+
+-- Stored Procedure: Retrieve Total Number of Students
+DROP PROCEDURE IF EXISTS GetTotalStudents;
+CREATE PROCEDURE GetTotalStudents()
+BEGIN
+    SELECT COUNT(*) AS Total_Students FROM Student;
+END;

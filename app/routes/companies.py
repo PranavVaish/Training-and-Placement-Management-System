@@ -21,8 +21,8 @@ async def get_company_by_id(company_id: int, db: mysql.connector.MySQLConnection
         LEFT JOIN Company_Email ce ON c.Company_ID = ce.Company_ID
         WHERE c.Company_ID = %s
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.execute(query, (company_id,))
         company = cursor.fetchone()
 
@@ -70,8 +70,8 @@ async def get_all_companies(
     Retrieve all companies from the database.
     """
     query = "SELECT * FROM Company"
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.execute(query)
         companies = cursor.fetchall()
 
@@ -109,8 +109,8 @@ async def register_company(
     """
     Register a new company.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
 
         # Hash the password
         hashed_password = bcrypt.hashpw(company_data.password.encode("utf-8"), bcrypt.gensalt())
@@ -154,8 +154,8 @@ async def login_company(
         FROM Company c
         WHERE c.Company_ID = %s
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.execute(query, (company_data.id,))
         company_credentials = cursor.fetchone()
 
@@ -194,8 +194,8 @@ async def get_hiring_history(
     """
     Retrieve the hiring history of a company using the GetHiringHistoryDetails stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.callproc("GetHiringHistoryDetails", (company_id,))
 
         for result in cursor.stored_results():

@@ -93,59 +93,18 @@ DELIMITER ;
 
 -----------------------------------------------------------------------------------------------------
 
---Stored Procedure: Retrieve Total Number of Students
 
-DELIMITER $$
-
-CREATE PROCEDURE GetTotalStudents()
-BEGIN
-    SELECT COUNT(*) AS Total_Students FROM Student;
-END$$
-
-DELIMITER ;
 
 ----------------------------------------------------------------------------------------------------
 
---Stored Procedure: Retrieve Total Number of Companies Registered
-
-DELIMITER $$
-
-CREATE PROCEDURE GetTotalCompanies()
-BEGIN
-    SELECT COUNT(*) AS Total_Companies FROM Company;
-END$$
-
-DELIMITER ;
 
 ----------------------------------------------------------------------------------------------------
 
---Stored Procedure: Get Number of Active Training Programs
 
-DELIMITER $$
-
-CREATE PROCEDURE GetActiveTrainingPrograms()
-BEGIN
-    SELECT COUNT(*) AS Active_Programs
-    FROM Training_Program
-    WHERE CURDATE() BETWEEN Start_Date AND End_Date;
-END$$
-
-DELIMITER ;
 
 -----------------------------------------------------------------------------------------------------
 
---Stored Procedure: Get Total Placements This Year
 
-DELIMITER $$
-
-CREATE PROCEDURE GetTotalPlacementsThisYear()
-BEGIN
-    SELECT COUNT(*) AS Total_Placements
-    FROM Placement_Record
-    WHERE YEAR(Placement_Date) = YEAR(CURDATE());
-END$$
-
-DELIMITER ;
 
 -------------------------------------------------------------------------------------------------------
 
