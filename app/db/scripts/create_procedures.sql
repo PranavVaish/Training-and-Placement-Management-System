@@ -837,3 +837,30 @@ CREATE PROCEDURE GetTotalStudents()
 BEGIN
     SELECT COUNT(*) AS Total_Students FROM Student;
 END;
+
+-- Stored Procedure: AddTrainingProgram
+DROP PROCEDURE IF EXISTS AddTrainingProgram;
+CREATE PROCEDURE AddTrainingProgram(
+    IN p_TrainingName VARCHAR(100),
+    IN p_TrainingDescription TEXT,
+    IN p_Duration INT,
+    IN p_TrainerID INT,
+    IN p_StartDate DATE,
+    IN p_EndDate DATE,
+    IN p_Mode VARCHAR(50),
+    IN p_CertificationProvided BOOLEAN,
+    IN p_TrainingCost DECIMAL(10,2)
+)
+BEGIN
+    -- Insert into Training_Program table
+    INSERT INTO Training_Program (
+        Training_Name, Training_Description,
+        Duration, Trainer_ID, Start_Date, End_Date,
+        Mode, Certification_Provided, Training_Cost
+    )
+    VALUES (
+        p_TrainingName, p_TrainingDescription,
+        p_Duration, p_TrainerID, p_StartDate, p_EndDate,
+        p_Mode, p_CertificationProvided, p_TrainingCost
+    );
+END;

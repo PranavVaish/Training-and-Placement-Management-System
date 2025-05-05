@@ -20,6 +20,17 @@ class JobListResponse(BaseModel):
 
 class JobByCompanyResponse(BaseModel):
     Job_ID: int
+    Job_Title: str
+    Salary: float
+    Company_Name: str
+    Job_Type: str
+    Application_Deadline: date
+
+class JobByCompanyListResponse(BaseModel):
+    jobs: List[JobByCompanyResponse]
+
+class JobByCompanyResponse(BaseModel):
+    Job_ID: int
     Title: str
     Salary: float
     Company_Name: str
