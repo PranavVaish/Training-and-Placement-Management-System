@@ -320,7 +320,6 @@ END;
 -- Stored Procedure: Add Job with Multiple Details
 DROP PROCEDURE IF EXISTS AddJobWithMultipleDetails;
 CREATE PROCEDURE AddJobWithMultipleDetails(
-    IN p_JobID INT,
     IN p_JobTitle VARCHAR(100),
     IN p_JobDescription TEXT,
     IN p_Salary DECIMAL(10,2),
@@ -337,10 +336,14 @@ BEGIN
     DECLARE total_location INT;
     DECLARE criterion VARCHAR(100);
     DECLARE location VARCHAR(100);
+    DECLARE new_JobID INT;
 
     -- Insert into Job table
-    INSERT INTO Job (Job_ID, Job_Title, Job_Description, Salary, Company_ID, Job_Type, Vacancies, Application_Deadline)
-    VALUES (p_JobID, p_JobTitle, p_JobDescription, p_Salary, p_CompanyID, p_JobType, p_Vacancies, p_ApplicationDeadline);
+    INSERT INTO Job (Job_Title, Job_Description, Salary, Company_ID, Job_Type, Vacancies, Application_Deadline)
+    VALUES (p_JobTitle, p_JobDescription, p_Salary, p_CompanyID, p_JobType, p_Vacancies, p_ApplicationDeadline);
+
+    -- Get the auto-generated Job_ID
+    SET new_JobID = LAST_INSERT_ID();
 
     -- Count how many items are in the comma-separated strings
     SET total_eligibility = LENGTH(p_EligibilityCriteriaList) - LENGTH(REPLACE(p_EligibilityCriteriaList, ',', '')) + 1;
@@ -351,7 +354,7 @@ BEGIN
     WHILE i <= total_eligibility DO
         SET criterion = TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(p_EligibilityCriteriaList, ',', i), ',', -1));
         INSERT INTO Job_Eligibility (Job_ID, Eligibility_Criterion)
-        VALUES (p_JobID, criterion);
+        VALUES (new_JobID, criterion);
         SET i = i + 1;
     END WHILE;
 
@@ -360,7 +363,7 @@ BEGIN
     WHILE i <= total_location DO
         SET location = TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(p_LocationList, ',', i), ',', -1));
         INSERT INTO Job_Location (Job_ID, Location)
-        VALUES (p_JobID, location);
+        VALUES (new_JobID, location);
         SET i = i + 1;
     END WHILE;
 END;

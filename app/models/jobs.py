@@ -21,7 +21,7 @@ class JobListResponse(BaseModel):
 class JobCreate(BaseModel):
     Job_Title: str = Field(..., alias="title")
     Job_Type: str = Field(..., alias="type")
-    Location_List: List[str] = Field(..., alias="loaction")
+    Location_List: List[str] = Field(..., alias="location")
     Vacancies: int = Field(..., alias="vacancy")
     Application_Deadline: date = Field(..., alias="deadline")
     Salary: float = Field(..., alias="salary")

@@ -20,3 +20,9 @@ class TrainerProgram(BaseModel):
     certification_provided: bool
     training_cost: float
     trainer_name: str
+
+class CreateTrainingProgram(BaseModel):
+    training_name: str = Field(..., alias="trainingName")
+    training_description: str = Field(..., alias="trainingDescription")
+    duration: int = Field(..., alias="duration")
+    trainer_name: str

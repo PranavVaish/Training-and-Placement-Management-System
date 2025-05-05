@@ -98,7 +98,6 @@ async def create_job(
         cursor.callproc(
             "AddJobWithMultipleDetails",
             (
-                job_data.Job_ID,
                 job_data.Job_Title,
                 job_data.Job_Description,
                 job_data.Salary,
