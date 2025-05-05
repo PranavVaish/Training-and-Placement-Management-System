@@ -127,7 +127,7 @@ async def register_student(
             student_data.cgpa,
             student_data.graduation_year,
             student_data.department,
-            hashed_password.decode("utf-8"),
+            hashed_password,
             student_data.email,
             student_data.phone_number
         ))
@@ -158,7 +158,7 @@ async def login_student(
     query = """
         SELECT sc.Student_ID, sc.Password
         FROM Student sc
-        WHERE se.Student_ID = %s
+        WHERE sc.Student_ID = %s
     """
 
     cursor = db.cursor()
