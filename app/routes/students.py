@@ -215,7 +215,7 @@ async def apply_to_job(
         # Call the stored procedure
         application_date = datetime.date.today()
         status = "Pending"
-        cursor.callproc("ApplyToJob", (student_id, application_data.job_id, application_data.resume, application_date, status))
+        cursor.callproc("ApplyToJob", (student_id, application_data.job_id, application_date, status))
 
         # Commit the changes
         db.commit()

@@ -198,7 +198,6 @@ CREATE TABLE IF NOT EXISTS Application (
     Student_ID INT,
     Job_ID INT,
     Application_Date DATE,
-    Resume MEDIUMBLOB NOT NULL,
     Status VARCHAR(50),
     FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID) ON DELETE CASCADE,
     FOREIGN KEY (Job_ID) REFERENCES Job(Job_ID) ON DELETE CASCADE

@@ -617,7 +617,6 @@ DROP PROCEDURE IF EXISTS ApplyToJob;
 CREATE PROCEDURE ApplyToJob(
     IN p_student_id INT,
     IN p_job_id INT,
-    IN p_resume MEDIUMBLOB,
     IN p_application_date DATE,
     IN p_status VARCHAR(50)
 )
@@ -628,8 +627,8 @@ BEGIN
     END IF;
 
     -- Insert the application into the Application table
-    INSERT INTO Application (Student_ID, Job_ID, Resume, Application_Date, Status)
-    VALUES (p_student_id, p_job_id, p_resume, p_application_date, p_status);
+    INSERT INTO Application (Student_ID, Job_ID, Application_Date, Status)
+    VALUES (p_student_id, p_job_id, p_application_date, p_status);
 END;
 
 -- Stored Procedure: Retrieve Placement Records for listing
