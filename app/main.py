@@ -7,6 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from db.connections import get_db
 from models.student import StudentLogin
+from models.admin import AdminLogin
+from models.company import CompanyLogin
 
 from routes.students import router as students_router, login_student
 from routes.companies import router as company_router, login_company
@@ -70,10 +72,12 @@ async def login_user(user_data: GenericLogin, db: mysql.connector.MySQLConnectio
         return await login_student(student_login_data, db)
     elif role == "company":
         # Call the company login function
-        return await login_company(user_data.id, user_data.password, db)
+        company_login_data = CompanyLogin(user_id=user_data.id, password=user_data.password)
+        return await login_company(company_login_data, db)
     elif role == "admin":
         # Call the admin login function
-        return await login_admin(user_data.id, user_data.password, db)
+        admin_login_data = AdminLogin(user_id=user_data.id, password=user_data.password)
+        return await login_admin(admin_login_data, db)
     else:
         raise HTTPException(
             status_code=400,

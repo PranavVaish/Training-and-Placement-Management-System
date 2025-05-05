@@ -32,8 +32,8 @@ class Company_Credentials(BaseModel):
 """
 
 class CompanyLogin(BaseModel):
-    email: EmailStr = Field(..., max_length=100)  # VARCHAR(100)
-    password: str  # Hashed password
+    id: int = Field(..., alias="user_id") 
+    password: str 
 
 class CompanyResponse(BaseModel):
     Company_ID: int

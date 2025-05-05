@@ -143,7 +143,7 @@ async def register_company(
 
 
 async def login_company(
-    email: str, password: str,  # Use CompanyLogin model
+    company_data: CompanyLogin,  # Use CompanyLogin model
     db: mysql.connector.MySQLConnection = Depends(get_db),
 ):
     """
@@ -155,11 +155,9 @@ async def login_company(
         JOIN Company_Email ce ON c.Company_ID = ce.Company_ID
         WHERE ce.Email_ID = %s
     """
-    company_data = CompanyLogin(email=email, password=password)
-
     try:
         cursor = db.cursor()
-        cursor.execute(query, (company_data.email,))
+        cursor.execute(query, (company_data.id,))
         company_credentials = cursor.fetchone()
 
         if not company_credentials:

@@ -14,13 +14,13 @@ class StudentRegistration(BaseModel):
 
 class StudentLogin(BaseModel):
     id: int = Field(..., gt=0, alias="user_id")
-    password: str  # Hashed password
+    password: str
 
 class StudentResponse(BaseModel):
     Student_ID: int
     Name: str
     Email_ID: EmailStr
-    Phone_No: Optional[str] = None  # Phone number can be None
+    Phone_No: Optional[str] = None
     Department: str
     CGPA: float
     Graduation_Year: int

@@ -6,6 +6,8 @@ from db.connections import get_db
 from mysql.connector import MySQLConnection
 from models.admin import AdminLogin, AdminResponse, AdminRegistration
 from typing import List
+import datetime
+from utils import create_access_token
 
 router = APIRouter()
 
@@ -89,7 +91,7 @@ async def register_admin(
             db.close()
 
 async def login_admin(
-    admin_data: AdminLogin = Body(...),  # Use AdminLogin model
+    admin_data: AdminLogin = Body(...),
     db: MySQLConnection = Depends(get_db),
 ):
     """
@@ -105,7 +107,7 @@ async def login_admin(
 
     try:
         cursor = db.cursor()
-        cursor.execute(query, (admin_data.email,))
+        cursor.execute(query, (admin_data.id,))
         admin_credentials = cursor.fetchone()
 
         if not admin_credentials:
@@ -114,10 +116,15 @@ async def login_admin(
         admin_id, password_hash = admin_credentials
 
         # Verify the password
-        if not bcrypt.checkpw(admin_data.password.encode('utf-8'), password_hash.encode('utf-8')):
+        if not bcrypt.checkpw(admin_data.password.encode('utf-8'), password_hash):
             raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        access_token_expires = datetime.timedelta(minutes=30)  # Token expiration time
+        access_token = create_access_token(
+            data={"sub": str(admin_id)}, expires_delta=access_token_expires
+        )
 
-        return {"access_token": "test_token"}
+        return {"access_token": access_token, "token_type": "bearer"}
 
     except mysql.connector.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")

@@ -18,7 +18,7 @@ class Admin_Phone(BaseModel):
 """
 
 class AdminLogin(BaseModel):
-    email: EmailStr = Field(..., max_length=100)
+    id: int = Field(..., max_length=100, alias="user_id")
     password: str
 
 class AdminResponse(BaseModel):
