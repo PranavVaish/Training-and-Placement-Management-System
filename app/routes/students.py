@@ -352,7 +352,7 @@ async def enroll_student(
             raise HTTPException(status_code=401, detail="Invalid access token")
 
         # Call the stored procedure
-        cursor.callproc("EnrollStudentInTraining", (enrollment_data.training_id, student_id))
+        cursor.callproc("EnrollStudentInTraining", (enrollment_data.trainingId, student_id))
 
         # Commit the changes
         db.commit()

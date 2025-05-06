@@ -45,7 +45,7 @@ class StudentApplicationListResponse(BaseModel):
     applications: list[StudentApplicationResponse]
 
 class EnrollStudent(BaseModel):
-    training_id: int
+    trainingId: int
     studentName: str
     studentId: int
     studentEmail: EmailStr
