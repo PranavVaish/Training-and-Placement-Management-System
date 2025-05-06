@@ -4,7 +4,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 import mysql.connector
 from db.connections import get_db
 from mysql.connector import MySQLConnection
-from models.admin import AdminLogin, AdminResponse, AdminRegistration
+from models.admin import AdminLogin, AdminResponse, AdminRegistration, AdminTrainingProgram
 from typing import List
 import datetime
 from utils import create_access_token
@@ -135,9 +135,51 @@ async def get_companies(db: MySQLConnection = Depends(get_db)):
         if db:
             db.close()
 
-@router.get("/training-programs")
-async def get_training_programs(db: MySQLConnection = Depends(get_db)):
-    ...
+@router.get("/training_programs", response_model=List[AdminTrainingProgram])
+async def get_admin_training_programs(db: mysql.connector.MySQLConnection = Depends(get_db)):
+    """
+    Retrieve all training programs with trainer information.
+    """
+    query = """
+        SELECT 
+            tp.Training_ID,
+            tp.Training_Name,
+            t.Name AS Trainer_Name,
+            tp.Duration,
+            tp.Mode,
+            tp.Training_Cost
+        FROM 
+            Training_Program tp
+        JOIN 
+            Trainer t ON tp.Trainer_ID = t.Trainer_ID
+    """
+    cursor = db.cursor()
+    try:
+        cursor.execute(query)
+        training_programs = cursor.fetchall()
+
+        # Convert the list of tuples to a list of dictionaries
+        training_program_list = []
+        for program in training_programs:
+            program_data = {
+                "Training_ID": program[0],
+                "Training_Name": program[1],
+                "Trainer_Name": program[2],
+                "Duration": program[3],
+                "Mode": program[4],
+                "Cost": program[5],
+            }
+            training_program_list.append(AdminTrainingProgram(**program_data))
+
+        return training_program_list
+
+    except mysql.connector.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()   
 
 @router.post("/register")
 async def register_admin(

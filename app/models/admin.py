@@ -35,3 +35,11 @@ class AdminRegistration(BaseModel):
     phone_number: str = Field(..., max_length=10, alias="phone")
     id: int = Field(..., gt=0, alias="adminId")
     password: str = Field(..., alias="password")
+
+class AdminTrainingProgram(BaseModel):
+    id: int = Field(..., alias="Training_ID")
+    name: str = Field(..., alias="Training_Name")
+    trainerName: str = Field(..., alias="Trainer_Name")
+    duration: str = Field(..., alias="Duration")
+    mode: str = Field(..., alias="Mode")
+    cost: str = Field(..., alias="Cost")
