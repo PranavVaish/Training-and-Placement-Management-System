@@ -34,7 +34,7 @@ async def get_placement_records(db: mysql.connector.MySQLConnection = Depends(ge
                     "Placement_Location": record[6],
                     "Placement_Date": record[5],
                 }
-                placement_list.append(PlacementReport(**record_data))
+                placement_list.append(PlacementRecord(**record_data))
             results.append(placement_list)
 
         if results:
