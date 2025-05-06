@@ -123,8 +123,8 @@ async def get_training_programs(
     """
     Get all training programs.
     """
-    cursor = db.cursor(dictionary=True)
     try:
+        cursor = db.cursor(dictionary=True)
 
         # Call the stored procedure
         cursor.callproc("GetAllTrainingProgramsRowByRow")
@@ -134,7 +134,7 @@ async def get_training_programs(
         for result in cursor.stored_results():
             programs.extend(result.fetchall())
 
-        return {"programs": programs}
+        return programs
 
     except mysql.connector.Error as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch training programs: {e}")
