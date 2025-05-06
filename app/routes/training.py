@@ -98,7 +98,7 @@ async def create_training_program(
             program_data.end_date,
             program_data.mode,
             program_data.certification_provided,
-            program_data.training_cost,
+            program_data.cost,
         ))
 
         # Commit the changes
