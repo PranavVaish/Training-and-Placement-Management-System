@@ -59,33 +59,24 @@ async def get_placement_report(db: mysql.connector.MySQLConnection = Depends(get
     cursor = db.cursor()
     try:
         cursor.callproc("GetPlacementReport")
-
-        results = []
+        results = None
         for result in cursor.stored_results():
-            report_data = result.fetchall()
+            results = result.fetchall()
+            break
 
-            if not report_data:
-                raise HTTPException(status_code=404, detail="Placement report not found")
-
-            # Assuming the stored procedure returns a single row
-            report = report_data[0]
-
-            # Convert the tuple to a dictionary
-            report_dict = {
-                "Total_Placement_Current_Year": report[0],
-                "Percentage_Change_in_Total_Placement": report[1],
-                "Average_Package_Current_Year": report[2],
-                "Percentage_Change_in_Package": report[3],
-                "Placement_Rate_Current_Year": report[4],
-                "Percentage_Change_in_Placement_Rate": report[5],
-            }
-
-            results.append(PlacementReport(**report_dict))
-
-        if results:
-            return results[0]
-        else:
+        if not results or not results[0]:
             raise HTTPException(status_code=404, detail="Placement report not found")
+
+        report = results[0]
+        placement_report = PlacementReport(
+            Total_Placement_Current_Year=report[0],
+            Percentage_Change_in_Total_Placement=report[1],
+            Average_Package_Current_Year=report[2],
+            Percentage_Change_in_Package=report[3],
+            Placement_Rate_Current_Year=report[4],
+            Percentage_Change_in_Placement_Rate=report[5],
+        )
+        return placement_report
 
     except mysql.connector.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
