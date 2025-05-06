@@ -258,3 +258,49 @@ async def login_admin(
         if db:
             db.close()
 
+@router.get("/feedback")
+async def get_all_feedback(
+    db: mysql.connector.MySQLConnection = Depends(get_db)
+):
+    """
+    Retrieve all feedback records with student name and training program.
+    """
+    query = """
+        SELECT 
+            f.Feedback_ID,
+            s.Name AS Student_Name,
+            tp.Training_Name,
+            f.Rating,
+            f.Comments
+        FROM 
+            Feedback f
+        JOIN 
+            Student s ON f.Student_ID = s.Student_ID
+        JOIN
+            Training_Program tp ON f.Training_ID = tp.Training_ID
+    """
+    cursor = db.cursor()
+    try:
+        cursor.execute(query)
+        feedbacks = cursor.fetchall()
+
+        feedback_list = [
+            {
+                "Feedback_ID": row[0],
+                "Student_Name": row[1],
+                "Training_Name": row[2],
+                "Rating": row[3],
+                "Comments": row[4],
+            }
+            for row in feedbacks
+        ]
+
+        return {"feedbacks": feedback_list}
+
+    except mysql.connector.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
