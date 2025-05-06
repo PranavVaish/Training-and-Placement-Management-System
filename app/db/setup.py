@@ -99,8 +99,8 @@ def setup_database():
         # Connect to the database
         print(f"Connecting to database {db_name} at {db_host}:{db_port}")
         connection = mysql.connector.connect(
-            user=os.getenv('DB_USER', 'root'),
-            password=os.getenv('DB_PASSWORD', 'root'),
+            user=os.getenv('DB_USER', 'fastapi'),
+            password=os.getenv('DB_PASSWORD', 'test123'),
             host=db_host,
             port=db_port,
             database=db_name

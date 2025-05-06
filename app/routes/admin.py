@@ -258,7 +258,7 @@ async def login_admin(
         if db:
             db.close()
 
-@router.get("/feedback", response_model=List[FeedbackResponse])  # Use response_model for type hinting
+@router.get("/feedback", response_model=List[FeedbackResponse])
 async def get_all_feedback(
     db: mysql.connector.MySQLConnection = Depends(get_db)
 ):
@@ -280,16 +280,15 @@ async def get_all_feedback(
         JOIN
             Training_Program tp ON f.Training_ID = tp.Training_ID
         JOIN
-            Trainer t ON tp.Trainer_ID = t.Trainer_ID
+            Trainer t ON f.Trainer_ID = t.Trainer_ID
     """
     cursor = db.cursor()
     try:
         cursor.execute(query)
         results = cursor.fetchall()
 
-        #  Safely handle empty result sets
         if not results:
-            return []  # Or raise an HTTPException(status_code=404, detail="No feedback found")
+            return []
 
         feedbacks = [
             FeedbackResponse(
