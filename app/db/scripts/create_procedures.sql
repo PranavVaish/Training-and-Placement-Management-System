@@ -534,7 +534,7 @@ BEGIN
         c.Name, ch.Hiring_Period, s.Name;
 END;
 
--- Stored Procedure: GetTrainingEnrollmentsByStudent
+-- Stored Procedure: Get Training Enrollments by Student
 DROP PROCEDURE IF EXISTS GetTrainingEnrollmentsByStudent;
 CREATE PROCEDURE GetTrainingEnrollmentsByStudent(
     IN p_StudentID INT
@@ -542,19 +542,17 @@ CREATE PROCEDURE GetTrainingEnrollmentsByStudent(
 BEGIN
     DECLARE done INT DEFAULT FALSE;
     DECLARE v_EnrollmentID INT;
-    DECLARE v_TrainingID INT;
+    DECLARE v_Duration INT;
     DECLARE v_TrainingName VARCHAR(100);
-    DECLARE v_PerformanceGrade VARCHAR(10);
-    DECLARE v_CompletionStatus VARCHAR(20);
+    DECLARE v_Start_Date DATE;
 
     -- Cursor: fetch enrollments for the given student, along with training name
     DECLARE enroll_cursor CURSOR FOR
         SELECT 
             te.Enrollment_ID,
-            te.Training_ID,
+            tp.Duration,
             tp.Training_Name,
-            te.Performance_Grade,
-            te.Completion_Status
+            tp.Start_Date,
         FROM Training_Enrollment te
         JOIN Training_Program tp ON te.Training_ID = tp.Training_ID
         WHERE te.Student_ID = p_StudentID;
@@ -568,10 +566,9 @@ BEGIN
     read_loop: LOOP
         FETCH enroll_cursor INTO
             v_EnrollmentID,
-            v_TrainingID,
+            v_Duration,
             v_TrainingName,
-            v_PerformanceGrade,
-            v_CompletionStatus;
+            v_Start_Date;
 
         IF done THEN
             LEAVE read_loop;
@@ -580,10 +577,9 @@ BEGIN
         -- Output one row at a time
         SELECT 
             v_EnrollmentID AS Enrollment_ID,
-            v_TrainingID AS Training_ID,
+            v_Duration AS Duration,
             v_TrainingName AS Training_Name,
-            v_PerformanceGrade AS Performance_Grade,
-            v_CompletionStatus AS Completion_Status;
+            v_Start_Date AS Start_Date;
 
     END LOOP;
 

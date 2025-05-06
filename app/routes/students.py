@@ -301,28 +301,24 @@ async def get_enrolled_courses(
     """
     cursor = db.cursor()
     try:
-
         # Call the stored procedure
         cursor.callproc("GetTrainingEnrollmentsByStudent", (student_id,))
 
-        # Fetch results from the procedure
+        enrollment_list = []
         for result in cursor.stored_results():
             enrollments = result.fetchall()
+            for enrollment in enrollments:
+                enrollment_data = {
+                    "Enrollment_ID": enrollment[0],
+                    "Duration": enrollment[1],
+                    "Training_Name": enrollment[2],
+                    "Start_Date": enrollment[3]
+                }
+                enrollment_list.append(enrollment_data)
 
-        if not enrollments:
+        if not enrollment_list:
             raise HTTPException(status_code=404, detail="No training enrollments found for this student")
 
-        # Convert the tuple to a dictionary or a Training object
-        enrollment_list = []
-        for enrollment in enrollments:
-            enrollment_data = {
-                "Enrollment_ID": enrollment[0],
-                "Training_ID": enrollment[1],
-                "Training_Name": enrollment[2],
-                "Performance_Grade": enrollment[3],
-                "Completion_Status": enrollment[4]
-            }
-            enrollment_list.append(enrollment_data)
         return {"enrollments": enrollment_list}
 
     except mysql.connector.Error as e:
