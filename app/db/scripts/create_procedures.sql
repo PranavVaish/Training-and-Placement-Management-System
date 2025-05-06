@@ -901,10 +901,10 @@ BEGIN
 END;
 
 -- Stored procedure for distinct department
-DROP PROCEDURE IF EXISTS GetDistinctDepartments;
-CREATE PROCEDURE GetDistinctDepartments()
+DROP PROCEDURE IF EXISTS GetDistinctCompanies;
+CREATE PROCEDURE GetDistinctCompanies()
 BEGIN
-    SELECT DISTINCT Department 
-    FROM Student
-    ORDER BY Department;
+    SELECT DISTINCT Name AS Company_Name, Company_ID  
+    FROM Company
+    ORDER BY Name;
 END;

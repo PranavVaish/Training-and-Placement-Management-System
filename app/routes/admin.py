@@ -101,6 +101,43 @@ async def get_admin_stats(db: MySQLConnection = Depends(get_db)):
         if db:
             db.close()
 
+@router.get("/companies")
+async def get_companies(db: MySQLConnection = Depends(get_db)):
+    """
+    Retrieve all companies using the GetDistinctCompanies stored procedure.
+    """
+    cursor = db.cursor()
+    try:
+        cursor.callproc("GetDistinctCompanies")
+        companies = []
+        for result in cursor.stored_results():
+            companies = result.fetchall()
+
+        if not companies:
+            raise HTTPException(status_code=404, detail="Companies not found")
+
+        # Convert the tuple to a dictionary or an Admin object
+        companies_list = []
+        for department in companies:
+            company_data = {
+                "name": department[0],
+                "id": department[1],
+            }
+            companies_list.append(company_data)
+
+        return companies_list
+
+    except mysql.connector.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+@router.get("/training-programs")
+async def get_training_programs(db: MySQLConnection = Depends(get_db)):
+    ...
 
 @router.post("/register")
 async def register_admin(
