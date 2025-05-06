@@ -10,16 +10,14 @@ class TrainerRegistration(BaseModel):
     phone_no: str = Field(..., max_length=15, alias="phone")
 
 class TrainerProgram(BaseModel):
-    trainer_id: int
-    training_name: str
-    training_description: str
-    duration: int
-    start_date: date
-    end_date: date
-    mode: str
-    certification_provided: bool
-    training_cost: float
-    trainer_name: str
+    training_name: str = Field(..., alias="Training_Name")
+    training_description: str = Field(..., alias="Training_Description")
+    duration: int = Field(..., alias="Duration")
+    start_date: date = Field(..., alias="Start_Date")
+    mode: str = Field(..., alias="Mode")
+    certification_provided: bool = Field(..., alias="Certification_Provided")
+    training_cost: float = Field(..., alias="Training_Cost")
+    trainer_name: str = Field(..., alias="Trainer_Name")
 
 class CreateTrainingProgram(BaseModel):
     training_name: str = Field(..., alias="trainingName")

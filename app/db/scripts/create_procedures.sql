@@ -908,3 +908,22 @@ BEGIN
     FROM Company
     ORDER BY Name;
 END;
+
+
+DROP PROCEDURE IF EXISTS GetAllTrainingProgramsRowByRow;
+CREATE PROCEDURE GetAllTrainingProgramsRowByRow()
+BEGIN
+    SELECT 
+        tp.Training_Name,
+        tp.Training_Description,
+        tp.Duration,
+        tp.Start_Date,
+        tp.Mode,
+        tp.Certification_Provided,
+        tp.Training_Cost,
+        t.Name AS Trainer_Name
+    FROM 
+        Training_Program tp
+    JOIN 
+        Trainer t ON tp.Trainer_ID = t.Trainer_ID;
+END;
