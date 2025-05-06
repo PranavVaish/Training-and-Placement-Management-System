@@ -154,13 +154,15 @@ CREATE TABLE IF NOT EXISTS Placement_Record (
 
 -- Feedback Set
 CREATE TABLE IF NOT EXISTS Feedback (
-    Feedback_ID INT PRIMARY KEY,
+    Feedback_ID INT PRIMARY KEY AUTO_INCREMENT,
     Student_ID INT,
     Rating INT,
     Comments TEXT,
     Trainer_ID INT,
+    Training_ID INT,
     FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID) ON DELETE CASCADE,
-    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID) ON DELETE CASCADE
+    FOREIGN KEY (Trainer_ID) REFERENCES Trainer(Trainer_ID) ON DELETE CASCADE,
+    FOREIGN KEY (Training_ID) REFERENCES Training_Program(Training_ID) ON DELETE CASCADE
 );
 
 

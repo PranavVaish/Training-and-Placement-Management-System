@@ -75,25 +75,16 @@ CREATE PROCEDURE AddFeedback (
     IN p_Student_ID INT,
     IN p_Rating INT,
     IN p_Comments TEXT,
-    IN p_Trainer_ID INT
+    IN p_Trainer_ID INT,
+    IN p_Training_ID INT
 )
 BEGIN
-    DECLARE v_Feedback_ID INT;
-    DECLARE id_exists INT DEFAULT 1;
-
-    generate_id: REPEAT
-        SET v_Feedback_ID = FLOOR(100000 + (RAND() * 900000)); -- 6-digit random ID
-        SELECT COUNT(*) INTO id_exists
-        FROM Feedback
-        WHERE Feedback_ID = v_Feedback_ID;
-    UNTIL id_exists = 0 END REPEAT;
-
     -- Check if Student exists
     IF EXISTS (SELECT 1 FROM Student WHERE Student_ID = p_Student_ID) AND
        EXISTS (SELECT 1 FROM Trainer WHERE Trainer_ID = p_Trainer_ID) THEN
 
-        INSERT INTO Feedback (Feedback_ID, Student_ID, Rating, Comments, Trainer_ID)
-        VALUES (v_Feedback_ID, p_Student_ID, p_Rating, p_Comments, p_Trainer_ID);
+        INSERT INTO Feedback (Student_ID, Rating, Comments, Trainer_ID, Training_ID)
+        VALUES (p_Student_ID, p_Rating, p_Comments, p_Trainer_ID, p_Training_ID);
     ELSE
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Invalid Student_ID, or Trainer_ID';

@@ -18,13 +18,11 @@ async def create_feedback(
         cursor.callproc(
             "AddFeedback",
             (
-                feedback_data.Feedback_ID,
                 feedback_data.Student_ID,
-                feedback_data.Company_ID,
                 feedback_data.Rating,
                 feedback_data.Comments,
-                feedback_data.Feedback_Type,
                 feedback_data.Trainer_ID,
+                feedback_data.Training_Program_ID
             ),
         )
         db.commit()
