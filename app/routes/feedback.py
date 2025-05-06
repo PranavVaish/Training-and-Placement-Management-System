@@ -82,3 +82,4 @@ async def get_feedback_form(
             cursor.close()
         if db:
             db.close()
+

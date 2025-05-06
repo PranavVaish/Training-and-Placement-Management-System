@@ -85,6 +85,7 @@ async def create_training_program(
         admin_id = program_data.admin_id
         cursor.execute("SELECT 1 FROM Admin WHERE Admin_ID = %s", (admin_id,))
         result = cursor.fetchone()
+        
         if not result:
             raise HTTPException(status_code=403, detail="User is not authorized to create a training program")
 

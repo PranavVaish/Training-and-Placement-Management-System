@@ -40,6 +40,6 @@ class AdminTrainingProgram(BaseModel):
     id: int = Field(..., alias="Training_ID")
     name: str = Field(..., alias="Training_Name")
     trainerName: str = Field(..., alias="Trainer_Name")
-    duration: str = Field(..., alias="Duration")
+    duration: int = Field(..., alias="Duration")
     mode: str = Field(..., alias="Mode")
-    cost: str = Field(..., alias="Cost")
+    cost: int = Field(..., alias="Cost")
