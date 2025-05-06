@@ -37,14 +37,14 @@ export default function AdminDashboard() {
   // Loading states
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingProfile, setLoadingProfile] = useState(true);
-  const [loadingDepartments, setLoadingDepartments] = useState(true);
+  const [loadingCompanies, setLoadingCompanies] = useState(true);
   const [loadingTrainings, setLoadingTrainings] = useState(true);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(true);
 
   // Error states
   const [statsError, setStatsError] = useState(null);
   const [profileError, setProfileError] = useState(null);
-  const [departmentsError, setDepartmentsError] = useState(null);
+  const [companiesError, setCompaniesError] = useState(null);
   const [trainingsError, setTrainingsError] = useState(null);
   const [feedbacksError, setFeedbacksError] = useState(null);
 
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
   const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isViewFeedbackDialogOpen, setIsViewFeedbackDialogOpen] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
 
   // Training Programs state
@@ -63,16 +63,17 @@ export default function AdminDashboard() {
 
   // Data states
   const [adminProfile, setAdminProfile] = useState(null);
-  const [departments, setDepartments] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [trainingPrograms, setTrainingPrograms] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
   const [stats, setStats] = useState([]);
+  const universalId = localStorage.getItem('universal_id') || '';
 
   // Fetch data on component mount
   useEffect(() => {
     fetchStats();
     fetchAdminProfile();
-    fetchDepartments();
+    fetchCompanies();
     fetchTrainingPrograms();
     fetchFeedbacks();
   }, []);
@@ -82,17 +83,47 @@ export default function AdminDashboard() {
     setLoadingStats(true);
     setStatsError(null);
     try {
-      const response = await axios.get(`${API_BASE_URL}/stats`);
-      setStats(response.data);
+      const response = await axios.get(`http://127.0.0.1:8000/admin/stats`);
+      const apiData = response.data;
+      const transformedStats = [
+        {
+          title: 'Total Students',
+          value: apiData.total_students || 0,
+          icon: <User className="h-8 w-8 text-blue-500" />,
+          change: '0%',
+          period: 'from last year'
+        },
+        {
+          title: 'Registered Companies',
+          value: apiData.total_companies || 0,
+          icon: <Briefcase className="h-8 w-8 text-purple-500" />,
+          change: '0%',
+          period: 'from last year'
+        },
+        {
+          title: 'Active Training Programs',
+          value: apiData.active_training_programs || 0,
+          icon: <BookOpen className="h-8 w-8 text-green-500" />,
+          change: '0%',
+          period: 'from last year'
+        },
+        {
+          title: 'Placements (2024)',
+          value: apiData.total_placements_this_year || 0,
+          icon: <Users className="h-8 w-8 text-orange-500" />,
+          change: '0%',
+          period: 'from previous batch'
+        }
+      ];
+      setStats(transformedStats);
     } catch (error) {
       console.error('Error fetching stats:', error);
       setStatsError('Failed to load dashboard statistics');
-      // Default stats if API fails
       setStats([
         { title: 'Total Students', value: 0, icon: <User className="h-8 w-8 text-blue-500" />, change: '0%', period: 'from last year' },
         { title: 'Registered Companies', value: 0, icon: <Briefcase className="h-8 w-8 text-purple-500" />, change: '0%', period: 'from last year' },
         { title: 'Active Training Programs', value: 0, icon: <BookOpen className="h-8 w-8 text-green-500" />, change: '0%', period: 'from last year' },
-        { title: 'Placements (2024)', value: 0, icon: <Users className="h-8 w-8 text-orange-500" />, change: '0%', period: 'from previous batch' },
+        { title: 'Placements (2024)', value: 0, icon: <Users className="h-8 w-8 text-orange-500" />, change: '0%', period: 'from previous batch' }
       ]);
     } finally {
       setLoadingStats(false);
@@ -104,37 +135,43 @@ export default function AdminDashboard() {
     setLoadingProfile(true);
     setProfileError(null);
     try {
-      const response = await axios.get(`${API_BASE_URL}/admin/profile`);
-      setAdminProfile(response.data);
+      const response = await axios.get(`http://127.0.0.1:8000/admin/profile`);
+      const profileData = Array.isArray(response.data) && response.data.length > 0 ? response.data[0] : null;
+      setAdminProfile(profileData || {
+        Admin_Name: 'Admin User',
+        Admin_ID: 'N/A',
+        Email: 'N/A',
+        Phone: 'N/A',
+        Role: 'N/A'
+      });
     } catch (error) {
       console.error('Error fetching admin profile:', error);
       setProfileError('Failed to load admin profile');
-      // Default profile if API fails
       setAdminProfile({
-        name: 'Admin User',
-        id: 'N/A',
-        email: 'N/A',
-        phone: 'N/A',
-        role: 'N/A',
+        Admin_Name: 'Admin User',
+        Admin_ID: 'N/A',
+        Email: 'N/A',
+        Phone: 'N/A',
+        Role: 'N/A'
       });
     } finally {
       setLoadingProfile(false);
     }
   };
 
-  // Fetch departments
-  const fetchDepartments = async () => {
-    setLoadingDepartments(true);
-    setDepartmentsError(null);
+  // Fetch companies
+  const fetchCompanies = async () => {
+    setLoadingCompanies(true);
+    setCompaniesError(null);
     try {
-      const response = await axios.get(`${API_BASE_URL}/departments`);
-      setDepartments(response.data);
+      const response = await axios.get(`http://127.0.0.1:8000/admin/companies`);
+      setCompanies(response.data);
     } catch (error) {
-      console.error('Error fetching departments:', error);
-      setDepartmentsError('Failed to load departments');
-      setDepartments([]);
+      console.error('Error fetching companies:', error);
+      setCompaniesError('Failed to load companies');
+      setCompanies([]);
     } finally {
-      setLoadingDepartments(false);
+      setLoadingCompanies(false);
     }
   };
 
@@ -143,7 +180,7 @@ export default function AdminDashboard() {
     setLoadingTrainings(true);
     setTrainingsError(null);
     try {
-      const response = await axios.get(`${API_BASE_URL}/training-programs`);
+      const response = await axios.get(`http://127.0.0.1:8000/admin/training_programs`);
       setTrainingPrograms(response.data);
     } catch (error) {
       console.error('Error fetching training programs:', error);
@@ -159,8 +196,13 @@ export default function AdminDashboard() {
     setLoadingFeedbacks(true);
     setFeedbacksError(null);
     try {
-      const response = await axios.get(`${API_BASE_URL}/feedbacks`);
-      setFeedbacks(response.data);
+      const response = await axios.get(`http://127.0.0.1:8000/admin/feedback`);
+      // Transform the feedback data to include a status field
+      const transformedFeedbacks = response.data.map(feedback => ({
+        ...feedback,
+        status: feedback.status || 'Unread' // Default to 'Unread' if status is not provided
+      }));
+      setFeedbacks(transformedFeedbacks);
     } catch (error) {
       console.error('Error fetching feedbacks:', error);
       setFeedbacksError('Failed to load student feedbacks');
@@ -170,49 +212,49 @@ export default function AdminDashboard() {
     }
   };
 
-  // Department handlers
-  const handleEditDepartment = (department) => {
-    setSelectedDepartment(department);
+  // Company handlers
+  const handleEditCompany = (company) => {
+    setSelectedCompany(company);
     setIsEditDialogOpen(true);
   };
 
-  const handleDeleteDepartment = async (departmentId) => {
+  const handleDeleteCompany = async (companyId) => {
     try {
-      await axios.delete(`${API_BASE_URL}/departments/${departmentId}`);
-      fetchDepartments(); // Refresh the list
+      await axios.delete(`${API_BASE_URL}/companies/${companyId}`);
+      fetchCompanies();
     } catch (error) {
-      console.error('Error deleting department:', error);
-      alert('Failed to delete department');
+      console.error('Error deleting company:', error);
+      alert('Failed to delete company');
     }
   };
 
-  const handleSaveDepartment = async () => {
-    if (!selectedDepartment) return;
+  const handleSaveCompany = async () => {
+    if (!selectedCompany) return;
     try {
-      await axios.put(`${API_BASE_URL}/departments/${selectedDepartment.id}`, selectedDepartment);
-      fetchDepartments(); // Refresh the list
+      await axios.put(`${API_BASE_URL}/companies/${selectedCompany.id}`, selectedCompany);
+      fetchCompanies();
       setIsEditDialogOpen(false);
     } catch (error) {
-      console.error('Error updating department:', error);
-      alert('Failed to update department');
+      console.error('Error updating company:', error);
+      alert('Failed to update company');
     }
   };
 
-  const handleAddDepartment = async (e) => {
+  const handleAddCompany = async (e) => {
     e.preventDefault();
     const form = e.target;
     const formData = new FormData(form);
-    const newDeptName = formData.get('departmentName')?.toString();
-    if (!newDeptName) return;
+    const newCompanyName = formData.get('companyName')?.toString();
+    if (!newCompanyName) return;
 
     try {
-      await axios.post(`${API_BASE_URL}/departments`, { name: newDeptName });
-      fetchDepartments(); // Refresh the list
+      await axios.post(`${API_BASE_URL}/companies`, { name: newCompanyName });
+      fetchCompanies();
       setIsAddDialogOpen(false);
       form.reset();
     } catch (error) {
-      console.error('Error adding department:', error);
-      alert('Failed to add department');
+      console.error('Error adding company:', error);
+      alert('Failed to add company');
     }
   };
 
@@ -225,7 +267,7 @@ export default function AdminDashboard() {
   const handleDeleteTraining = async (trainingId) => {
     try {
       await axios.delete(`${API_BASE_URL}/training-programs/${trainingId}`);
-      fetchTrainingPrograms(); // Refresh the list
+      fetchTrainingPrograms();
     } catch (error) {
       console.error('Error deleting training program:', error);
       alert('Failed to delete training program');
@@ -236,7 +278,7 @@ export default function AdminDashboard() {
     if (!selectedTraining) return;
     try {
       await axios.put(`${API_BASE_URL}/training-programs/${selectedTraining.id}`, selectedTraining);
-      fetchTrainingPrograms(); // Refresh the list
+      fetchTrainingPrograms();
       setIsEditTrainingDialogOpen(false);
     } catch (error) {
       console.error('Error updating training program:', error);
@@ -250,20 +292,21 @@ export default function AdminDashboard() {
     const formData = new FormData(form);
 
     const newTraining = {
-      name: formData.get('trainingName')?.toString() || '',
-      description: formData.get('trainingDescription')?.toString() || '',
+      universal_id: formData.get('universalId')?.toString() || universalId,
+      trainingName: formData.get('trainingName')?.toString() || '',
+      trainingDescription: formData.get('trainingDescription')?.toString() || '',
       duration: parseInt(formData.get('duration')?.toString() || '0'),
-      trainerName: formData.get('trainerName')?.toString() || '',
+      trainerId: parseInt(formData.get('trainerName')?.toString() || '0'),
       startDate: formData.get('startDate')?.toString() || '',
       endDate: formData.get('endDate')?.toString() || '',
       mode: formData.get('mode')?.toString() || 'Online',
       certificationProvided: formData.get('certificationProvided') === 'on',
-      cost: parseFloat(formData.get('cost')?.toString() || '0')
+      cost: parseFloat(formData.get('cost')?.toString() || '0'),
     };
 
     try {
-      await axios.post(`${API_BASE_URL}/training-programs`, newTraining);
-      fetchTrainingPrograms(); // Refresh the list
+      await axios.post(`http://127.0.0.1:8000/training/create-program`, newTraining);
+      fetchTrainingPrograms();
       setIsAddTrainingDialogOpen(false);
       form.reset();
     } catch (error) {
@@ -285,7 +328,7 @@ export default function AdminDashboard() {
         ...selectedFeedback,
         status
       });
-      fetchFeedbacks(); // Refresh the list
+      fetchFeedbacks();
       setIsViewFeedbackDialogOpen(false);
     } catch (error) {
       console.error('Error updating feedback status:', error);
@@ -297,7 +340,7 @@ export default function AdminDashboard() {
   const handleUpdateProfile = async () => {
     try {
       await axios.put(`${API_BASE_URL}/admin/profile`, adminProfile);
-      fetchAdminProfile(); // Refresh the profile
+      fetchAdminProfile();
       setIsEditProfileDialogOpen(false);
     } catch (error) {
       console.error('Error updating admin profile:', error);
@@ -323,7 +366,7 @@ export default function AdminDashboard() {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'USD'
     }).format(amount);
   };
 
@@ -360,7 +403,7 @@ export default function AdminDashboard() {
             <div className="col-span-full">
               <LoadingSpinner />
             </div>
-          ) : (
+          ) : stats.length > 0 ? (
             stats.map((stat, index) => (
               <Card key={index}>
                 <CardContent className="p-6">
@@ -379,6 +422,10 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             ))
+          ) : (
+            <div className="col-span-full">
+              <NoDataMessage message="No statistics available" />
+            </div>
           )}
         </div>
 
@@ -398,11 +445,11 @@ export default function AdminDashboard() {
                 <LoadingSpinner />
               ) : adminProfile ? (
                 <>
-                  <div><h3 className="text-gray-500">Name</h3><p>{adminProfile.name}</p></div>
-                  <div><h3 className="text-gray-500">Admin ID</h3><p>{adminProfile.id}</p></div>
-                  <div><h3 className="text-gray-500">Email</h3><p>{adminProfile.email}</p></div>
-                  <div><h3 className="text-gray-500">Phone</h3><p>{adminProfile.phone}</p></div>
-                  <div><h3 className="text-gray-500">Role</h3><p>{adminProfile.role}</p></div>
+                  <div><h3 className="text-gray-500">Name</h3><p>{adminProfile.Admin_Name}</p></div>
+                  <div><h3 className="text-gray-500">Admin ID</h3><p>{adminProfile.Admin_ID}</p></div>
+                  <div><h3 className="text-gray-500">Email</h3><p>{adminProfile.Email}</p></div>
+                  <div><h3 className="text-gray-500">Phone</h3><p>{adminProfile.Phone}</p></div>
+                  <div><h3 className="text-gray-500">Role</h3><p>{adminProfile.Role}</p></div>
                   <Button
                     variant="outline"
                     className="w-full mt-4"
@@ -417,56 +464,56 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          {/* Department, Training Programs and Feedback Management Tabs */}
+          {/* Companies, Training Programs and Feedback Management Tabs */}
           <Card className="lg:col-span-2">
             <CardHeader>
-              <Tabs defaultValue="departments" className="w-full">
+              <Tabs defaultValue="companies" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="departments">Departments</TabsTrigger>
+                  <TabsTrigger value="companies">Companies</TabsTrigger>
                   <TabsTrigger value="training">Training Programs</TabsTrigger>
                   <TabsTrigger value="feedback">Student Feedback</TabsTrigger>
                 </TabsList>
 
-                {/* Departments Tab Content */}
-                <TabsContent value="departments">
+                {/* Companies Tab Content */}
+                <TabsContent value="companies">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <CardTitle>Departments</CardTitle>
-                      <CardDescription>Manage academic departments</CardDescription>
+                      <CardTitle>Companies</CardTitle>
+                      <CardDescription>Manage registered companies</CardDescription>
                     </div>
                     <Button onClick={() => setIsAddDialogOpen(true)}>
-                      <Plus className="h-4 w-4 mr-2" /> Add Department
+                      <Plus className="h-4 w-4 mr-2" /> Add Company
                     </Button>
                   </div>
 
-                  {departmentsError ? (
+                  {companiesError ? (
                     <Alert variant="destructive">
                       <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>{departmentsError}</AlertDescription>
+                      <AlertDescription>{companiesError}</AlertDescription>
                     </Alert>
-                  ) : loadingDepartments ? (
+                  ) : loadingCompanies ? (
                     <LoadingSpinner />
-                  ) : departments.length > 0 ? (
+                  ) : companies.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full border-collapse">
                         <thead>
                           <tr className="text-left text-sm text-gray-500 border-b">
-                            <th className="py-3 px-2">Department ID</th>
-                            <th className="py-3 px-2">Department Name</th>
+                            <th className="py-3 px-2">Company ID</th>
+                            <th className="py-3 px-2">Company Name</th>
                             <th className="py-3 px-2">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {departments.map((dept) => (
-                            <tr key={dept.id} className="border-b">
-                              <td className="py-3 px-2">{dept.id}</td>
-                              <td className="py-3 px-2 font-medium">{dept.name}</td>
+                          {companies.map((company) => (
+                            <tr key={company.id} className="border-b">
+                              <td className="py-3 px-2">{company.id}</td>
+                              <td className="py-3 px-2 font-medium">{company.name}</td>
                               <td className="py-3 px-2">
                                 <div className="flex space-x-2">
-                                  <Button variant="outline" size="sm" onClick={() => handleEditDepartment(dept)}>
+                                  <Button variant="outline" size="sm" onClick={() => handleEditCompany(company)}>
                                     <Edit className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="outline" size="sm" onClick={() => handleDeleteDepartment(dept.id)}>
+                                  <Button variant="outline" size="sm" onClick={() => handleDeleteCompany(company.id)}>
                                     <Trash2 className="h-4 w-4 text-red-500" />
                                   </Button>
                                 </div>
@@ -477,7 +524,7 @@ export default function AdminDashboard() {
                       </table>
                     </div>
                   ) : (
-                    <NoDataMessage message="No departments found" />
+                    <NoDataMessage message="No companies found" />
                   )}
                 </TabsContent>
 
@@ -517,12 +564,12 @@ export default function AdminDashboard() {
                         <tbody>
                           {trainingPrograms.map((program) => (
                             <tr key={program.id} className="border-b">
-                              <td className="py-3 px-2">{program.id}</td>
-                              <td className="py-3 px-2 font-medium">{program.name}</td>
-                              <td className="py-3 px-2">{program.trainerName}</td>
-                              <td className="py-3 px-2">{program.duration} days</td>
-                              <td className="py-3 px-2">{program.mode}</td>
-                              <td className="py-3 px-2">{formatCurrency(program.cost)}</td>
+                              <td className="py-3 px-2">{program.Training_ID}</td>
+                              <td className="py-3 px-2 font-medium">{program.Training_Name}</td>
+                              <td className="py-3 px-2">{program.Trainer_Name}</td>
+                              <td className="py-3 px-2">{program.Duration} days</td>
+                              <td className="py-3 px-2">{program.Mode}</td>
+                              <td className="py-3 px-2">{formatCurrency(program.Cost)}</td>
                               <td className="py-3 px-2">
                                 <div className="flex space-x-2">
                                   <Button variant="outline" size="sm" onClick={() => handleEditTraining(program)}>
@@ -564,9 +611,8 @@ export default function AdminDashboard() {
                           <tr className="text-left text-sm text-gray-500 border-b">
                             <th className="py-3 px-2">ID</th>
                             <th className="py-3 px-2">Student</th>
-                            <th className="py-3 px-2">Department</th>
-                            <th className="py-3 px-2">Subject</th>
-                            <th className="py-3 px-2">Date</th>
+                            <th className="py-3 px-2">Training Program</th>
+                            <th className="py-3 px-2">Rating</th>
                             <th className="py-3 px-2">Status</th>
                             <th className="py-3 px-2">Actions</th>
                           </tr>
@@ -574,13 +620,12 @@ export default function AdminDashboard() {
                         <tbody>
                           {feedbacks.map((feedback) => (
                             <tr key={feedback.id} className="border-b">
-                              <td className="py-3 px-2">{feedback.id}</td>
-                              <td className="py-3 px-2">{feedback.studentName}</td>
-                              <td className="py-3 px-2">{feedback.department}</td>
-                              <td className="py-3 px-2">{feedback.subject}</td>
-                              <td className="py-3 px-2">{feedback.date}</td>
-                              <td className={`py-3 px-2 font-medium ${getStatusColor(feedback.status)}`}>
-                                {feedback.status}
+                              <td className="py-3 px-2">{feedback.Feedback_ID}</td>
+                              <td className="py-3 px-2">{feedback.Student_Name}</td>
+                              <td className="py-3 px-2">{feedback.Training_Name}</td>
+                              <td className="py-3 px-2">{feedback.Rating}/5</td>
+                              <td className={`py-3 px-2 font-medium ${getStatusColor(feedback.Comments)}`}>
+                                {feedback.Comments}
                               </td>
                               <td className="py-3 px-2">
                                 <Button variant="outline" size="sm" onClick={() => handleViewFeedback(feedback)}>
@@ -610,16 +655,16 @@ export default function AdminDashboard() {
                 <label htmlFor="email" className="text-sm font-medium">Email</label>
                 <Input
                   id="email"
-                  value={adminProfile?.email || ''}
-                  onChange={(e) => setAdminProfile(prev => prev ? { ...prev, email: e.target.value } : null)}
+                  value={adminProfile?.Email || ''}
+                  onChange={(e) => setAdminProfile(prev => prev ? { ...prev, Email: e.target.value } : null)}
                 />
               </div>
               <div className="space-y-2">
                 <label htmlFor="phone" className="text-sm font-medium">Phone</label>
                 <Input
                   id="phone"
-                  value={adminProfile?.phone || ''}
-                  onChange={(e) => setAdminProfile(prev => prev ? { ...prev, phone: e.target.value } : null)}
+                  value={adminProfile?.Phone || ''}
+                  onChange={(e) => setAdminProfile(prev => prev ? { ...prev, Phone: e.target.value } : null)}
                 />
               </div>
             </div>
@@ -630,45 +675,45 @@ export default function AdminDashboard() {
           </DialogContent>
         </Dialog>
 
-        {/* Edit Department Dialog */}
+        {/* Edit Company Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent>
-            <DialogHeader><DialogTitle>Edit Department</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Edit Company</DialogTitle></DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label htmlFor="departmentId" className="text-sm font-medium">Department ID</label>
-                <Input id="departmentId" value={selectedDepartment?.id || ''} disabled />
+                <label htmlFor="companyId" className="text-sm font-medium">Company ID</label>
+                <Input id="companyId" value={selectedCompany?.id || ''} disabled />
               </div>
               <div className="space-y-2">
-                <label htmlFor="departmentName" className="text-sm font-medium">Department Name</label>
+                <label htmlFor="companyName" className="text-sm font-medium">Company Name</label>
                 <Input
-                  id="departmentName"
-                  value={selectedDepartment?.name || ''}
-                  onChange={(e) => setSelectedDepartment(prev => prev ? { ...prev, name: e.target.value } : null)}
+                  id="companyName"
+                  value={selectedCompany?.name || ''}
+                  onChange={(e) => setSelectedCompany(prev => prev ? { ...prev, name: e.target.value } : null)}
                 />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleSaveDepartment}>Save Changes</Button>
+              <Button onClick={handleSaveCompany}>Save Changes</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Add Department Dialog */}
+        {/* Add Company Dialog */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogContent>
-            <DialogHeader><DialogTitle>Add New Department</DialogTitle></DialogHeader>
-            <form onSubmit={handleAddDepartment}>
+            <DialogHeader><DialogTitle>Add New Company</DialogTitle></DialogHeader>
+            <form onSubmit={handleAddCompany}>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <label htmlFor="departmentName" className="text-sm font-medium">Department Name</label>
-                  <Input id="departmentName" name="departmentName" placeholder="Enter department name" required />
+                  <label htmlFor="companyName" className="text-sm font-medium">Company Name</label>
+                  <Input id="companyName" name="companyName" placeholder="Enter company name" required />
                 </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" type="button" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-                <Button type="submit">Add Department</Button>
+                <Button type="submit">Add Company</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -702,7 +747,7 @@ export default function AdminDashboard() {
                     <Input id="duration" name="duration" type="number" min="1" placeholder="Days" required />
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="trainerName" className="text-sm font-medium">Trainer Name</label>
+                    <label htmlFor="trainerName" className="text-sm font-medium">Trainer ID</label>
                     <Input id="trainerName" name="trainerName" placeholder="Enter trainer's name" required />
                   </div>
                 </div>
@@ -752,7 +797,7 @@ export default function AdminDashboard() {
           </DialogContent>
         </Dialog>
 
-        {/* Edit Training Program Dialog */}
+        {/* Edit985 Training Program Dialog */}
         <Dialog open={isEditTrainingDialogOpen} onOpenChange={setIsEditTrainingDialogOpen}>
           <DialogContent className="max-w-lg">
             <DialogHeader><DialogTitle>Edit Training Program</DialogTitle></DialogHeader>
@@ -801,8 +846,7 @@ export default function AdminDashboard() {
                       onChange={(e) => setSelectedTraining(prev => prev ? { ...prev, trainerName: e.target.value } : null)}
                     />
                   </div>
-                </
-                div>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label htmlFor="startDate" className="text-sm font-medium">Start Date</label>
@@ -870,7 +914,6 @@ export default function AdminDashboard() {
           </DialogContent>
         </Dialog>
 
-
         {/* View Feedback Dialog */}
         <Dialog open={isViewFeedbackDialogOpen} onOpenChange={setIsViewFeedbackDialogOpen}>
           <DialogContent className="max-w-lg">
@@ -882,16 +925,12 @@ export default function AdminDashboard() {
                   <p>{selectedFeedback.studentName}</p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Department</label>
-                  <p>{selectedFeedback.department}</p>
+                  <label className="text-sm font-medium">Training Program</label>
+                  <p>{selectedFeedback.trainingProgram}</p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Subject</label>
-                  <p>{selectedFeedback.subject}</p>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Date</label>
-                  <p>{selectedFeedback.date}</p>
+                  <label className="text-sm font-medium">Rating</label>
+                  <p>{selectedFeedback.rating}/5</p>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Status</label>

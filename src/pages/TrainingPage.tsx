@@ -16,18 +16,19 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BookOpen, Calendar, Clock, User, Search, Filter, Award, UserRound, Phone, Mail, Briefcase, Bookmark, Star, Loader2 } from 'lucide-react';
+import { BookOpen, Calendar, Clock, User, Search, Award, UserRound, Phone, Mail, Briefcase, Bookmark, Star, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import axios from 'axios';
 
 // API base URL - replace with your actual FastAPI endpoint
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 export default function TrainingPage() {
   // State variables
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProgram, setSelectedProgram] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   // Data states
   const [programs, setPrograms] = useState([]);
@@ -66,16 +67,40 @@ export default function TrainingPage() {
     }
   });
 
+  const enrollForm = useForm({
+    defaultValues: {
+      studentId: '',
+      name: '',
+      email: '',
+      department: '',
+      paymentMethod: 'credit'
+    }
+  });
+
   // Fetch training programs data
   const fetchPrograms = async () => {
     try {
       setLoadingPrograms(true);
       setProgramsError(null);
-      const response = await axios.get(`http://127.0.0.1:8000/training/programs`);
-      setPrograms(response.data);
+      const response = await axios.get(`${API_BASE_URL}/training/programs`);
+
+      // Map server response to expected frontend format
+      const mappedPrograms = response.data.map((program, index) => ({
+        id: program.Training_ID || index + 1, // Use server-provided ID or fallback
+        name: program.Training_Name,
+        description: program.Training_Description,
+        duration: `${program.Duration} hours`,
+        startDate: program.Start_Date,
+        endDate: program.End_Date || 'N/A',
+        mode: program.Mode,
+        cost: `$${program.Training_Cost.toFixed(2)}`,
+        trainerName: program.Trainer_Name,
+        certification: program.Certification_Provided
+      }));
+
+      setPrograms(mappedPrograms);
     } catch (error) {
-      console.error("Error fetching training programs:", error);
-      setProgramsError(error.response?.data?.detail || "Failed to fetch training programs");
+      setProgramsError(error.response?.data?.detail || 'Failed to fetch training programs');
     } finally {
       setLoadingPrograms(false);
     }
@@ -86,11 +111,21 @@ export default function TrainingPage() {
     try {
       setLoadingTrainers(true);
       setTrainersError(null);
-      const response = await axios.get(`${API_BASE_URL}/trainers`);
-      setTrainers(response.data);
+      const response = await axios.get(`${API_BASE_URL}/training/trainers`);
+
+      // Map the fetched data to match the expected format
+      const mappedTrainers = response.data.trainers.map(trainer => ({
+        id: trainer.Trainer_ID,
+        name: trainer.Name,
+        organization: trainer.Organisation,
+        email: trainer.Email,
+        phone: trainer.Phone_No,
+        expertise: trainer.Expertise,
+      }));
+
+      setTrainers(mappedTrainers);
     } catch (error) {
-      console.error("Error fetching trainers:", error);
-      setTrainersError(error.response?.data?.detail || "Failed to fetch trainers");
+      setTrainersError(error.response?.data?.detail || 'Failed to fetch trainers');
     } finally {
       setLoadingTrainers(false);
     }
@@ -101,15 +136,13 @@ export default function TrainingPage() {
     try {
       setLoadingEnrollments(true);
       setEnrollmentsError(null);
+      const studentId = 'ST12345'; // Replace with dynamic student ID from auth context
       const response = await axios.get(`${API_BASE_URL}/enrollments`, {
-        params: {
-          studentId: 'ST12345' // Replace with actual student ID when you have authentication
-        }
+        params: { studentId }
       });
       setEnrollments(response.data);
     } catch (error) {
-      console.error("Error fetching enrollments:", error);
-      setEnrollmentsError(error.response?.data?.detail || "Failed to fetch enrollments");
+      setEnrollmentsError(error.response?.data?.detail || 'Failed to fetch enrollments');
     } finally {
       setLoadingEnrollments(false);
     }
@@ -131,14 +164,15 @@ export default function TrainingPage() {
   // Handler for trainer form submission
   const handleTrainerSubmit = async (data) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/trainers`, data);
-      console.log('Trainer registration data:', response.data);
+      setSubmitting(true);
+      await axios.post(`${API_BASE_URL}/training/register`, data);
       toast.success('Trainer registration submitted successfully!');
       trainerForm.reset();
-      fetchTrainers(); // Refresh trainers list
+      fetchTrainers();
     } catch (error) {
-      console.error("Error registering trainer:", error);
-      toast.error(error.response?.data?.detail || "Failed to register trainer");
+      toast.error(error.response?.data?.detail || 'Failed to register trainer');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -148,56 +182,62 @@ export default function TrainingPage() {
   };
 
   // Handler for enrollment submission
-  const handleEnrollSubmit = async (e) => {
-    e.preventDefault();
-
-    const form = e.target;
-    const enrollmentData = {
-      studentId: form.studentId.value,
-      studentName: form.name.value,
-      studentEmail: form.email.value,
-      department: form.department.value,
-      trainingId: selectedProgram.id,
-      paymentMethod: form.paymentMethod.value
-    };
+  const handleEnrollSubmit = async (data) => {
+    if (!selectedProgram) {
+      toast.error('No program selected for enrollment');
+      return;
+    }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/enrollments`, enrollmentData);
-      console.log('Enrolled for training:', response.data);
+      setSubmitting(true);
+      const enrollmentData = {
+        studentId: data.studentId,
+        studentName: data.name,
+        studentEmail: data.email,
+        department: data.department,
+        trainingId: selectedProgram.id,
+        paymentMethod: data.paymentMethod
+      };
+
+      await axios.post(`${API_BASE_URL}/students/enroll`, enrollmentData);
       toast.success(`Successfully enrolled in ${selectedProgram.name}!`);
       setSelectedProgram(null);
-      fetchEnrollments(); // Refresh enrollments list
+      enrollForm.reset();
+      fetchEnrollments();
     } catch (error) {
-      console.error("Error enrolling in training:", error);
-      toast.error(error.response?.data?.detail || "Failed to enroll in training");
+      toast.error(error.response?.data?.detail || 'Failed to enroll in training');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   // Handler for feedback submission
   const handleFeedbackSubmit = async (data) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/feedback`, data);
-      console.log('Feedback data:', response.data);
+      setSubmitting(true);
+      await axios.post(`${API_BASE_URL}/feedback`, data);
       toast.success('Feedback submitted successfully!');
       feedbackForm.reset();
     } catch (error) {
-      console.error("Error submitting feedback:", error);
-      toast.error(error.response?.data?.detail || "Failed to submit feedback");
+      toast.error(error.response?.data?.detail || 'Failed to submit feedback');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   // Handler for trainer removal
   const handleTrainerRemoval = async (trainerId, adminId, adminPassword) => {
     try {
-      const response = await axios.delete(`${API_BASE_URL}/trainers/${trainerId}`, {
+      setSubmitting(true);
+      await axios.delete(`${API_BASE_URL}/trainers/${trainerId}`, {
         data: { adminId, adminPassword }
       });
-      console.log(`Trainer ${trainerId} removed successfully.`);
-      toast.success(`Trainer removed successfully!`);
-      fetchTrainers(); // Refresh trainers list
+      toast.success('Trainer removed successfully!');
+      fetchTrainers();
     } catch (error) {
-      console.error("Error removing trainer:", error);
-      toast.error(error.response?.data?.detail || "Invalid admin credentials.");
+      toast.error(error.response?.data?.detail || 'Invalid admin credentials');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -249,9 +289,7 @@ export default function TrainingPage() {
 
             <Dialog>
               <DialogTrigger asChild>
-                <Button
-                  className="bg-dark-orange text-white"
-                >
+                <Button className="bg-dark-orange text-white">
                   <UserRound className="mr-2 h-4 w-4" />
                   Register as Trainer
                 </Button>
@@ -272,7 +310,7 @@ export default function TrainingPage() {
                         <FormItem>
                           <FormLabel>Full Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. John Doe" {...field} />
+                            <Input placeholder="e.g. John Doe" {...field} required />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -287,7 +325,7 @@ export default function TrainingPage() {
                           <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                              <Input placeholder="e.g. johndoe@example.com" {...field} />
+                              <Input type="email" placeholder="e.g. johndoe@example.com" {...field} required />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -301,7 +339,7 @@ export default function TrainingPage() {
                           <FormItem>
                             <FormLabel>Phone Number</FormLabel>
                             <FormControl>
-                              <Input placeholder="e.g. (123) 456-7890" {...field} />
+                              <Input placeholder="e.g. (123) 456-7890" {...field} required />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -312,11 +350,13 @@ export default function TrainingPage() {
                     <FormField
                       control={trainerForm.control}
                       name="trainerId"
-                      render={({ field }) => (
+                      render={({ field
+
+                      }) => (
                         <FormItem>
                           <FormLabel>Trainer ID</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. TR123" {...field} />
+                            <Input placeholder="e.g. TR123" {...field} required />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -330,7 +370,7 @@ export default function TrainingPage() {
                         <FormItem>
                           <FormLabel>Area of Expertise</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Web Development, Machine Learning" {...field} />
+                            <Input placeholder="e.g. Web Development, Machine Learning" {...field} required />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -344,7 +384,7 @@ export default function TrainingPage() {
                         <FormItem>
                           <FormLabel>Organization</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Tech University" {...field} />
+                            <Input placeholder="e.g. Tech University" {...field} required />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -352,7 +392,9 @@ export default function TrainingPage() {
                     />
 
                     <DialogFooter>
-                      <Button type="submit" className="bg-dark-charcoal text-white">Register</Button>
+                      <Button type="submit" className="bg-dark-charcoal text-white" disabled={submitting}>
+                        {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Register'}
+                      </Button>
                     </DialogFooter>
                   </form>
                 </Form>
@@ -415,7 +457,7 @@ export default function TrainingPage() {
                         )}
                       </CardContent>
                       <CardFooter>
-                        <Dialog>
+                        <Dialog open={selectedProgram?.id === program.id} onOpenChange={(open) => !open && setSelectedProgram(null)}>
                           <DialogTrigger asChild>
                             <Button
                               className="w-full bg-dark-purple text-white"
@@ -425,57 +467,108 @@ export default function TrainingPage() {
                               Enroll Now
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="sm:max-w-[500px]">
-                            <DialogHeader>
-                              <DialogTitle>Training Registration</DialogTitle>
-                              <DialogDescription>
-                                Register for "{selectedProgram?.name}" training program.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <form onSubmit={handleEnrollSubmit} className="space-y-4">
-                              <div className="grid gap-4">
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label htmlFor="studentId" className="text-right">Student ID</Label>
-                                  <Input id="studentId" name="studentId" placeholder="Enter your student ID" className="col-span-3" required />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label htmlFor="name" className="text-right">Full Name</Label>
-                                  <Input id="name" name="name" placeholder="Enter your full name" className="col-span-3" required />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label htmlFor="email" className="text-right">Email</Label>
-                                  <Input id="email" name="email" type="email" placeholder="Enter your email" className="col-span-3" required />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label htmlFor="department" className="text-right">Department</Label>
-                                  <Input id="department" name="department" placeholder="Enter your department" className="col-span-3" required />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label htmlFor="paymentMethod" className="text-right">Payment Method</Label>
-                                  <Select defaultValue="credit" name="paymentMethod">
-                                    <SelectTrigger className="col-span-3">
-                                      <SelectValue placeholder="Select payment method" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="credit">Credit Card</SelectItem>
-                                      <SelectItem value="debit">Debit Card</SelectItem>
-                                      <SelectItem value="bank">Bank Transfer</SelectItem>
-                                      <SelectItem value="paypal">PayPal</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                              <div className="bg-muted p-3 rounded-md">
-                                <div className="flex justify-between items-center">
-                                  <span>Training Fee:</span>
-                                  <span className="font-semibold">{selectedProgram?.cost}</span>
-                                </div>
-                              </div>
-                              <DialogFooter>
-                                <Button type="submit" className="bg-dark-charcoal text-white">Confirm Registration</Button>
-                              </DialogFooter>
-                            </form>
-                          </DialogContent>
+                          {selectedProgram && (
+                            <DialogContent className="sm:max-w-[500px]">
+                              <DialogHeader>
+                                <DialogTitle>Training Registration</DialogTitle>
+                                <DialogDescription>
+                                  Register for "{selectedProgram.name}" training program.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <Form {...enrollForm}>
+                                <form onSubmit={enrollForm.handleSubmit(handleEnrollSubmit)} className="space-y-4">
+                                  <div className="grid gap-4">
+                                    <FormField
+                                      control={enrollForm.control}
+                                      name="studentId"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Student ID</FormLabel>
+                                          <FormControl>
+                                            <Input placeholder="Enter your student ID" {...field} required />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                    <FormField
+                                      control={enrollForm.control}
+                                      name="name"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Full Name</FormLabel>
+                                          <FormControl>
+                                            <Input placeholder="Enter your full name" {...field} required />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                    <FormField
+                                      control={enrollForm.control}
+                                      name="email"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Email</FormLabel>
+                                          <FormControl>
+                                            <Input type="email" placeholder="Enter your email" {...field} required />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                    <FormField
+                                      control={enrollForm.control}
+                                      name="department"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Department</FormLabel>
+                                          <FormControl>
+                                            <Input placeholder="Enter your department" {...field} required />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                    <FormField
+                                      control={enrollForm.control}
+                                      name="paymentMethod"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Payment Method</FormLabel>
+                                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                              <SelectTrigger>
+                                                <SelectValue placeholder="Select payment method" />
+                                              </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                              <SelectItem value="credit">Credit Card</SelectItem>
+                                              <SelectItem value="debit">Debit Card</SelectItem>
+                                              <SelectItem value="bank">Bank Transfer</SelectItem>
+                                              <SelectItem value="paypal">PayPal</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                  <div className="bg-muted p-3 rounded-md">
+                                    <div className="flex justify-between items-center">
+                                      <span>Training Fee:</span>
+                                      <span className="font-semibold">{selectedProgram.cost}</span>
+                                    </div>
+                                  </div>
+                                  <DialogFooter>
+                                    <Button type="submit" className="bg-dark-charcoal text-white" disabled={submitting}>
+                                      {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Confirm Registration'}
+                                    </Button>
+                                  </DialogFooter>
+                                </form>
+                              </Form>
+                            </DialogContent>
+                          )}
                         </Dialog>
                       </CardFooter>
                     </Card>
@@ -547,7 +640,7 @@ export default function TrainingPage() {
                                   <form
                                     onSubmit={(e) => {
                                       e.preventDefault();
-                                      const form = e.target as HTMLFormElement;
+                                      const form = e.target;
                                       const adminId = form.adminId.value;
                                       const adminPassword = form.adminPassword.value;
                                       handleTrainerRemoval(trainer.id, adminId, adminPassword);
@@ -576,8 +669,8 @@ export default function TrainingPage() {
                                       </div>
                                     </div>
                                     <DialogFooter>
-                                      <Button type="submit" className="bg-red-600 text-white">
-                                        Confirm Removal
+                                      <Button type="submit" className="bg-red-600 text-white" disabled={submitting}>
+                                        {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Confirm Removal'}
                                       </Button>
                                     </DialogFooter>
                                   </form>
@@ -616,7 +709,7 @@ export default function TrainingPage() {
                             <FormItem>
                               <FormLabel>Student ID</FormLabel>
                               <FormControl>
-                                <Input placeholder="Enter your Student ID" {...field} />
+                                <Input placeholder="Enter your Student ID" {...field} required />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -738,9 +831,8 @@ export default function TrainingPage() {
                         )}
                       />
 
-                      <Button type="submit" className="bg-dark-charcoal text-white">
-                        <Star className="mr-2 h-4 w-4" />
-                        Submit Feedback
+                      <Button type="submit" className="bg-dark-charcoal text-white" disabled={submitting}>
+                        {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <><Star className="mr-2 h-4 w-4" /> Submit Feedback</>}
                       </Button>
                     </form>
                   </Form>

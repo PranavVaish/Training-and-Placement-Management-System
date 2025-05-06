@@ -78,7 +78,6 @@ export default function StudentDashboard() {
       setIsLoadingApplications(true);
       try {
         const response = await axios.get(`${API_BASE_URL}/students/applications/${student_id}`);
-        // Expect response.data.applications as an array
         const applications = Array.isArray(response.data.applications) ? response.data.applications : [];
         setJobApplications(applications);
         setApplicationsError(null);
@@ -105,7 +104,6 @@ export default function StudentDashboard() {
       setIsLoadingInterviews(true);
       try {
         const response = await axios.get(`${API_BASE_URL}/students/interviews/${student_id}`);
-        // Ensure response.data is an array
         const interviews = Array.isArray(response.data) ? response.data : [];
         setScheduledInterviews(interviews);
         setInterviewsError(null);
@@ -132,9 +130,24 @@ export default function StudentDashboard() {
       setIsLoadingEnrollments(true);
       try {
         const response = await axios.get(`${API_BASE_URL}/students/enrolled_courses/${student_id}`);
-        // Ensure response.data is an array
-        const enrollments = Array.isArray(response.data) ? response.data : [];
-        setTrainingEnrollments(enrollments);
+        // Log the response to debug
+        console.log('Training enrollments response:', response.data);
+        // Handle different possible response structures
+        const enrollments = Array.isArray(response.data) 
+          ? response.data 
+          : Array.isArray(response.data.enrollments) 
+            ? response.data.enrollments 
+            : [];
+        // Ensure enrollments have the expected properties
+        const formattedEnrollments = enrollments.map(enrollment => ({
+          Enrollment_ID: enrollment.Enrollment_ID || enrollment.id || 'N/A',
+          Training_Name: enrollment.Training_Name || enrollment.course_name || enrollment.name || 'N/A',
+          Duration: enrollment.Duration || enrollment.duration || 'N/A',
+          Start_Date: enrollment.Start_Date || enrollment.start_date || 'N/A',
+          status: enrollment.Status || enrollment.status || 'In Progress'
+        }));
+        console.log('Formatted enrollments:', formattedEnrollments);
+        setTrainingEnrollments(formattedEnrollments);
         setEnrollmentsError(null);
       } catch (error) {
         console.error('Error fetching training enrollments:', error);
@@ -187,7 +200,6 @@ export default function StudentDashboard() {
         setIsEditDialogOpen(false);
       } catch (error) {
         console.error('Error updating profile:', error);
-        // Add toast notification or error message here if needed
       }
     }
   };
@@ -340,7 +352,7 @@ export default function StudentDashboard() {
                           {jobApplications.map((application) => (
                             <tr key={application.applicationId} className="border-b">
                               <td className="py-3 px-2 font-medium">{application.jobTitle || 'N/A'}</td>
-                              <td className="py-3 px-2">{application.company || 'N/A'}</td>
+                              <td className="py-3 px-2">{application.companyName || 'N/A'}</td>
                               <td className="py-3 px-2">{application.applicationDate || 'N/A'}</td>
                               <td className="py-3 px-2">
                                 <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(application.status)}`}>
@@ -441,11 +453,11 @@ export default function StudentDashboard() {
                     </thead>
                     <tbody>
                       {trainingEnrollments.map((enrollment) => (
-                        <tr key={enrollment.enrollmentId || enrollment.id} className="border-b">
-                          <td className="py-3 px-2 font-medium">{enrollment.programName || 'N/A'}</td>
-                          <td className="py-3 px-2">{enrollment.enrollmentId || 'N/A'}</td>
-                          <td className="py-3 px-2">{enrollment.duration || 'N/A'}</td>
-                          <td className="py-3 px-2">{enrollment.startDate || 'N/A'}</td>
+                        <tr key={enrollment.Enrollment_ID} className="border-b">
+                          <td className="py-3 px-2 font-medium">{enrollment.Training_Name || 'N/A'}</td>
+                          <td className="py-3 px-2">{enrollment.Enrollment_ID || 'N/A'}</td>
+                          <td className="py-3 px-2">{enrollment.Duration || 'N/A'}</td>
+                          <td className="py-3 px-2">{enrollment.Start_Date || 'N/A'}</td>
                           <td className="py-3 px-2">
                             <div className="flex items-center">
                               {enrollment.status && enrollment.status.toLowerCase() === 'completed' ? (
