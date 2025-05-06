@@ -19,7 +19,7 @@ class Admin_Phone(BaseModel):
 
 class AdminLogin(BaseModel):
     id: int = Field(..., alias="user_id")
-    password: str
+    password: str = Field(..., alias="password")
 
 class AdminResponse(BaseModel):
     Admin_ID: int = Field(..., alias="Admin_ID")

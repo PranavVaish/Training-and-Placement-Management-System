@@ -145,10 +145,9 @@ async def login_admin(
     """
     # Construct the raw SQL query to fetch admin credentials
     query = """
-        SELECT a.Admin_ID, a.Password_Hash
+        SELECT a.Admin_ID, a.Password
         FROM Admin a
-        JOIN Admin_Email ae ON a.Admin_ID = ae.Admin_ID
-        WHERE ae.Email_ID = %s
+        WHERE a.Admin_ID = %s
     """
 
     cursor = db.cursor()

@@ -899,3 +899,12 @@ BEGIN
     ORDER BY 
         a.Application_Date DESC;
 END;
+
+-- Stored procedure for distinct department
+DROP PROCEDURE IF EXISTS GetDistinctDepartments;
+CREATE PROCEDURE GetDistinctDepartments()
+BEGIN
+    SELECT DISTINCT Department 
+    FROM Student
+    ORDER BY Department;
+END;
