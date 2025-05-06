@@ -22,7 +22,7 @@ async def register_trainer(
             trainer_data.trainer_id,
             trainer_data.expertise,
             trainer_data.name,
-            trainer_data.organisation,
+            trainer_data.organization,
             trainer_data.email,
             trainer_data.phone_no,
         ))

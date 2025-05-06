@@ -2,12 +2,12 @@ from pydantic import BaseModel, Field, EmailStr
 from datetime import date
 
 class TrainerRegistration(BaseModel):
-    Trainer_ID: int = Field(..., gt=0, alias="trainerId")
-    Expertise: str = Field(..., max_length=100, alias="expertise")
-    Name: str = Field(..., max_length=100, alias="name")
-    Organisation: str = Field(..., max_length=100, alias="organization")
-    Email: EmailStr = Field(..., max_length=100, alias="email")
-    Phone_No: str = Field(..., max_length=15, alias="phone")
+    trainer_id: int = Field(..., gt=0, alias="trainerId")
+    expertise: str = Field(..., max_length=100, alias="expertise")
+    name: str = Field(..., max_length=100, alias="name")
+    organization: str = Field(..., max_length=100, alias="organization")
+    email: EmailStr = Field(..., max_length=100, alias="email")
+    phone_no: str = Field(..., max_length=15, alias="phone")
 
 class TrainerProgram(BaseModel):
     trainer_id: int
