@@ -16,7 +16,7 @@ class PlacementRecord(BaseModel):
     Job_Title: str
     Package: float
     Placement_Location: str
-    Placement_: date
+    Placement_Date: date
 
 class TopIndustry(BaseModel):
     Industry_Type: str
