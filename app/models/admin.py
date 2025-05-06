@@ -22,10 +22,11 @@ class AdminLogin(BaseModel):
     password: str
 
 class AdminResponse(BaseModel):
-    Admin_ID: int = Field(..., alias="adminId")
-    Name: str
-    Role: str
-    Phone_Number: str = Field(..., max_length=10)
+    Admin_ID: int = Field(..., alias="Admin_ID")
+    Name: str = Field(..., alias="Admin_Name")
+    Role: str = Field(..., alias="Role")
+    Phone_Number: str = Field(..., max_length=10, alias="Phone")
+    Email_ID: str = Field(..., max_length=100, alias="Email")
 
 class AdminRegistration(BaseModel):
     name: str = Field(..., alias="name")
