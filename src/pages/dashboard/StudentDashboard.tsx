@@ -11,10 +11,10 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
 import { Edit, FileText, Clock, Check, Calendar, Briefcase } from 'lucide-react';
-import axios from 'axios'; // Make sure axios is installed
+import axios from 'axios';
 
-// API base URL - you might want to set this in an environment variable
-const API_BASE_URL = 'http://localhost:8000/api'; // Update this to your FastAPI server URL
+// API base URL - set this in an environment variable in production
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 export default function StudentDashboard() {
   // State for profile editing dialog
@@ -22,7 +22,7 @@ export default function StudentDashboard() {
   const [editedProfile, setEditedProfile] = useState(null);
   const [activeApplicationTab, setActiveApplicationTab] = useState('jobListings');
 
-  // States for data from API
+  // States for data from API with initial empty values to prevent undefined errors
   const [studentProfile, setStudentProfile] = useState(null);
   const [jobApplications, setJobApplications] = useState([]);
   const [scheduledInterviews, setScheduledInterviews] = useState([]);
@@ -40,18 +40,24 @@ export default function StudentDashboard() {
   const [interviewsError, setInterviewsError] = useState(null);
   const [enrollmentsError, setEnrollmentsError] = useState(null);
 
-  const student_id = localStorage.getItem('universal_id'); // Assuming you store the student ID in localStorage
+  const student_id = localStorage.getItem('universal_id');
+
   // Fetch student profile data
   useEffect(() => {
     const fetchStudentProfile = async () => {
+      if (!student_id) {
+        setProfileError('No student ID found. Please log in.');
+        setIsLoadingProfile(false);
+        return;
+      }
       setIsLoadingProfile(true);
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/students/${student_id}`);
+        const response = await axios.get(`${API_BASE_URL}/students/${student_id}`);
         setStudentProfile(response.data);
         setProfileError(null);
       } catch (error) {
         console.error('Error fetching student profile:', error);
-        setProfileError('Failed to load profile data');
+        setProfileError('Failed to load profile data. Please try again.');
         setStudentProfile(null);
       } finally {
         setIsLoadingProfile(false);
@@ -59,19 +65,26 @@ export default function StudentDashboard() {
     };
 
     fetchStudentProfile();
-  }, []);
+  }, [student_id]);
 
   // Fetch job applications
   useEffect(() => {
     const fetchJobApplications = async () => {
+      if (!student_id) {
+        setApplicationsError('No student ID found. Please log in.');
+        setIsLoadingApplications(false);
+        return;
+      }
       setIsLoadingApplications(true);
       try {
-        const response = await axios.get(`${API_BASE_URL}/student/applications`);
-        setJobApplications(response.data);
+        const response = await axios.get(`${API_BASE_URL}/students/applications/${student_id}`);
+        // Expect response.data.applications as an array
+        const applications = Array.isArray(response.data.applications) ? response.data.applications : [];
+        setJobApplications(applications);
         setApplicationsError(null);
       } catch (error) {
         console.error('Error fetching job applications:', error);
-        setApplicationsError('Failed to load application data');
+        setApplicationsError('Failed to load application data. Please try again.');
         setJobApplications([]);
       } finally {
         setIsLoadingApplications(false);
@@ -79,19 +92,26 @@ export default function StudentDashboard() {
     };
 
     fetchJobApplications();
-  }, []);
+  }, [student_id]);
 
   // Fetch scheduled interviews
   useEffect(() => {
     const fetchScheduledInterviews = async () => {
+      if (!student_id) {
+        setInterviewsError('No student ID found. Please log in.');
+        setIsLoadingInterviews(false);
+        return;
+      }
       setIsLoadingInterviews(true);
       try {
-        const response = await axios.get(`${API_BASE_URL}/student/interviews`);
-        setScheduledInterviews(response.data);
+        const response = await axios.get(`${API_BASE_URL}/students/interviews/${student_id}`);
+        // Ensure response.data is an array
+        const interviews = Array.isArray(response.data) ? response.data : [];
+        setScheduledInterviews(interviews);
         setInterviewsError(null);
       } catch (error) {
         console.error('Error fetching scheduled interviews:', error);
-        setInterviewsError('Failed to load interview data');
+        setInterviewsError('Failed to load interview data. Please try again.');
         setScheduledInterviews([]);
       } finally {
         setIsLoadingInterviews(false);
@@ -99,19 +119,26 @@ export default function StudentDashboard() {
     };
 
     fetchScheduledInterviews();
-  }, []);
+  }, [student_id]);
 
   // Fetch training enrollments
   useEffect(() => {
     const fetchTrainingEnrollments = async () => {
+      if (!student_id) {
+        setEnrollmentsError('No student ID found. Please log in.');
+        setIsLoadingEnrollments(false);
+        return;
+      }
       setIsLoadingEnrollments(true);
       try {
-        const response = await axios.get(`${API_BASE_URL}/student/enrollments`);
-        setTrainingEnrollments(response.data);
+        const response = await axios.get(`${API_BASE_URL}/students/enrolled_courses/${student_id}`);
+        // Ensure response.data is an array
+        const enrollments = Array.isArray(response.data) ? response.data : [];
+        setTrainingEnrollments(enrollments);
         setEnrollmentsError(null);
       } catch (error) {
         console.error('Error fetching training enrollments:', error);
-        setEnrollmentsError('Failed to load enrollment data');
+        setEnrollmentsError('Failed to load enrollment data. Please try again.');
         setTrainingEnrollments([]);
       } finally {
         setIsLoadingEnrollments(false);
@@ -119,7 +146,7 @@ export default function StudentDashboard() {
     };
 
     fetchTrainingEnrollments();
-  }, []);
+  }, [student_id]);
 
   // Helper function to get status badge color
   const getStatusColor = (status) => {
@@ -155,12 +182,12 @@ export default function StudentDashboard() {
   const handleSaveProfile = async () => {
     if (editedProfile) {
       try {
-        await axios.put(`${API_BASE_URL}/student/profile`, editedProfile);
+        await axios.put(`${API_BASE_URL}/students/profile`, editedProfile);
         setStudentProfile(editedProfile);
         setIsEditDialogOpen(false);
       } catch (error) {
         console.error('Error updating profile:', error);
-        // You could add error handling here, like showing a toast notification
+        // Add toast notification or error message here if needed
       }
     }
   };
@@ -224,31 +251,31 @@ export default function StudentDashboard() {
                 <>
                   <div>
                     <h3 className="font-medium text-gray-500">Name</h3>
-                    <p>{studentProfile.Name}</p>
+                    <p>{studentProfile.Name || 'N/A'}</p>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-500">Student ID</h3>
-                    <p>{studentProfile.Student_ID}</p>
+                    <p>{studentProfile.Student_ID || 'N/A'}</p>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-500">Email</h3>
-                    <p>{studentProfile.Email_ID}</p>
+                    <p>{studentProfile.Email_ID || 'N/A'}</p>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-500">Phone</h3>
-                    <p>{studentProfile.Phone_No}</p>
+                    <p>{studentProfile.Phone_No || 'N/A'}</p>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-500">Department</h3>
-                    <p>{studentProfile.Department}</p>
+                    <p>{studentProfile.Department || 'N/A'}</p>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-500">CGPA</h3>
-                    <p>{studentProfile.CGPA}</p>
+                    <p>{studentProfile.CGPA || 'N/A'}</p>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-500">Graduation Year</h3>
-                    <p>{studentProfile.Graduation_Year}</p>
+                    <p>{studentProfile.Graduation_Year || 'N/A'}</p>
                   </div>
                 </>
               )}
@@ -301,7 +328,7 @@ export default function StudentDashboard() {
                       <table className="w-full border-collapse">
                         <thead>
                           <tr className="text-left text-sm text-gray-500 border-b">
-                            <th className="py-3 px-2">Position</th>
+                            <th className="py-3 px-2">Job Title</th>
                             <th className="py-3 px-2">Company</th>
                             <th className="py-3 px-2">Date Applied</th>
                             <th className="py-3 px-2">Status</th>
@@ -312,15 +339,15 @@ export default function StudentDashboard() {
                         <tbody>
                           {jobApplications.map((application) => (
                             <tr key={application.applicationId} className="border-b">
-                              <td className="py-3 px-2 font-medium">{application.position}</td>
-                              <td className="py-3 px-2">{application.company}</td>
-                              <td className="py-3 px-2">{application.applicationDate}</td>
+                              <td className="py-3 px-2 font-medium">{application.jobTitle || 'N/A'}</td>
+                              <td className="py-3 px-2">{application.company || 'N/A'}</td>
+                              <td className="py-3 px-2">{application.applicationDate || 'N/A'}</td>
                               <td className="py-3 px-2">
                                 <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(application.status)}`}>
-                                  {application.status}
+                                  {application.status || 'Unknown'}
                                 </span>
                               </td>
-                              <td className="py-3 px-2">{application.interviewSchedule}</td>
+                              <td className="py-3 px-2">{application.interviewSchedule || 'Not Scheduled'}</td>
                               <td className="py-3 px-2">
                                 <Button variant="ghost" size="sm">
                                   <FileText className="h-4 w-4" />
@@ -359,16 +386,16 @@ export default function StudentDashboard() {
                         </thead>
                         <tbody>
                           {scheduledInterviews.map((interview) => (
-                            <tr key={interview.interviewId} className="border-b">
-                              <td className="py-3 px-2 font-medium">{interview.company}</td>
-                              <td className="py-3 px-2">{interview.position}</td>
-                              <td className="py-3 px-2">{interview.date}</td>
-                              <td className="py-3 px-2">{interview.time}</td>
-                              <td className="py-3 px-2">{interview.mode}</td>
-                              <td className="py-3 px-2">{interview.interviewer}</td>
+                            <tr key={interview.interviewId || interview.id} className="border-b">
+                              <td className="py-3 px-2 font-medium">{interview.company || 'N/A'}</td>
+                              <td className="py-3 px-2">{interview.position || 'N/A'}</td>
+                              <td className="py-3 px-2">{interview.date || 'N/A'}</td>
+                              <td className="py-3 px-2">{interview.time || 'N/A'}</td>
+                              <td className="py-3 px-2">{interview.mode || 'N/A'}</td>
+                              <td className="py-3 px-2">{interview.interviewer || 'N/A'}</td>
                               <td className="py-3 px-2">
                                 <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(interview.status)}`}>
-                                  {interview.status}
+                                  {interview.status || 'Unknown'}
                                 </span>
                               </td>
                             </tr>
@@ -414,24 +441,24 @@ export default function StudentDashboard() {
                     </thead>
                     <tbody>
                       {trainingEnrollments.map((enrollment) => (
-                        <tr key={enrollment.enrollmentId} className="border-b">
-                          <td className="py-3 px-2 font-medium">{enrollment.programName}</td>
-                          <td className="py-3 px-2">{enrollment.enrollmentId}</td>
-                          <td className="py-3 px-2">{enrollment.duration}</td>
-                          <td className="py-3 px-2">{enrollment.startDate}</td>
+                        <tr key={enrollment.enrollmentId || enrollment.id} className="border-b">
+                          <td className="py-3 px-2 font-medium">{enrollment.programName || 'N/A'}</td>
+                          <td className="py-3 px-2">{enrollment.enrollmentId || 'N/A'}</td>
+                          <td className="py-3 px-2">{enrollment.duration || 'N/A'}</td>
+                          <td className="py-3 px-2">{enrollment.startDate || 'N/A'}</td>
                           <td className="py-3 px-2">
                             <div className="flex items-center">
-                              {enrollment.status.toLowerCase() === 'completed' ? (
+                              {enrollment.status && enrollment.status.toLowerCase() === 'completed' ? (
                                 <Check className="h-4 w-4 text-green-500 mr-1" />
                               ) : (
                                 <Clock className="h-4 w-4 text-yellow-500 mr-1" />
                               )}
-                              {enrollment.status}
+                              {enrollment.status || 'Unknown'}
                             </div>
                           </td>
                           <td className="py-3 px-2">
                             <Button variant="outline" size="sm">
-                              {enrollment.status.toLowerCase() === 'completed' ? 'Certificate' : 'Access Course'}
+                              {enrollment.status && enrollment.status.toLowerCase() === 'completed' ? 'Certificate' : 'Access Course'}
                             </Button>
                           </td>
                         </tr>
@@ -456,7 +483,7 @@ export default function StudentDashboard() {
                   <label htmlFor="name" className="text-sm font-medium">Name</label>
                   <Input
                     id="name"
-                    value={editedProfile.name || ''}
+                    value={editedProfile.Name || ''}
                     disabled
                   />
                 </div>
@@ -464,7 +491,7 @@ export default function StudentDashboard() {
                   <label htmlFor="id" className="text-sm font-medium">Student ID</label>
                   <Input
                     id="id"
-                    value={editedProfile.id || ''}
+                    value={editedProfile.Student_ID || ''}
                     disabled
                   />
                 </div>
@@ -472,7 +499,7 @@ export default function StudentDashboard() {
                   <label htmlFor="email" className="text-sm font-medium">Email</label>
                   <Input
                     id="email"
-                    value={editedProfile.email || ''}
+                    value={editedProfile.Email_ID || ''}
                     onChange={handleInputChange}
                   />
                 </div>
@@ -480,7 +507,7 @@ export default function StudentDashboard() {
                   <label htmlFor="phone" className="text-sm font-medium">Phone</label>
                   <Input
                     id="phone"
-                    value={editedProfile.phone || ''}
+                    value={editedProfile.Phone_No || ''}
                     onChange={handleInputChange}
                   />
                 </div>
@@ -488,7 +515,7 @@ export default function StudentDashboard() {
                   <label htmlFor="department" className="text-sm font-medium">Department</label>
                   <Input
                     id="department"
-                    value={editedProfile.department || ''}
+                    value={editedProfile.Department || ''}
                     disabled
                   />
                 </div>
@@ -496,7 +523,7 @@ export default function StudentDashboard() {
                   <label htmlFor="cgpa" className="text-sm font-medium">CGPA</label>
                   <Input
                     id="cgpa"
-                    value={editedProfile.cgpa || ''}
+                    value={editedProfile.CGPA || ''}
                     onChange={handleInputChange}
                   />
                 </div>
@@ -504,7 +531,7 @@ export default function StudentDashboard() {
                   <label htmlFor="graduationYear" className="text-sm font-medium">Graduation Year</label>
                   <Input
                     id="graduationYear"
-                    value={editedProfile.graduationYear || ''}
+                    value={editedProfile.Graduation_Year || ''}
                     disabled
                   />
                 </div>
