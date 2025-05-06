@@ -21,3 +21,12 @@ class PlacementRecord(BaseModel):
 class TopIndustry(BaseModel):
     Industry_Type: str
     No_of_Placements: int
+
+class PlacementRecordCreate(BaseModel):
+    Placement_ID: int
+    Student_ID: int
+    Job_ID: int
+    Company_ID: int
+    Package: float
+    Placement_Date: date
+    Placement_Location: str

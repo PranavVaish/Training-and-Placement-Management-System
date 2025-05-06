@@ -618,6 +618,31 @@ BEGIN
     VALUES (p_student_id, p_job_id, p_application_date, p_status);
 END;
 
+-- ADD PLACEMENT RECORD
+DROP PROCEDURE IF EXISTS AddPlacementRecord;
+CREATE PROCEDURE AddPlacementRecord (
+    IN p_Placement_ID INT,
+    IN p_Student_ID INT,
+    IN p_Job_ID INT,
+    IN p_Company_ID INT,
+    IN p_Package DECIMAL(10,2),
+    IN p_Placement_Date DATE,
+    IN p_Placement_Location VARCHAR(100)
+)
+BEGIN
+    -- Check if Student, Job, and Company records exist
+    IF EXISTS (SELECT 1 FROM Student WHERE Student_ID = p_Student_ID) AND
+       EXISTS (SELECT 1 FROM Job WHERE Job_ID = p_Job_ID) AND
+       EXISTS (SELECT 1 FROM Company WHERE Company_ID = p_Company_ID) THEN
+       
+        INSERT INTO Placement_Record (Placement_ID, Student_ID, Job_ID, Company_ID, Package, Placement_Date, Placement_Location)
+        VALUES (p_Placement_ID, p_Student_ID, p_Job_ID, p_Company_ID, p_Package, p_Placement_Date, p_Placement_Location);
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid Student_ID, Job_ID, or Company_ID';
+    END IF;
+END;
+
 -- Stored Procedure: Retrieve Placement Records for listing
 DROP PROCEDURE IF EXISTS GetPlacementRecordsRowByRow;
 CREATE PROCEDURE GetPlacementRecordsRowByRow()

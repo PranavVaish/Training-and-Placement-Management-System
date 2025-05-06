@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 import mysql.connector
 from db.connections import get_db
-from models.records import PlacementReport, PlacementRecord, TopIndustry 
+from models.records import PlacementReport, PlacementRecord, TopIndustry, PlacementRecordCreate
 from typing import List, Dict, Any
 
 router = APIRouter()
@@ -11,8 +11,8 @@ async def get_placement_records(db: mysql.connector.MySQLConnection = Depends(ge
     """
     Retrieve all placement records from the database using the GetPlacementRecordsRowByRow stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.callproc("GetPlacementRecordsRowByRow")
 
         results = []
@@ -56,8 +56,8 @@ async def get_placement_report(db: mysql.connector.MySQLConnection = Depends(get
     """
     Retrieve the placement report from the database using the GetPlacementReport stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.callproc("GetPlacementReport")
 
         results = []
@@ -100,8 +100,8 @@ async def get_top_5_industries(db: mysql.connector.MySQLConnection = Depends(get
     """
     Retrieve the top 5 industries by placement count from the database using the GetTop5IndustriesByPlacement stored procedure.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
         cursor.callproc("GetTop5IndustriesByPlacement")
 
         results = []
@@ -139,8 +139,8 @@ async def get_all_records(db: mysql.connector.MySQLConnection = Depends(get_db))
     """
     Retrieve all placement records, placement report, and top 5 industries from the database.
     """
+    cursor = db.cursor()
     try:
-        cursor = db.cursor()
 
         # Get placement records
         cursor.callproc("GetPlacementRecordsRowByRow")
@@ -193,6 +193,41 @@ async def get_all_records(db: mysql.connector.MySQLConnection = Depends(get_db))
         }
 
     except mysql.connector.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+
+@router.post("/")
+async def create_placement_record(
+    placement_data: PlacementRecordCreate = Body(...),
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+):
+    """
+    Create a new placement record using the AddPlacementRecord stored procedure.
+    """
+    cursor = db.cursor()
+    try:
+        cursor.callproc(
+            "AddPlacementRecord",
+            (
+                placement_data.Placement_ID,
+                placement_data.Student_ID,
+                placement_data.Job_ID,
+                placement_data.Company_ID,
+                placement_data.Package,
+                placement_data.Placement_Date,
+                placement_data.Placement_Location,
+            ),
+        )
+        db.commit()
+        return {"message": "Placement record created successfully"}
+
+    except mysql.connector.Error as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
     finally:
         if cursor:
