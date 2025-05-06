@@ -43,3 +43,11 @@ class AdminTrainingProgram(BaseModel):
     duration: int = Field(..., alias="Duration")
     mode: str = Field(..., alias="Mode")
     cost: int = Field(..., alias="Cost")
+
+class FeedbackResponse(BaseModel):
+    Feedback_ID: int
+    Student_Name: str
+    Training_Name: str
+    Trainer_Name: str
+    Rating: int
+    Comments: str

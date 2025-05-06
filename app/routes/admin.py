@@ -4,7 +4,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 import mysql.connector
 from db.connections import get_db
 from mysql.connector import MySQLConnection
-from models.admin import AdminLogin, AdminResponse, AdminRegistration, AdminTrainingProgram
+from models.admin import AdminLogin, AdminResponse, AdminRegistration, AdminTrainingProgram, FeedbackResponse
 from typing import List
 import datetime
 from utils import create_access_token
@@ -258,44 +258,52 @@ async def login_admin(
         if db:
             db.close()
 
-@router.get("/feedback")
+@router.get("/feedback", response_model=List[FeedbackResponse])  # Use response_model for type hinting
 async def get_all_feedback(
     db: mysql.connector.MySQLConnection = Depends(get_db)
 ):
     """
-    Retrieve all feedback records with student name and training program.
+    Retrieve all feedback records with student name and training program details including trainer name.
     """
     query = """
-        SELECT 
+        SELECT
             f.Feedback_ID,
             s.Name AS Student_Name,
             tp.Training_Name,
+            t.Name AS Trainer_Name,
             f.Rating,
             f.Comments
-        FROM 
+        FROM
             Feedback f
-        JOIN 
+        JOIN
             Student s ON f.Student_ID = s.Student_ID
         JOIN
             Training_Program tp ON f.Training_ID = tp.Training_ID
+        JOIN
+            Trainer t ON tp.Trainer_ID = t.Trainer_ID
     """
     cursor = db.cursor()
     try:
         cursor.execute(query)
-        feedbacks = cursor.fetchall()
+        results = cursor.fetchall()
 
-        feedback_list = [
-            {
-                "Feedback_ID": row[0],
-                "Student_Name": row[1],
-                "Training_Name": row[2],
-                "Rating": row[3],
-                "Comments": row[4],
-            }
-            for row in feedbacks
+        #  Safely handle empty result sets
+        if not results:
+            return []  # Or raise an HTTPException(status_code=404, detail="No feedback found")
+
+        feedbacks = [
+            FeedbackResponse(
+                Feedback_ID=row[0],
+                Student_Name=row[1],
+                Training_Name=row[2],
+                Trainer_Name=row[3],
+                Rating=row[4],
+                Comments=row[5],
+            )
+            for row in results
         ]
 
-        return {"feedbacks": feedback_list}
+        return feedbacks
 
     except mysql.connector.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
