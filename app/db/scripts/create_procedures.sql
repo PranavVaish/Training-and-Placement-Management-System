@@ -552,7 +552,7 @@ BEGIN
             te.Enrollment_ID,
             tp.Duration,
             tp.Training_Name,
-            tp.Start_Date,
+            tp.Start_Date
         FROM Training_Enrollment te
         JOIN Training_Program tp ON te.Training_ID = tp.Training_ID
         WHERE te.Student_ID = p_StudentID;
@@ -886,11 +886,14 @@ BEGIN
         a.Job_ID,
         j.Job_Title,
         a.Application_Date,
-        a.Status
+        a.Status,
+        c.Name AS CompanyName  -- Added Company Name
     FROM 
         Application a
     JOIN 
         Job j ON a.Job_ID = j.Job_ID
+    JOIN
+        Company c ON j.Company_ID = c.Company_ID -- Join Company Table
     WHERE 
         a.Student_ID = p_StudentID
     ORDER BY 

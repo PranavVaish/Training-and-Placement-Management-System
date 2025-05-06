@@ -277,8 +277,9 @@ async def get_applications(
                 "applicationId": application[0],
                 "jobId": application[1],
                 "jobTitle": application[2],
-                "universalId": student_id,
-                "status": application[4]
+                "applicationDate": application[3],
+                "status": application[4],
+                "companyName": application[5]
             }
             application_list.append(StudentApplicationResponse(**application_data))
         return StudentApplicationListResponse(applications=application_list)

@@ -1,5 +1,6 @@
 # Models for Student
 from pydantic import BaseModel, EmailStr, Field
+from datetime import date
 from typing import Optional
 
 class StudentRegistration(BaseModel):
@@ -36,8 +37,9 @@ class StudentApplicationResponse(BaseModel):
     application_id: int = Field(..., alias="applicationId")
     job_id: int = Field(..., alias="jobId")
     job_title: str = Field(..., alias="jobTitle")
-    student_id: int = Field(..., alias="universalId")
-    status: str
+    status: str = Field(..., alias="status")
+    application_date: date = Field(..., alias="applicationDate")
+    company_name: str = Field(..., alias="companyName")
 
 class StudentApplicationListResponse(BaseModel):
     applications: list[StudentApplicationResponse]
