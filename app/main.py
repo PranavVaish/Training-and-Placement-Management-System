@@ -16,6 +16,7 @@ from routes.admin import router as admin_router, login_admin
 from routes.jobs import router as job_router
 from routes.training import router as training_router
 from routes.feedback import router as feedback_router
+from routes.records import router as records_router
 
 from contextlib import asynccontextmanager
 from db.setup import setup_database  
@@ -49,6 +50,7 @@ app.include_router(admin_router, prefix="/admin")
 app.include_router(job_router, prefix="/job")
 app.include_router(training_router, prefix="/training")
 app.include_router(feedback_router, prefix="/feedback")  
+app.include_router(records_router, prefix="/record")
 
 @app.get("/")
 def read_root():
