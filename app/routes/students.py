@@ -335,7 +335,6 @@ async def get_enrolled_courses(
 async def enroll_student(
     enrollment_data: EnrollStudent,
     db: mysql.connector.MySQLConnection = Depends(get_db),
-    current_user: dict = Depends(create_access_token),
 ):
     """
     Enroll a student in a training program using their access token and a stored procedure.
@@ -344,8 +343,12 @@ async def enroll_student(
     try:
 
         # Extract student_id from the access token
-        student_id = current_user.get("sub")
-        if not student_id:
+        student_id = enrollment_data.studentId
+        query = "SELECT 1 FROM student WHERE student_id = %s"
+        cursor.execute(query, (student_id,))
+        is_student = cursor.fetchone()
+
+        if not is_student:
             raise HTTPException(status_code=401, detail="Invalid access token")
 
         # Call the stored procedure

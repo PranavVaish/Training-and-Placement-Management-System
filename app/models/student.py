@@ -46,3 +46,8 @@ class StudentApplicationListResponse(BaseModel):
 
 class EnrollStudent(BaseModel):
     training_id: int
+    studentName: str
+    studentId: int
+    studentEmail: EmailStr
+    paymentMethod: str
+    department: str
