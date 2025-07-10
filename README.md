@@ -1,4 +1,4 @@
-# Placement Management System API
+# Stride - The Placement Management System API
 
 This project is a FastAPI-based backend for managing placements, jobs, companies, and students.
 
