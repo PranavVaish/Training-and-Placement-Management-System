@@ -54,8 +54,8 @@ cd Training-and-Placement-Management-System
 ```bash
 cd frontend
 # Open in your preferred editor (e.g., VS Code)
-code .
-# Use Live Server Extension in VS Code to run the index.html file
+npm i
+npm run dev
 ```
 
 Frontend Features:
