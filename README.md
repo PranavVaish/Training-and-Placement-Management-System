@@ -118,6 +118,6 @@ More APIs can be explored in Swagger UI.
 
 ---
 
-## 📝 License
+## License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](./LICENSE) © 2025 Pranav Vaish.
